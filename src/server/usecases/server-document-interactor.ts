@@ -2,7 +2,7 @@ import { Author, Document, DocumentHeader, DocumentRepository, ID } from "@/doma
 import { User, UserRepository } from './server-user-models';
 
 
-export class DocumentInteractor {
+export class ServerDocumentInteractor {
   private documents: DocumentRepository;
   private users: UserRepository;
 

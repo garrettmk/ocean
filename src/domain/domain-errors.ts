@@ -17,3 +17,4 @@ export class OceanError extends Error {
 
 export class NotImplementedError extends OceanError {};
 export class NotFoundError extends OceanError {};
+export class ValidationError extends OceanError {};
