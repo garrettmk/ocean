@@ -8,9 +8,11 @@ import { GraphQLSchema } from 'graphql';
 export class DocumentsGraphQLApi {
   private interactor: DocumentInteractor;
 
+  
   constructor(interactor: DocumentInteractor) {
     this.interactor = interactor;
     this.createDocument = this.createDocument.bind(this);
+    this.listDocuments = this.listDocuments.bind(this);
   };
 
 
@@ -19,6 +21,14 @@ export class DocumentsGraphQLApi {
       type Author {
         id: ID!
         name: String!
+      }
+
+      type DocumentHeader {
+        id: ID!
+        author: Author!
+        isPublic: Boolean!
+        title: String!
+        contentType: String!
       }
 
       type Document {
@@ -39,9 +49,17 @@ export class DocumentsGraphQLApi {
       type Mutation {
         createDocument(input: CreateDocumentInput!): Document
       }
+
+      type Query {
+        listDocuments : [DocumentHeader!]!
+      }
     `;
 
     const resolvers: IResolvers = {
+      Query: {
+        listDocuments: this.listDocuments,
+      },
+
       Mutation: {
         createDocument: this.createDocument
       }
@@ -57,5 +75,12 @@ export class DocumentsGraphQLApi {
       throw new Error('Must be signed in');
       
     return this.interactor.createDocument(context.id, args);
+  }
+
+
+  listDocuments(parent: never, args: never, context: User | undefined, info: any) {
+    console.log({ info });
+
+    return this.interactor.listDocuments(context?.id);
   }
 }

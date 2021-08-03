@@ -1,4 +1,4 @@
-import { Author, Document, DocumentRepository, ID } from "@/domain";
+import { Author, Document, DocumentHeader, DocumentRepository, ID } from "@/domain";
 import { User, UserRepository } from './server-user-models';
 
 
@@ -21,6 +21,15 @@ export class DocumentInteractor {
     });
 
     return doc;
+  }
+
+
+  async listDocuments(userId?: ID) : Promise<DocumentHeader[]> {
+    const user = userId && await this.users.getById(userId);
+    if (user)
+      return await this.documents.listByAuthor(user.author.id);
+    else
+      return await this.documents.listPublic();
   }
 }
 

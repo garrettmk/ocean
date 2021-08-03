@@ -1,4 +1,5 @@
 import express from 'express';
+import morgan from 'morgan';
 import cors from 'cors';
 import { graphqlHTTP } from 'express-graphql';
 
@@ -23,10 +24,15 @@ const schema = documentsApi.getSchema();
 
 // Set up the express server
 const app = express();
-app.use(cors);
+app.use(morgan('combined'));
+app.use(cors());
+
 app.use('/graphql', graphqlHTTP({
   schema,
+  rootValue: undefined,
   graphiql: true
 }));
 
-app.listen(3000);
+app.listen(3000, () => {
+  console.log('Listening on port 3000');
+});
