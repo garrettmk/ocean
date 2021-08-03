@@ -1,16 +1,22 @@
 const path = require('path');
 
 module.exports = {
-  entry: './src/index.ts',
+  entry: './src/server/index.ts',
 
   output: {
     path: path.join(__dirname, 'dist'),
+    filename: 'server.bundle.js'
   },
 
-  mode: process.env.NODE_ENV || 'development',
+  mode: 'development',
+
+  devtool: 'inline-source-map',
 
   resolve: {
-    extensions: ['.ts']
+    extensions: ['.ts'],
+    alias: {
+      '@': path.resolve(__dirname, 'src')
+    }
   },
 
   module: {
@@ -18,7 +24,7 @@ module.exports = {
       {
         test: /\.(tsx?)$/,
         exclude: /node_modules/,
-        use: ['babel-loader']
+        use: ['ts-loader']
       }
     ]
   }

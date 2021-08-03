@@ -1,14 +1,21 @@
 {
   "compilerOptions": {
+    "strict": true,
     "baseUrl": ".",
     "outDir": "dist",
     "noImplicitAny": true,
     "module": "es6",
     "target": "es6",
     "allowJs": false,
+    "declaration": true,
     "sourceMap": true,
     "allowSyntheticDefaultImports": true,
-    "moduleResolution": "node"
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "lib": ["esnext"],
+    "paths": {
+      "@/*": ["src/*"]
+    }
   },
   "include": ["src"]
 }

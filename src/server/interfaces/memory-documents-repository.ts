@@ -1,4 +1,4 @@
-import { Document, CreateDocumentInput, DocumentRepository, ID, ModifyDocumentInput, NotImplementedError, NotFoundError } from "src/domain";
+import { Document, CreateDocumentInput, DocumentRepository, ID, ModifyDocumentInput, NotImplementedError, NotFoundError } from "@/domain";
 import { AuthorRepository } from "src/domain";
 
 

@@ -1,4 +1,4 @@
-import { Author, Document, DocumentRepository, ID } from "../../domain";
+import { Author, Document, DocumentRepository, ID } from "@/domain";
 import { User, UserRepository } from './server-user-models';
 
 

@@ -1,4 +1,4 @@
-import type { CreateDocumentInput, DocumentInteractor, User } from '../usecases';
+import type { CreateDocumentInput, DocumentInteractor, User } from '@/server/usecases';
 
 
 export class DocumentsGraphQLApi {

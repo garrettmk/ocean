@@ -1,5 +1,5 @@
-import { AuthorRepository, ID, NotFoundError } from 'src/domain';
-import { SaveUserInput, User, UserRepository } from '../usecases/server-user-models';
+import { AuthorRepository, ID, NotFoundError } from '@/domain';
+import { SaveUserInput, User, UserRepository } from '@/server/usecases';
 
 
 export class MemoryUserRepository implements UserRepository {

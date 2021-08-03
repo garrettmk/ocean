@@ -1,4 +1,4 @@
-import { ID, Author } from "src/domain";
+import { ID, Author } from "@/domain";
 
 
 

@@ -1,4 +1,4 @@
-import { Author, AuthorRepository, CreateAuthorInput, ID, NotFoundError } from "src/domain";
+import { Author, AuthorRepository, CreateAuthorInput, ID, NotFoundError } from "@/domain";
 
 
 export class MemoryAuthorRepository implements AuthorRepository {
