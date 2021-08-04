@@ -1,5 +1,6 @@
-import { Author, Document, DocumentHeader, DocumentRepository, ID } from "@/domain";
-import { User, UserRepository } from './server-user-models';
+import { Document, DocumentHeader, DocumentRepository, ID } from "@/domain";
+import { AuthorizationError } from "./server-errors";
+import { UserRepository } from './server-user-models';
 
 
 export class ServerDocumentInteractor {
@@ -31,11 +32,33 @@ export class ServerDocumentInteractor {
     else
       return await this.documents.listPublic();
   }
+
+
+  async updateDocument(userId: ID, documentId: ID, input: UpdateDocumentInput) {
+    const user = userId && await this.users.getById(userId);
+    const document = documentId && await this.documents.getById(documentId);
+    const isUpdatePermitted =
+      user &&
+      document &&
+      user.author.id === document.author.id;
+
+    if (!isUpdatePermitted)
+      throw new AuthorizationError('Only the document author can make changes');
+    
+    const newDocument = await this.documents.update(documentId, input);
+    return newDocument;
+  }
 }
 
 
-export type CreateDocumentInput = {
-  title?: string,
-  contentType?: string,
-  content?: any
+type CreateTitleInput = {
+  title?: string
 }
+
+type CreateContentInput = {
+  contentType: string,
+  content: any
+}
+
+export type CreateDocumentInput = CreateTitleInput | CreateContentInput | (CreateTitleInput & CreateContentInput);
+export type UpdateDocumentInput = CreateTitleInput | CreateContentInput | (CreateTitleInput & CreateContentInput);

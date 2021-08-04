@@ -1,4 +1,4 @@
-import { ID } from '@/domain';
+import { ID, UpdateDocumentInput } from '@/domain';
 import type { CreateDocumentInput, ServerDocumentInteractor, User } from '@/server/usecases';
 import { makeExecutableSchema } from '@graphql-tools/schema';
 import { GraphQLSchema } from 'graphql';
@@ -9,7 +9,6 @@ import { AuthorizationError } from '../usecases/server-errors';
 export type ServerDocumentsApiContext = () => {
   userId?: ID
 }
-
 
 export class ServerDocumentsApi {
   private interactor: ServerDocumentInteractor;
@@ -59,12 +58,19 @@ export class ServerDocumentsApi {
           content: String
         }
 
+        input UpdateDocumentInput {
+          title: String,
+          contentType: String,
+          content: String
+        }
+
         type Mutation {
           createDocument(input: CreateDocumentInput!): Document
+          updateDocument(documentId: ID!, input: UpdateDocumentInput!): Document!
         }
 
         type Query {
-          listDocuments : [DocumentHeader!]!
+          listDocuments: [DocumentHeader!]!
         }
       `,
 
@@ -82,6 +88,13 @@ export class ServerDocumentsApi {
             const { input }: { input: CreateDocumentInput } = args;
 
             return this.interactor.createDocument(userId, input);
+          },
+
+          updateDocument: (root, args, context, info) => {
+            const userId = getAuthenticatedUserId(context);
+            const { documentId, input }: { documentId: ID, input: UpdateDocumentInput } = args;
+
+            return this.interactor.updateDocument(userId, documentId, input);
           }
         }
       }

@@ -38,22 +38,28 @@ export interface DocumentRepository {
   getById(documentId: ID) : Promise<Document>,
   listByAuthor(authorId: ID) : Promise<DocumentHeader[]>,
   listPublic() : Promise<DocumentHeader[]>,
-  modify(documentId: ID, input: ModifyDocumentInput) : Promise<Document>,
+  update(documentId: ID, input: UpdateDocumentInput) : Promise<Document>,
   delete(documentId: ID) : Promise<boolean>
 }
 
 
-export type CreateDocumentInput = {
+type ContentInput = {
+  contentType: string,
+  content: any
+}
+
+type CreateInput = {
   authorId: ID,
   title?: string,
   isPublic?: boolean,
-  contentType?: string,
-  content?: any
 }
 
-
-export type ModifyDocumentInput = {
+type UpdateInput = {
   title?: string,
-  contentType?: string,
-  content?: any
-} 
+  isPublic?: boolean
+}
+
+export type CreateDocumentInput = CreateInput | (CreateInput & ContentInput);
+
+export type UpdateDocumentInput = UpdateInput | (UpdateInput & ContentInput)
+
