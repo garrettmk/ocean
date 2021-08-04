@@ -44,6 +44,7 @@
     "graphql-scalars": "^1.10.0",
     "graphql-tag": "^2.12.5",
     "morgan": "^1.10.0",
-    "pm2": "^5.1.0"
+    "pm2": "^5.1.0",
+    "superstruct": "^0.15.2"
   }
 }

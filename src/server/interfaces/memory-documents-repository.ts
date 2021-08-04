@@ -1,4 +1,4 @@
-import { Document, CreateDocumentInput, DocumentRepository, ID, UpdateDocumentInput, NotImplementedError, NotFoundError, ValidationError } from "@/domain";
+import { Document, CreateDocumentInput, DocumentRepository, ID, UpdateDocumentInput, NotImplementedError, NotFoundError, ValidationError, validateCreateDocumentInput, validateDocument, validateUpdateDocumentInput } from "@/domain";
 import { AuthorRepository } from "src/domain";
 
 
@@ -16,6 +16,8 @@ export class MemoryDocumentRepository implements DocumentRepository {
 
 
   async create(input: CreateDocumentInput) {
+    validateCreateDocumentInput(input);
+
     const id = Object.keys(this.docs).length + 1;
     const author = await this.authors.getById(input.authorId);
 
@@ -27,6 +29,8 @@ export class MemoryDocumentRepository implements DocumentRepository {
       contentType: 'contentType' in input ? input.contentType : 'text/plain',
       content: 'content' in input ? input.content : ''
     };
+
+    validateDocument(doc);
 
     this.docs[id] = doc;
 
@@ -53,13 +57,14 @@ export class MemoryDocumentRepository implements DocumentRepository {
 
 
   async update(documentId: ID, input: UpdateDocumentInput) {
+    validateUpdateDocumentInput(input);
+
     const doc = this.docs[documentId];
     if (!doc)
       throw new NotFoundError(`document id ${documentId}`);
 
     const newDoc = { ...doc, ...input };
-
-    // Validate
+    validateDocument(newDoc);
 
     this.docs[documentId] = newDoc;
     return newDoc;

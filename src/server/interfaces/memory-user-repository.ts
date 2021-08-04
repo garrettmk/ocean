@@ -1,5 +1,5 @@
 import { Author, AuthorRepository, ID, NotFoundError } from '@/domain';
-import { SaveUserInput, User, UserRepository } from '@/server/usecases';
+import { SaveUserInput, User, UserRepository, validateSaveUserInput } from '@/server/usecases';
 
 
 export class MemoryUserRepository implements UserRepository {
@@ -16,6 +16,8 @@ export class MemoryUserRepository implements UserRepository {
 
 
   async save(input: SaveUserInput) {
+    validateSaveUserInput(input);
+    
     const author: Author = await this.authors.getById(input.id).catch(async error => {
       if (error instanceof NotFoundError) {
         return await this.authors.create({

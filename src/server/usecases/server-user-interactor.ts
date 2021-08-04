@@ -1,5 +1,6 @@
-import { ID, ValidationError } from "@/domain";
-import { UserRepository } from "./server-user-models";
+import { ID } from "@/domain";
+import { SaveUserInput, UserRepository } from "./server-user-models";
+import { validateSaveUserInput } from "./server-user-validators";
 
 
 export class ServerUserInteractor {
@@ -11,11 +12,10 @@ export class ServerUserInteractor {
 
 
   async loginUser(userId: ID, name: string) {
-    if (!userId)
-      throw new ValidationError(`invalid user id: ${userId}`);
-
-    if (!name)
-      throw new ValidationError(`invalid user name: ${name}`);
+    const saveUserInput: SaveUserInput = {
+      id: userId,
+      name
+    };
 
     const user = await this.users.save({ id: userId, name });
     return user;

@@ -1,4 +1,4 @@
-import { Author, AuthorRepository, CreateAuthorInput, ID, NotFoundError } from "@/domain";
+import { Author, AuthorRepository, CreateAuthorInput, ID, NotFoundError, validateAuthor, validateCreateAuthorInput } from "@/domain";
 
 
 export class MemoryAuthorRepository implements AuthorRepository {
@@ -13,11 +13,15 @@ export class MemoryAuthorRepository implements AuthorRepository {
 
 
   async create(input: CreateAuthorInput) {
+    validateCreateAuthorInput(input);
+
     const id = Object.keys(this.authors).length + 1;
     const author: Author = {
       id: id + '',
       name: input.name
     };
+
+    validateAuthor(author);
 
     this.authors[id] = author;
     return author;

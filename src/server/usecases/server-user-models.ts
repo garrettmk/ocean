@@ -1,7 +1,6 @@
 import { ID, Author } from "@/domain";
 
 
-
 export interface User {
   id: ID,
   name: string,
