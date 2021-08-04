@@ -1,10 +1,10 @@
 import cors from 'cors';
-import express, { NextFunction, Request, Response } from 'express';
+import express from 'express';
 import { graphqlHTTP } from 'express-graphql';
 import morgan from 'morgan';
 import { MemoryAuthorRepository, MemoryDocumentRepository, MemoryUserRepository, ServerApi } from "./interfaces";
+import { ServerApiContextMiddleware } from './middleware';
 import { ServerDocumentInteractor, ServerUserInteractor } from "./usecases";
-
 
 
 // Create repositories
@@ -22,44 +22,23 @@ users.save({
 const documentInteractor = new ServerDocumentInteractor(documents, users);
 const userInteractor = new ServerUserInteractor(users);
 
-// Create the web service
+// Create the api
 const serverApi = new ServerApi(userInteractor, documentInteractor);
+const apiContext = new ServerApiContextMiddleware();
 
 // Set up the express server
 const app = express();
 app.use(morgan('combined'));
 app.use(cors());
-
-const userMiddleware = makeUserMiddleware();
-app.use(userMiddleware);
+app.use(apiContext.middleware);
 
 app.use('/graphql', graphqlHTTP({
   schema: serverApi.getSchema(),
   rootValue: undefined,
-  context: userMiddleware.context,
+  context: apiContext.getContext,
   graphiql: true
 }));
 
 app.listen(3000, () => {
   console.log('Listening on port 3000');
 });
-
-
-
-function makeUserMiddleware() {
-  let _context = {};
-
-  function context() {
-    return _context;
-  }
-
-  async function middleware(req: Request, res: Response, next: NextFunction) {
-    const accessToken = req.headers.authorization;
-    // Parse token for user key ('sub')
-    const userId = 'SINGLE_USER';
-    _context = { userId };
-    next();
-  }
-
-  return Object.assign(middleware, { context });
-}
