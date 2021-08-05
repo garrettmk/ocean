@@ -1,4 +1,4 @@
-import { validate } from '@/domain';
+import { validate } from '@/domain/domain-utils';
 import { Struct, string, pattern, size, object, refine } from 'superstruct';
 import { SaveUserInput, User } from './server-user-models';
 

@@ -1,22 +1,8 @@
-import { Struct, assert, object, string, pattern, pick, boolean, min, size, assign, unknown, union, optional, StructError, refine } from 'superstruct';
-import { ValidationError } from './domain-errors';
-import { Document, Author, CreateAuthorInput, CreateDocumentInput, DocumentHeader, UpdateDocumentInput } from './domain-models';
+import { assign, boolean, object, optional, pattern, refine, string, union, unknown } from 'superstruct';
+import { Author, CreateAuthorInput, CreateDocumentInput, Document, DocumentHeader, UpdateDocumentInput } from './domain-models';
+import { validate } from './domain-utils';
 
 
-// Transforms StructErrors into ValidationErrors
-export function validate(value: any, schema: Struct<any, any>) {
-  try {
-    assert(value, schema);
-  } catch (e) {
-    if (e instanceof StructError) {
-      const match = e.message.match(/StructError: (.*)/);
-      const message = match ? match[1] : e.message;
-      throw new ValidationError(message);
-    } else {
-      throw e;
-    }
-  }
-}
 
 // Some common types
 const NonEmptyString = refine(string(), 'nonemptystring', value => value.length > 0);
