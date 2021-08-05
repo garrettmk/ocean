@@ -1,10 +1,16 @@
 module.exports = {
   apps: [
     {
-      name: 'build',
-      script: 'npm run build',
+      name: 'build-server',
+      script: 'npm run build:server',
       instances: 1,
-      watch: ['webpack.config.js']
+      watch: ['webpack.server-config.js']
+    },
+    {
+      name: 'build-react',
+      script: 'npm run build:react',
+      instances: 1,
+      watch: ['webpack.react-config.js']
     },
     {
       name: 'serve',

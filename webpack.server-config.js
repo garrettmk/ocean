@@ -3,14 +3,14 @@ const path = require('path');
 
 module.exports = {
   target: 'node',
+  mode: 'development',
+
   entry: './src/server/index.ts',
 
   output: {
     path: path.join(__dirname, 'dist'),
     filename: 'server.bundle.js'
   },
-
-  mode: 'development',
 
   devtool: 'inline-source-map',
 

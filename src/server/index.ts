@@ -34,6 +34,7 @@ app.use(morgan('combined'));
 app.use(cors());
 app.use(apiContext.middleware);
 
+app.use('/', express.static(__dirname + '/public'))
 app.use('/graphql', graphqlHTTP({
   schema: serverApi.getSchema(),
   rootValue: undefined,
