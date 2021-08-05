@@ -1,4 +1,4 @@
-import { ID, UpdateDocumentInput } from '@/domain';
+import { DocumentHeader, ID, UpdateDocumentInput, validateCreateDocumentInput } from '@/domain';
 import type { CreateDocumentInput, ServerDocumentInteractor, User } from '@/server/usecases';
 import { makeExecutableSchema } from '@graphql-tools/schema';
 import { GraphQLSchema } from 'graphql';
@@ -101,3 +101,10 @@ export class ServerDocumentsApi {
     });
   }
 }
+
+
+export interface ClientDocumentsGateway {
+  listDocuments() : Promise<DocumentHeader[]>
+}
+
+export { CreateDocumentInput };

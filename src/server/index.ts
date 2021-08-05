@@ -6,6 +6,8 @@ import { MemoryAuthorRepository, MemoryDocumentRepository, MemoryUserRepository,
 import { ServerApiContextMiddleware } from './middleware';
 import { ServerDocumentInteractor, ServerUserInteractor } from "./usecases";
 
+export { ClientDocumentsGateway, CreateDocumentInput } from './interfaces';
+
 
 // Create repositories
 const authors = new MemoryAuthorRepository();
