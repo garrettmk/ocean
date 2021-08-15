@@ -17,4 +17,16 @@ export class OceanError extends Error {
 
 export class NotImplementedError extends OceanError {};
 export class NotFoundError extends OceanError {};
-export class ValidationError extends OceanError {};
+
+export class ValidationError extends OceanError {
+  public path: string[];
+  public expected: string;
+  public recieved: any;
+
+  constructor(message: string, path: string[], expected: string, recieved: any) {
+    super(message);
+    this.path = path;
+    this.expected = expected;
+    this.recieved = recieved;
+  }
+};
