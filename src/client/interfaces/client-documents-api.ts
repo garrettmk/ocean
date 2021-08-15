@@ -1,3 +1,4 @@
+import { ID } from "@/domain";
 import { CreateDocumentInput, ClientDocumentsGateway } from "@/server";
 import { DocumentNode } from "graphql";
 import gql from "graphql-tag";
@@ -22,7 +23,7 @@ export class DocumentsGraphQLClient implements ClientDocumentsGateway {
     this.client = client;
   }
 
-
+  
   async listDocuments() {
     const query = gql`
       query {
@@ -44,5 +45,29 @@ export class DocumentsGraphQLClient implements ClientDocumentsGateway {
       // Transform into an application error and throw
     
     return result.data?.listDocuments ?? [];
+  }
+
+  async getDocument(id: ID) {
+    const query = gql`
+      query($id: ID!) {
+        getDocument(id: $id) {
+          id
+          title
+          author {
+            id
+            name
+          }
+          isPublic
+          contentType
+          content
+        }
+      }
+    `;
+
+    const result = await this.client.query(query);
+    if (result.error)
+      // Transform into application error
+
+    return result.data?.getDocument;
   }
 }

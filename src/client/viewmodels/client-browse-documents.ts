@@ -23,7 +23,6 @@ export type BrowseDocumentsEvent =
 
 
 export function makeBrowseDocumentsMachine(gateway: ClientDocumentsGateway) {
-
   return createMachine<BrowseDocumentsContext, BrowseDocumentsEvent>({
     id: 'browse-documents',
     initial: 'loading',

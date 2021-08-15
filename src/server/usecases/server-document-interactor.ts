@@ -48,6 +48,18 @@ export class ServerDocumentInteractor {
     const newDocument = await this.documents.update(documentId, input);
     return newDocument;
   }
+
+
+  async getDocument(userId: ID | undefined, documentId: ID) : Promise<Document> {
+    const user = userId && await this.users.getById(userId);
+    const document = await this.documents.getById(documentId);
+    const isViewPermitted = (document.isPublic) || (user && user.author.id === document.author.id);
+
+    if (!isViewPermitted)
+      throw new AuthorizationError('Only the document author can view this document');
+
+    return document;
+  }
 }
 
 

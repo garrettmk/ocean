@@ -71,6 +71,7 @@ export class ServerDocumentsApi {
 
         type Query {
           listDocuments: [DocumentHeader!]!
+          getDocument(id: ID!): Document!
         }
       `,
 
@@ -79,6 +80,13 @@ export class ServerDocumentsApi {
           listDocuments: (root, args, context, info) => {
             const { userId } = context();
             return this.interactor.listDocuments(userId);
+          },
+
+          getDocument: (root, args, context, info) => {
+            const { userId } = context();
+            const { id: documentId } = args;
+
+            return this.interactor.getDocument(userId, documentId);
           }
         },
 
@@ -104,7 +112,8 @@ export class ServerDocumentsApi {
 
 
 export interface ClientDocumentsGateway {
-  listDocuments() : Promise<DocumentHeader[]>
+  listDocuments() : Promise<DocumentHeader[]>,
+  getDocument(id: ID) : Promise<Document>,
 }
 
 export { CreateDocumentInput };
