@@ -18,6 +18,7 @@
     "skipLibCheck": true,
     "lib": ["dom", "dom.iterable", "esnext"],
     "jsx": "react-jsx",
+    "types": ["node", "jest"],
     "paths": {
       "@/*": ["src/*"]
     }

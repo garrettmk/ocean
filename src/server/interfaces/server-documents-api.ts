@@ -116,4 +116,4 @@ export interface ClientDocumentsGateway {
   getDocument(id: ID) : Promise<Document>,
 }
 
-export { CreateDocumentInput };
+export type { CreateDocumentInput };

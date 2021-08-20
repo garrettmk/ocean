@@ -9,7 +9,7 @@ const INVALID_NAMES = [null, undefined, 0, '', 123, {}, []];
 const INVALID_TITLES = INVALID_NAMES;
 const INVALID_CONTENT_TYPE = [...INVALID_NAMES, 'text'];
 
-function optional(values) {
+function optional(values: any[]) {
   return values.filter(v => v !== undefined);
 }
 
