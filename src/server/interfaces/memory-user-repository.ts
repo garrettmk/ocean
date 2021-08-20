@@ -17,24 +17,28 @@ export class MemoryUserRepository implements UserRepository {
 
   async save(input: SaveUserInput) {
     validateSaveUserInput(input);
-    
-    const author: Author = await this.authors.getById(input.id).catch(async error => {
-      if (error instanceof NotFoundError) {
-        return await this.authors.create({
-          name: input.name
-        });
-      } else {
-        throw error;
-      }
-    });
 
-    const user: User = { ...input, author };
-    this.users[input.id] = user;
+    const existing = this.users[input.id];
 
-    return user;
+    if (existing) {
+      const modified = {
+        ...existing,
+        name: input.name
+      };
+
+      this.users[existing.id] = modified;
+      return modified;
+
+    } else {
+      const author = await this.authors.create({ name: input.name });
+      const user: User = { ...input, author };
+
+      this.users[user.id] = user;
+      return user;
+    }
   }
 
-  
+    
   async getById(id: ID) {
     const user = this.users[id];
     if (!user)
