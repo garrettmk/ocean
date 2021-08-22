@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { ServerApiContext } from "../interfaces";
-
+import jwt from 'jwt-simple';
 
 export class ServerApiContextMiddleware {
   private context?: ReturnType<ServerApiContext>;
@@ -13,8 +13,7 @@ export class ServerApiContextMiddleware {
 
   middleware(req: Request, res: Response, next: NextFunction) {
     // Get the access token from the request
-    // const accessToken = req.headers.authorization;
-    const accessToken = 'token';
+    const accessToken = req.headers.authorization;
     
     // Parse the token for the user ID
     const claims = accessToken ? this.parseToken(accessToken) : undefined;
@@ -34,9 +33,6 @@ export class ServerApiContextMiddleware {
 
 
   parseToken(accessToken: string) {
-    // TODO: the crypto stuff
-    return {
-      sub: 'SINGLE_USER'
-    }
+    return jwt.decode(accessToken, 'secret');
   }
 }

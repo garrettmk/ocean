@@ -4,12 +4,12 @@ import { DocumentNode } from "graphql";
 import gql from "graphql-tag";
 
 
-interface GraphQLClient {
+export interface GraphQLClient {
   query(q: DocumentNode, variables?: Record<string, any>): Promise<GraphQLResult>,
   mutation(m: DocumentNode, variables?: Record<string, any>): Promise<GraphQLResult>
 }
 
-type GraphQLResult = {
+export type GraphQLResult = {
   data?: any,
   error?: any
 }
@@ -42,7 +42,7 @@ export class DocumentsGraphQLClient implements ClientDocumentsGateway {
 
     const result = await this.client.query(query);
     if (result.error)
-      // Transform into an application error and throw
+      throw new Error(result.error);
     
     return result.data?.listDocuments ?? [];
   }
