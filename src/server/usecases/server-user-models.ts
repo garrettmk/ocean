@@ -11,6 +11,7 @@ export interface User {
 export interface UserRepository {
   save(input: SaveUserInput) : Promise<User>,
   getById(id: ID) : Promise<User>,
+  getByAuthorId(id: ID) : Promise<User>
 }
 
 

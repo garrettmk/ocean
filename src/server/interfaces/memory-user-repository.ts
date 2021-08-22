@@ -46,4 +46,13 @@ export class MemoryUserRepository implements UserRepository {
 
     return user;
   }
+
+
+  async getByAuthorId(id: ID) {
+    const user = Object.values(this.users).find(usr => usr.author.id === id);
+    if (!user)
+      throw new NotFoundError(`author.id ${id}`);
+
+    return user;
+  }
 }
