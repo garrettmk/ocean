@@ -1,11 +1,10 @@
 import { DocumentsGraphQLClient, UrqlGraphQLClient } from "@/client/interfaces";
-import { OceanServer } from "../app"
-import { MemoryAuthorRepository, MemoryDocumentRepository, MemoryUserRepository } from "../interfaces";
+import { OceanServer } from "@/server/app"
+import { MemoryAuthorRepository, MemoryDocumentRepository, MemoryUserRepository } from "@/server/interfaces";
 import fetch from 'node-fetch';
 import { AuthorRepository, DocumentRepository, Document, DocumentHeader } from "@/domain";
-import { UserRepository } from "../usecases";
+import { UserRepository } from "@/server/usecases";
 import jwt from 'jwt-simple';
-import e from "cors";
 
 
 describe('Testing OceanServer', () => {
