@@ -1,10 +1,10 @@
-import { DocumentsGraphQLClient, UrqlGraphQLClient } from "@/client/interfaces";
-import { OceanServer } from "@/server/app"
+import { ClientAuthenticator, DocumentsGraphQLClient, UrqlGraphQLClient } from "@/client/interfaces";
+import { OceanServer } from "@/server/ocean-server"
 import { MemoryAuthorRepository, MemoryDocumentRepository, MemoryUserRepository } from "@/server/interfaces";
 import fetch from 'node-fetch';
-import { AuthorRepository, DocumentRepository, Document, DocumentHeader } from "@/domain";
+import { AuthorRepository, DocumentRepository, Document, DocumentHeader, NotFoundError } from "@/domain";
 import { UserRepository } from "@/server/usecases";
-import jwt from 'jwt-simple';
+import { TestAuthenticator } from "../__mocks__/TestAuthenticator";
 
 
 describe('Testing OceanServer', () => {
@@ -13,6 +13,7 @@ describe('Testing OceanServer', () => {
   let documents: DocumentRepository;
   let server: OceanServer;
   let api: DocumentsGraphQLClient;
+  let authenticator: TestAuthenticator;
 
 
   async function populate() : Promise<Document[]> {
@@ -44,14 +45,12 @@ describe('Testing OceanServer', () => {
     documents = new MemoryDocumentRepository(authors);
     users = new MemoryUserRepository(authors);
     
-    server = new OceanServer(users, documents);
+    server = new OceanServer(users, documents, 'secret');
     server.listen(3000);
 
-    const tokenGetter = async () => jwt.encode({
-      sub: 'luke'
-    }, 'secret');
-
-    const graphqlClient = new UrqlGraphQLClient('http://127.0.0.1:3000/graphql', fetch, tokenGetter);
+    authenticator = new TestAuthenticator();
+    const graphqlClient = new UrqlGraphQLClient('http://127.0.0.1:3000/graphql', authenticator, fetch as any);
+    
     api = new DocumentsGraphQLClient(graphqlClient);
   });
 
@@ -63,13 +62,39 @@ describe('Testing OceanServer', () => {
 
   it('should only return headers from the given author', async () => {
     expect.assertions(1);
+
     const docs = await populate();
     const expected: DocumentHeader[] = docs
       .filter(doc => doc.author.name == 'Luke')
       .map(({ content, ...header }) => header);
+    
+    authenticator.useUserId('luke');    
 
-    const result = await api.listDocuments();
-    expect(result).toMatchObject(expected);
-    // expect(api.listDocuments()).resolves.toMatchObject(expected);
+    await expect(api.listDocuments()).resolves.toMatchObject(expected);
+  });
+
+  
+  it('should return only public documents if no user is logged in', async () => {
+    expect.assertions(1);
+
+    const docs = await populate();
+    const expected: DocumentHeader[] = docs
+      .filter(doc => doc.isPublic)
+      .map(({ content, ...header }) => header);
+
+    authenticator.useUserId(undefined);
+
+    await expect(api.listDocuments()).resolves.toMatchObject(expected);
+  });
+
+
+  it('should throw an error if given an invalid user id', async () => {
+    expect.assertions(1);
+
+    const docs = await populate();
+
+    authenticator.useUserId('vader');
+
+    await expect(api.listDocuments()).rejects.toBeInstanceOf(Error)
   })
 })

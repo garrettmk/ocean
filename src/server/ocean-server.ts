@@ -13,14 +13,14 @@ export class OceanServer {
   private app: Express;
   private server?: Server;
 
-  constructor(users: UserRepository, documents: DocumentRepository) {
+  constructor(users: UserRepository, documents: DocumentRepository, secret: string) {
     // Create the interactors
     const documentInteractor = new ServerDocumentInteractor(documents, users);
     const userInteractor = new ServerUserInteractor(users);
 
     // Create the api
     const serverApi = new ServerApi(userInteractor, documentInteractor);
-    const apiContext = new ServerApiContextMiddleware();
+    const apiContext = new ServerApiContextMiddleware(secret);
 
     // Set up the express server
     this.app = express();

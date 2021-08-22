@@ -4,9 +4,11 @@ import jwt from 'jwt-simple';
 
 export class ServerApiContextMiddleware {
   private context?: ReturnType<ServerApiContext>;
+  private secret: string;
 
 
-  constructor() {
+  constructor(secret: string) {
+    this.secret = secret;
     this.middleware = this.middleware.bind(this);
     this.getContext = this.getContext.bind(this);
   }
@@ -33,6 +35,6 @@ export class ServerApiContextMiddleware {
 
 
   parseToken(accessToken: string) {
-    return jwt.decode(accessToken, 'secret');
+    return jwt.decode(accessToken, this.secret);
   }
 }
