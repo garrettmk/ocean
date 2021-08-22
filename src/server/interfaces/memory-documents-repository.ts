@@ -8,24 +8,27 @@ export class MemoryDocumentRepository implements DocumentRepository {
     [key: string]: Document
   };
 
+  private count: number;
+
 
   constructor(authors: AuthorRepository) {
     this.authors = authors;
     this.docs = {};
+    this.count = 0;
   }
 
 
   async create(input: CreateDocumentInput) {
     validateCreateDocumentInput(input);
 
-    const id = Object.keys(this.docs).length + 1;
+    const id = await this._getNextId();
     const author = await this.authors.getById(input.authorId);
 
     const doc: Document = {
       id: id + '',
       author,
-      isPublic: input.isPublic || false,
-      title: input.title || 'Untitled',
+      isPublic: input.isPublic ?? false,
+      title: input.title ?? 'Untitled',
       contentType: 'contentType' in input ? input.contentType : 'text/plain',
       content: 'content' in input ? input.content : ''
     };
@@ -37,6 +40,10 @@ export class MemoryDocumentRepository implements DocumentRepository {
     return doc;
   }
 
+  async _getNextId() {
+    this.count += 1;
+    return this.count;
+  }
 
   async getById(documentId: ID) {
     if (!this.docs[documentId])

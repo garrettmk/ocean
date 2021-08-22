@@ -12,12 +12,14 @@ export class ServerUserInteractor {
 
 
   async loginUser(userId: ID, name: string) {
-    const saveUserInput: SaveUserInput = {
+    const input: SaveUserInput = {
       id: userId,
       name
     };
 
-    const user = await this.users.save({ id: userId, name });
+    validateSaveUserInput(input);
+
+    const user = await this.users.save(input);
     return user;
   }
 }
