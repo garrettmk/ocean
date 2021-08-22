@@ -6,10 +6,12 @@ import { graphqlHTTP } from 'express-graphql';
 import morgan from 'morgan';
 import { ServerApiContextMiddleware } from './middleware';
 import { ServerApi } from "./interfaces";
+import { createServer, Server } from 'http';
 
 
 export class OceanServer {
   private app: Express;
+  private server?: Server;
 
   constructor(users: UserRepository, documents: DocumentRepository) {
     // Create the interactors
@@ -33,9 +35,15 @@ export class OceanServer {
       context: apiContext.getContext,
       graphiql: true
     }));
+  }
 
-    this.app.listen(3000, () => {
-      console.log('Listening on port 3000');
-    });
+  listen(port: number, callback?: () => void) {
+    // Create the server explicitly, so we can close() it later
+    this.server = createServer(this.app);
+    this.server.listen(port, undefined, undefined, callback);
+  }
+
+  close() {
+    this.server?.close();
   }
 }
