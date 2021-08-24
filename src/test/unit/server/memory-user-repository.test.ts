@@ -1,7 +1,7 @@
 import { AuthorRepository, NotFoundError, ValidationError } from '@/domain';
 import { MemoryAuthorRepository, MemoryUserRepository } from '@/server/interfaces';
 import e from 'cors';
-import { SaveUserInput, UserRepository, validateUser } from '../usecases';
+import { SaveUserInput, UserRepository, validateUser } from '../../../server/usecases';
 
 
 describe('Testing MemoryUserRepository', () => {
@@ -24,11 +24,13 @@ describe('Testing MemoryUserRepository', () => {
       { id: 'valid', name: '', author: { id: 'authorId', name: 'author' } },
       { id: '', name: 'valid', author: { id: 'authorId', name: 'author' } }
     ])('should throw ValidationError if given an invalid input', input => {
+      expect.assertions(1);
       expect(users.save(input as SaveUserInput)).rejects.toBeInstanceOf(ValidationError);
     });
   
   
     it('should return a valid user when given a valid input', async () => {
+      expect.assertions(1);
       const user = await users.save({ id: 'valid', name: 'username' });
       expect(() => validateUser(user)).not.toThrow();
     });
@@ -37,11 +39,13 @@ describe('Testing MemoryUserRepository', () => {
 
   describe('testing getById()', () => {
     it('should throw NotFoundError when given an invalid ID', async () => {
+      expect.assertions(1);
       expect(users.getById('nonexistent')).rejects.toBeInstanceOf(NotFoundError);
     });
   
   
     it('should return a valid user if given a valid ID', async () => {
+      expect.assertions(1);
       const user = await users.save({ id: 'userId', name: 'Bob' });
   
       const received = await users.getById('userId');
@@ -63,6 +67,7 @@ describe('Testing MemoryUserRepository', () => {
 
   describe('testing update()', () => {
     it('should modify the user if given an existing user ID', async () => {
+      expect.assertions(2);
       const original = await users.save({ id: 'userId', name: 'Bob' });
       const expected = { ...original, name: 'Larry' };
       

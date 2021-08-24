@@ -1,4 +1,4 @@
-import { MemoryAuthorRepository, MemoryDocumentRepository } from "../interfaces";
+import { MemoryAuthorRepository, MemoryDocumentRepository } from "../../../server/interfaces";
 import { Document, AuthorRepository, CreateDocumentInput, DocumentRepository, NotFoundError, validateDocument, ValidationError, UpdateDocumentInput } from "@/domain";
 
 
@@ -42,11 +42,13 @@ describe.only('Testing MemoryDocumentRepository', () => {
     { authorId: 'good', title: '' },
     { authorId: 'good', title: 'good', contentType: 'bad' },
   ])('should throw ValidationError if create() is given an invalid input', input => {
+    expect.assertions(1);
     expect(documents.create(input as CreateDocumentInput)).rejects.toBeInstanceOf(ValidationError);
   });
 
 
   it('should throw NotFoundError if the author does not exist', () => {
+    expect.assertions(1);
     const input: CreateDocumentInput = { authorId: 'validButNonexistent' };
     
     expect(documents.create(input)).rejects.toBeInstanceOf(NotFoundError);
@@ -54,6 +56,7 @@ describe.only('Testing MemoryDocumentRepository', () => {
 
 
   it('should return a valid Document if create() is given a valid input', async () => {
+    expect.assertions(1);
     const author = await authors.create({ name: 'Chewbacca' });
     const input: CreateDocumentInput = { authorId: author.id };
 
@@ -64,6 +67,7 @@ describe.only('Testing MemoryDocumentRepository', () => {
 
 
   it('should throw NotFoundError if getById() is given a non-existent id', async () => {
+    expect.assertions(1);
     await populate();
 
     expect(documents.getById('foo')).rejects.toBeInstanceOf(NotFoundError);
@@ -71,6 +75,7 @@ describe.only('Testing MemoryDocumentRepository', () => {
 
 
   it('should return a valid Document if getById() is given a valid id', async () => {
+    expect.assertions(1);
     const docs = await populate();
     const document = docs[0];
 
@@ -79,6 +84,7 @@ describe.only('Testing MemoryDocumentRepository', () => {
 
 
   it('should return all documents by the given author', async () => {
+    expect.assertions(1);
     const docs = await populate();
     const { author } = docs[0];
     const expected = docs.filter(doc => doc.author.id === author.id);
@@ -88,6 +94,7 @@ describe.only('Testing MemoryDocumentRepository', () => {
 
 
   it('should return only public documents', async () => {
+    expect.assertions(1);
     const docs = await populate();
     const expected = docs.filter(doc => doc.isPublic);
 
@@ -96,6 +103,7 @@ describe.only('Testing MemoryDocumentRepository', () => {
 
 
   it('should modify the document when update() is given a valid input', async () => {
+    expect.assertions(1);
     const docs = await populate();
     const document = docs[0];
     const input: UpdateDocumentInput = { contentType: 'text/plain', content: 'A long time ago...' };
@@ -106,6 +114,7 @@ describe.only('Testing MemoryDocumentRepository', () => {
 
 
   it('should delete the document', async () => {
+    expect.assertions(2);
     const docs = await populate();
     const document = docs[0];
 

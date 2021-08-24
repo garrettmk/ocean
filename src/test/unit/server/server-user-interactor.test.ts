@@ -1,6 +1,6 @@
 import e from "cors";
-import { MemoryAuthorRepository, MemoryUserRepository } from "../interfaces";
-import { ServerUserInteractor, validateUser } from "../usecases";
+import { MemoryAuthorRepository, MemoryUserRepository } from "../../../server/interfaces";
+import { ServerUserInteractor, validateUser } from "../../../server/usecases";
 
 
 describe('Testing ServerUserInteractor', () => {
@@ -17,6 +17,7 @@ describe('Testing ServerUserInteractor', () => {
 
 
   it('should return a User', async () => {
+    expect.assertions(2);
     const userId = 'a user key';
     const userName = 'Chewie';
 

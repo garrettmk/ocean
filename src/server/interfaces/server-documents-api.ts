@@ -1,4 +1,4 @@
-import { DocumentHeader, ID, UpdateDocumentInput, validateCreateDocumentInput } from '@/domain';
+import { DocumentHeader, ID, UpdateDocumentInput, validateCreateDocumentInput, validateDocument } from '@/domain';
 import type { CreateDocumentInput, ServerDocumentInteractor, User } from '@/server/usecases';
 import { makeExecutableSchema } from '@graphql-tools/schema';
 import { GraphQLSchema } from 'graphql';

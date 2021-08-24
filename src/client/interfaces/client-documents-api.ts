@@ -1,7 +1,10 @@
 import { ID } from "@/domain";
-import { CreateDocumentInput, ClientDocumentsGateway } from "@/server";
-import { DocumentNode } from "graphql";
+import { CreateDocumentInput, ClientDocumentsGateway, AuthorizationError } from "@/server";
+import { CombinedError } from "@urql/core";
+import { DocumentNode, GraphQLError } from "graphql";
 import gql from "graphql-tag";
+import { NotFoundError, NotImplementedError, OceanError, ValidationError } from '@/domain';
+import e from "cors";
 
 
 export interface GraphQLClient {
@@ -11,7 +14,13 @@ export interface GraphQLClient {
 
 export type GraphQLResult = {
   data?: any,
-  error?: any
+  error?: GraphQLCombinedError
+}
+
+
+export interface GraphQLCombinedError extends Error {
+  networkError?: Error,
+  graphQLErrors?: GraphQLError[]
 }
 
 
@@ -42,8 +51,8 @@ export class DocumentsGraphQLClient implements ClientDocumentsGateway {
 
     const result = await this.client.query(query);
     if (result.error)
-      throw new Error(result.error);
-    
+      throw fromCombinedError(result.error);
+
     return result.data?.listDocuments ?? [];
   }
 
@@ -64,10 +73,39 @@ export class DocumentsGraphQLClient implements ClientDocumentsGateway {
       }
     `;
 
-    const result = await this.client.query(query);
+    const result = await this.client.query(query, { id });
     if (result.error)
-      // Transform into application error
+      throw fromCombinedError(result.error);
 
     return result.data?.getDocument;
   }
+}
+
+
+
+function fromCombinedError(error: GraphQLCombinedError) : Error {
+  const originalError = error?.graphQLErrors?.[0]?.originalError;
+  if (!originalError) return error;
+
+  // @ts-ignore
+  const { name, ...extensions } = originalError.extensions;
+
+  if (name === NotImplementedError.name)
+    return new NotImplementedError(originalError.message);
+  else if (name === NotFoundError.name)
+    return new NotFoundError(originalError.message);
+  else if (name === ValidationError.name)
+    return new ValidationError(
+      originalError.message,
+      // @ts-ignore
+      extensions.path,
+      // @ts-ignore 
+      extensions.expected,
+      // @ts-ignore 
+      extensions.received
+    );
+  else if (name === AuthorizationError.name)
+    return new AuthorizationError(originalError.message);
+
+  return error;
 }

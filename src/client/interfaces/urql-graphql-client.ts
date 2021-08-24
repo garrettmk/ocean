@@ -1,4 +1,4 @@
-import { Client, dedupExchange, cacheExchange, fetchExchange, makeOperation } from '@urql/core';
+import { cacheExchange, Client, dedupExchange, fetchExchange, makeOperation } from '@urql/core';
 import { authExchange } from '@urql/exchange-auth';
 import { DocumentNode } from 'graphql';
 import { ClientAuthenticator } from './client-authenticator';

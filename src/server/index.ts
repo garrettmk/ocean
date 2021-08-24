@@ -1,6 +1,7 @@
 import { OceanServer } from './ocean-server';
 import { MemoryAuthorRepository, MemoryDocumentRepository, MemoryUserRepository } from "./interfaces";
 export { ClientDocumentsGateway, CreateDocumentInput } from './interfaces';
+export { AuthorizationError } from './usecases';
 
 
 // Create repositories
