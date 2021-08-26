@@ -18,11 +18,11 @@ export class MemoryDocumentRepository implements DocumentRepository {
   }
 
 
-  async create(input: CreateDocumentInput) {
+  async create(authorId: ID, input: CreateDocumentInput) {
     validateCreateDocumentInput(input);
 
     const id = await this._getNextId();
-    const author = await this.authors.getById(input.authorId);
+    const author = await this.authors.getById(authorId);
 
     const doc: Document = {
       id: id + '',

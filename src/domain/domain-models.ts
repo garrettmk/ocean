@@ -34,7 +34,7 @@ export interface Document extends DocumentHeader {
 
 
 export interface DocumentRepository {
-  create(input: CreateDocumentInput) : Promise<Document>,
+  create(authorId: ID, input: CreateDocumentInput) : Promise<Document>,
   getById(documentId: ID) : Promise<Document>,
   listByAuthor(authorId: ID) : Promise<DocumentHeader[]>,
   listPublic() : Promise<DocumentHeader[]>,
@@ -49,7 +49,6 @@ type ContentInput = {
 }
 
 type CreateInput = {
-  authorId: ID,
   title?: string,
   isPublic?: boolean,
 }

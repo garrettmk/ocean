@@ -217,7 +217,6 @@ describe('Testing validateDocument', () => {
 
 describe('Testing validateCreateDocumentInput', () => {
   const VALID_INPUT_1 = {
-    authorId: 'valid',
     isPublic: true,
     title: 'untitled',
   };

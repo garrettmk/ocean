@@ -16,10 +16,7 @@ export class ServerDocumentInteractor {
 
   async createDocument(userId: ID, input: CreateDocumentInput) : Promise<Document> {
     const user = await this.users.getById(userId);
-    const doc = await this.documents.create({
-      authorId: user.author.id,
-      ...input
-    });
+    const doc = await this.documents.create(user.author.id, input);
 
     return doc;
   }
@@ -35,8 +32,8 @@ export class ServerDocumentInteractor {
 
 
   async updateDocument(userId: ID, documentId: ID, input: UpdateDocumentInput) {
-    const user = userId && await this.users.getById(userId);
-    const document = documentId && await this.documents.getById(documentId);
+    const user = await this.users.getById(userId);
+    const document = await this.documents.getById(documentId);
     const isUpdatePermitted =
       user &&
       document &&

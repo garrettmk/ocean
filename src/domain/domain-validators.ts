@@ -1,4 +1,4 @@
-import { assign, boolean, object, optional, pattern, refine, string, union, unknown } from 'superstruct';
+import { assign, boolean, object, optional, pattern, refine, string, union, unknown, type } from 'superstruct';
 import { Author, CreateAuthorInput, CreateDocumentInput, Document, DocumentHeader, UpdateDocumentInput } from './domain-models';
 import { validate } from './domain-utils';
 
@@ -11,7 +11,7 @@ const ContentTypeSchema = pattern(string(), /\w+\/\w+/);
 
 
 // Author validation
-const AuthorSchema = object({
+const AuthorSchema = type({
   id: IDSchema,
   name: NonEmptyString
 });
@@ -31,7 +31,7 @@ export function validateCreateAuthorInput(value: any) : asserts value is CreateA
 
 
 // Document validation
-const DocumentHeaderSchema = object({
+const DocumentHeaderSchema = type({
   id: IDSchema,
   author: AuthorSchema,
   isPublic: boolean(),
@@ -44,7 +44,7 @@ export function validateDocumentHeader(value: any) : asserts value is DocumentHe
 }
 
 
-const DocumentSchema = assign(DocumentHeaderSchema, object({
+const DocumentSchema = assign(DocumentHeaderSchema, type({
   content: unknown()
 }));
 
@@ -55,13 +55,11 @@ export function validateDocument(value: any) : asserts value is Document {
 
 const CreateDocumentInputSchema = union([
   object({
-    authorId: IDSchema,
     title: optional(NonEmptyString),
     isPublic: optional(boolean())
   }),
 
   object({
-    authorId: IDSchema,
     title: optional(NonEmptyString),
     isPublic: optional(boolean()),
     contentType: ContentTypeSchema,

@@ -1,10 +1,11 @@
-import { ID } from "@/domain";
+import { ID, validateCreateDocumentInput, validateUpdateDocumentInput } from "@/domain";
 import { CreateDocumentInput, ClientDocumentsGateway, AuthorizationError } from "@/server";
 import { CombinedError } from "@urql/core";
 import { DocumentNode, GraphQLError } from "graphql";
 import gql from "graphql-tag";
 import { NotFoundError, NotImplementedError, OceanError, ValidationError } from '@/domain';
 import e from "cors";
+import { UpdateDocumentInput } from "@/server/usecases";
 
 
 export interface GraphQLClient {
@@ -79,6 +80,60 @@ export class DocumentsGraphQLClient implements ClientDocumentsGateway {
 
     return result.data?.getDocument;
   }
+
+
+  async createDocument(input: CreateDocumentInput) {
+    validateCreateDocumentInput(input);
+
+    const query = gql`
+      mutation($input: CreateDocumentInput!) {
+        createDocument(input: $input) {
+          id
+          title
+          author {
+            id
+            name
+          }
+          isPublic
+          contentType
+          content
+        }
+      }
+    `;
+
+    const result = await this.client.mutation(query, { input });
+    if (result.error)
+      throw fromCombinedError(result.error);
+
+    return result?.data?.createDocument;
+  }
+
+
+  async updateDocument(id: ID, input: UpdateDocumentInput) {
+    validateUpdateDocumentInput(input);
+
+    const query = gql`
+      mutation($id: ID!, $input: UpdateDocumentInput!) {
+        updateDocument(id: $id, input: $input) {
+          id
+          title
+          author {
+            id
+            name
+          }
+          isPublic
+          contentType
+          content
+        }
+      }
+    `;
+
+    const result = await this.client.mutation(query, { id, input });
+    if (result.error)
+      throw fromCombinedError(result.error);
+    
+    return result?.data?.updateDocument;
+  }
 }
 
 
@@ -88,7 +143,7 @@ function fromCombinedError(error: GraphQLCombinedError) : Error {
   if (!originalError) return error;
 
   // @ts-ignore
-  const { name, ...extensions } = originalError.extensions;
+  const { name, ...extensions } = originalError?.extensions ?? {};
 
   if (name === NotImplementedError.name)
     return new NotImplementedError(originalError.message);

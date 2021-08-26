@@ -21,8 +21,7 @@ describe.only('Testing MemoryDocumentRepository', () => {
 
     return Promise.all(auths.flatMap(author => 
       ['Title 1', 'Title 2', 'Title 3'].map(title =>
-        documents.create({
-          authorId: author.id,
+        documents.create(author.id, {
           isPublic: author.name === 'Chewie',
           title: title
         })
@@ -37,30 +36,28 @@ describe.only('Testing MemoryDocumentRepository', () => {
     'a string',
     123,
     {},
-    { authorId: '' },
-    { authorId: 123 },
-    { authorId: 'good', title: '' },
-    { authorId: 'good', title: 'good', contentType: 'bad' },
-  ])('should throw ValidationError if create() is given an invalid input', input => {
+    { title: '' },
+    { title: 'good', contentType: 'bad' },
+  ])('should throw ValidationError if create() is given an invalid input', async input => {
     expect.assertions(1);
-    expect(documents.create(input as CreateDocumentInput)).rejects.toBeInstanceOf(ValidationError);
+    await expect(documents.create('luke', input as CreateDocumentInput)).rejects.toBeInstanceOf(ValidationError);
   });
 
 
-  it('should throw NotFoundError if the author does not exist', () => {
+  it('should throw NotFoundError if the author does not exist', async () => {
     expect.assertions(1);
-    const input: CreateDocumentInput = { authorId: 'validButNonexistent' };
+    const input: CreateDocumentInput = {};
     
-    expect(documents.create(input)).rejects.toBeInstanceOf(NotFoundError);
+    await expect(documents.create('vader', input)).rejects.toBeInstanceOf(NotFoundError);
   });
 
 
   it('should return a valid Document if create() is given a valid input', async () => {
     expect.assertions(1);
     const author = await authors.create({ name: 'Chewbacca' });
-    const input: CreateDocumentInput = { authorId: author.id };
+    const input: CreateDocumentInput = {};
 
-    const document = await documents.create(input);
+    const document = await documents.create(author.id, input);
 
     expect(() => validateDocument(document)).not.toThrow();
   });
@@ -70,7 +67,7 @@ describe.only('Testing MemoryDocumentRepository', () => {
     expect.assertions(1);
     await populate();
 
-    expect(documents.getById('foo')).rejects.toBeInstanceOf(NotFoundError);
+    await expect(documents.getById('foo')).rejects.toBeInstanceOf(NotFoundError);
   });
 
 
@@ -79,7 +76,7 @@ describe.only('Testing MemoryDocumentRepository', () => {
     const docs = await populate();
     const document = docs[0];
 
-    expect(documents.getById(document.id)).resolves.toMatchObject(document);
+    await expect(documents.getById(document.id)).resolves.toMatchObject(document);
   });
 
 
@@ -89,7 +86,7 @@ describe.only('Testing MemoryDocumentRepository', () => {
     const { author } = docs[0];
     const expected = docs.filter(doc => doc.author.id === author.id);
 
-    expect(documents.listByAuthor(author.id)).resolves.toMatchObject(expected);
+    await expect(documents.listByAuthor(author.id)).resolves.toMatchObject(expected);
   });
 
 
@@ -98,7 +95,7 @@ describe.only('Testing MemoryDocumentRepository', () => {
     const docs = await populate();
     const expected = docs.filter(doc => doc.isPublic);
 
-    expect(documents.listPublic()).resolves.toMatchObject(expected);
+    await expect(documents.listPublic()).resolves.toMatchObject(expected);
   });
 
 
@@ -109,7 +106,7 @@ describe.only('Testing MemoryDocumentRepository', () => {
     const input: UpdateDocumentInput = { contentType: 'text/plain', content: 'A long time ago...' };
     const expected = { ...document, ...input };
 
-    expect(documents.update(document.id, input)).resolves.toMatchObject(expected);
+    await expect(documents.update(document.id, input)).resolves.toMatchObject(expected);
   });
 
 
@@ -118,7 +115,7 @@ describe.only('Testing MemoryDocumentRepository', () => {
     const docs = await populate();
     const document = docs[0];
 
-    expect(documents.delete(document.id)).resolves.toBe(true);
-    expect(documents.getById(document.id)).rejects.toBeInstanceOf(NotFoundError);
+    await expect(documents.delete(document.id)).resolves.toBe(true);
+    await expect(documents.getById(document.id)).rejects.toBeInstanceOf(NotFoundError);
   });
 })

@@ -66,7 +66,7 @@ export class ServerDocumentsApi {
 
         type Mutation {
           createDocument(input: CreateDocumentInput!): Document
-          updateDocument(documentId: ID!, input: UpdateDocumentInput!): Document!
+          updateDocument(id: ID!, input: UpdateDocumentInput!): Document!
         }
 
         type Query {
@@ -100,9 +100,9 @@ export class ServerDocumentsApi {
 
           updateDocument: (root, args, context, info) => {
             const userId = getAuthenticatedUserId(context);
-            const { documentId, input }: { documentId: ID, input: UpdateDocumentInput } = args;
+            const { id, input }: { id: ID, input: UpdateDocumentInput } = args;
 
-            return this.interactor.updateDocument(userId, documentId, input);
+            return this.interactor.updateDocument(userId, id, input);
           }
         }
       }
@@ -114,6 +114,8 @@ export class ServerDocumentsApi {
 export interface ClientDocumentsGateway {
   listDocuments() : Promise<DocumentHeader[]>,
   getDocument(id: ID) : Promise<Document>,
+  createDocument(input: CreateDocumentInput) : Promise<Document>,
+  updateDocument(id: ID, input: UpdateDocumentInput) : Promise<Document>
 }
 
 export type { CreateDocumentInput };

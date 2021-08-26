@@ -32,8 +32,7 @@ describe('Testing ServerDocumentInteractor', () => {
 
     const docs = Promise.all(usrs.flatMap(user => 
       ['Title 1', 'Title 2', 'Title 3'].map(title =>
-        documents.create({
-          authorId: user.author.id,
+        documents.create(user.author.id, {
           isPublic: user.author.name === 'Chewie',
           title: title
         })

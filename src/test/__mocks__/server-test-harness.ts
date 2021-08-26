@@ -17,7 +17,7 @@ export class ServerTestHarness {
   public graphql: GraphQLClient;
   public documentsApi: DocumentsGraphQLClient;
 
-  public docs?: Document[];
+  public docs: Document[] = [];
 
 
   constructor() {
@@ -44,8 +44,7 @@ export class ServerTestHarness {
 
     this.docs = await Promise.all(usrs.flatMap(user => 
       ['Title 1', 'Title 2', 'Title 3'].map(title =>
-        this.documents.create({
-          authorId: user.author.id,
+        this.documents.create(user.author.id, {
           isPublic: user.author.name === 'Chewie',
           title: title
         })
