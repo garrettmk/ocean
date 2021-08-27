@@ -57,6 +57,20 @@ export class ServerDocumentInteractor {
 
     return document;
   }
+
+
+  async deleteDocument(userId: ID, documentId: ID) : Promise<Document> {
+    const user = await this.users.getById(userId);
+    const document = await this.documents.getById(documentId);
+    const isDeletePermitted = document.author.id === user.author.id;
+
+    if (!isDeletePermitted)
+      throw new AuthorizationError('Only the document author can delete a document');
+
+    await this.documents.delete(document.id);
+
+    return document;
+  }
 }
 
 

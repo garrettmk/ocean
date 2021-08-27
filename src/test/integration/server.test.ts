@@ -1,6 +1,7 @@
 import { DocumentHeader, NotFoundError, NotImplementedError, validateDocument, ValidationError } from "@/domain";
 import { AuthorizationError, CreateDocumentInput } from "@/server";
 import { UpdateDocumentInput } from "@/server/usecases";
+import e from "cors";
 import { ServerTestHarness } from "../__mocks__/server-test-harness";
 
 
@@ -166,5 +167,43 @@ describe('Testing OceanServer', () => {
 
       await expect(harness.documentsApi.updateDocument('9999', input)).rejects.toBeInstanceOf(NotFoundError);
     });
-  })
+  });
+
+
+  describe('testing deleteDocument()', () => {
+    it('should delete the document', async () => {
+      expect.assertions(1);
+      const document = harness.docs[0];
+      const user = await harness.users.getByAuthorId(document.author.id);
+      harness.authenticator.useUserId(user.id);
+
+      await expect(harness.documentsApi.deleteDocument(document.id)).resolves.toMatchObject(document);
+    });
+
+
+    it('should throw NotFoundError if the user can\'t be found', async () => {
+      expect.assertions(1);
+      const document = harness.docs[0];
+      harness.authenticator.useUserId('vader');
+
+      await expect(harness.documentsApi.deleteDocument(document.id)).rejects.toBeInstanceOf(NotFoundError);
+    });
+
+
+    it('should throw NotFoundError if the document can\'t be found', async () => {
+      expect.assertions(1);
+      harness.authenticator.useUserId('luke');
+
+      await expect(harness.documentsApi.deleteDocument('909999')).rejects.toBeInstanceOf(NotFoundError);
+    });
+
+
+    it('should throw AuthorizationError if the user is not the documents author', async () => {
+      expect.assertions(1);
+      const document = harness.docs[0];
+      harness.authenticator.useUserId('leia');
+
+      await expect(harness.documentsApi.deleteDocument(document.id)).rejects.toBeInstanceOf(AuthorizationError);
+    });
+  });
 })

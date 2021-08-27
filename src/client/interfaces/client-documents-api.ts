@@ -134,6 +134,31 @@ export class DocumentsGraphQLClient implements ClientDocumentsGateway {
     
     return result?.data?.updateDocument;
   }
+
+
+  async deleteDocument(id: ID) {
+    const query = gql`
+      mutation($id: ID!) {
+        deleteDocument(id: $id) {
+          id
+          title
+          author {
+            id
+            name
+          }
+          isPublic
+          contentType
+          content
+        }
+      }
+    `;
+
+    const result = await this.client.mutation(query, { id });
+    if (result.error)
+      throw fromCombinedError(result.error);
+
+    return result?.data?.deleteDocument;
+  }
 }
 
 

@@ -193,4 +193,45 @@ describe('Testing ServerDocumentInteractor', () => {
       expect(interactor.getDocument('leia', document.id)).rejects.toBeInstanceOf(AuthorizationError);
     });
   });
+
+
+  describe('testing deleteDocument', () => {
+    let docs: Document[];
+
+    beforeEach(async () => {
+      docs = await populate();
+    });
+
+
+    it('should delete the document', async () => {
+      expect.assertions(2);
+      const document = docs[0];
+
+      await expect(interactor.deleteDocument('luke', document.id)).resolves.toMatchObject(document);
+      await expect(documents.getById(document.id)).rejects.toBeInstanceOf(NotFoundError);
+    });
+
+
+    it('should throw NotFoundError if the user can\'t be found', async () => {
+      expect.assertions(1);
+      const document = docs[0];
+
+      await expect(interactor.deleteDocument('vader', document.id)).rejects.toBeInstanceOf(NotFoundError);
+    });
+
+
+    it('should throw NotFoundError if the document can\'t be found', async () => {
+      expect.assertions(1);
+      
+      await expect(interactor.deleteDocument('luke', 'lkjlkj')).rejects.toBeInstanceOf(NotFoundError);
+    });
+
+
+    it('should throw AuthorizationError if the user is not the document author', async () => {
+      expect.assertions(1);
+      const document = docs[0];
+
+      await expect(interactor.deleteDocument('leia', document.id)).rejects.toBeInstanceOf(AuthorizationError);
+    })
+  })
 });
