@@ -35,7 +35,6 @@ describe.only('Testing MemoryDocumentRepository', () => {
     undefined,
     'a string',
     123,
-    {},
     { title: '' },
     { title: 'good', contentType: 'bad' },
   ])('should throw ValidationError if create() is given an invalid input', async input => {
