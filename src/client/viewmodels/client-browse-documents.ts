@@ -67,7 +67,12 @@ export function makeBrowseDocumentsMachine(gateway: ClientDocumentsGateway) {
 
       assignError: assign({
         error: (_, event) => (event as ErrorEvent).error
-      })
+      }),
+
+      clearError: assign(({ error, ...ctx }) => ctx),
     }
   });
 }
+
+
+export type BrowseDocumentsMachine = ReturnType<typeof makeBrowseDocumentsMachine>;
