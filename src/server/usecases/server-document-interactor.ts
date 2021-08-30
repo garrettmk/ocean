@@ -75,7 +75,8 @@ export class ServerDocumentInteractor {
 
 
 type CreateTitleInput = {
-  title?: string
+  title?: string,
+  isPublic?: boolean
 }
 
 type CreateContentInput = {

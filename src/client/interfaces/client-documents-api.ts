@@ -1,5 +1,5 @@
-import { ID, validateCreateDocumentInput, validateUpdateDocumentInput } from "@/domain";
-import { CreateDocumentInput, ClientDocumentsGateway, AuthorizationError } from "@/server";
+import { ID, validateCreateDocumentInput, validateUpdateDocumentInput, CreateDocumentInput } from "@/domain";
+import { ClientDocumentsGateway, AuthorizationError } from "@/client/interfaces";
 import { CombinedError } from "@urql/core";
 import { DocumentNode, GraphQLError } from "graphql";
 import gql from "graphql-tag";

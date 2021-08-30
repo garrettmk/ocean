@@ -1,3 +1,6 @@
+import { Buffer } from 'buffer/';
+// @ts-ignore
+window.Buffer = Buffer;
 import { ClientAuthenticator } from "@/client/interfaces";
 import jwt from 'jwt-simple';
 

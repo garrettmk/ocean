@@ -1,5 +1,5 @@
-import { DocumentHeader, ID, UpdateDocumentInput, validateCreateDocumentInput, validateDocument } from '@/domain';
-import type { CreateDocumentInput, ServerDocumentInteractor, User } from '@/server/usecases';
+import { ID, UpdateDocumentInput } from '@/domain';
+import type { CreateDocumentInput, ServerDocumentInteractor } from '@/server/usecases';
 import { makeExecutableSchema } from '@graphql-tools/schema';
 import { GraphQLSchema } from 'graphql';
 import gql from 'graphql-tag';
@@ -117,14 +117,3 @@ export class ServerDocumentsApi {
     });
   }
 }
-
-
-export interface ClientDocumentsGateway {
-  listDocuments() : Promise<DocumentHeader[]>,
-  getDocument(id: ID) : Promise<Document>,
-  createDocument(input: CreateDocumentInput) : Promise<Document>,
-  updateDocument(id: ID, input: UpdateDocumentInput) : Promise<Document>,
-  deleteDocument(id: ID) : Promise<Document>,
-}
-
-export type { CreateDocumentInput };

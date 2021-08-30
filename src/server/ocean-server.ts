@@ -8,6 +8,7 @@ import morgan from 'morgan';
 import { ServerApi } from "./interfaces";
 import { ServerApiContextMiddleware } from './middleware';
 import { ServerDocumentInteractor, ServerUserInteractor, UserRepository } from "./usecases";
+import path from 'path';
 
 
 export class OceanServer {
@@ -29,7 +30,10 @@ export class OceanServer {
     this.app.use(cors());
     this.app.use(apiContext.middleware);
 
-    this.app.use('/', express.static(__dirname + '/public'))
+    // Specific assets are in the public folder
+    this.app.use('/public', express.static(__dirname + '/public'))
+
+    // Route api requests through the GraphQL router
     this.app.use('/graphql', graphqlHTTP({
       schema: serverApi.getSchema(),
       rootValue: undefined,
@@ -37,6 +41,12 @@ export class OceanServer {
       graphiql: true,
       customFormatErrorFn: this.formatError,
     }));
+
+    // All other requests get the SPA
+    this.app.use('*', (req, res) => {
+      const indexPath = path.resolve(__dirname, 'public', 'index.html');
+      res.sendFile(path.resolve(indexPath));
+    });
   }
 
   listen(port: number = 3000) {

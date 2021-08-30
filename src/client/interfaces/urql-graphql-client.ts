@@ -10,7 +10,7 @@ type Fetch = ConstructorParameters<Client>[0]['fetch'];
 export class UrqlGraphQLClient implements GraphQLClient {
   private client: Client;
 
-  constructor(url: string, authenticator: ClientAuthenticator, fetch: Fetch) {
+  constructor(url: string, authenticator: ClientAuthenticator, fetch?: Fetch) {
     this.client = new Client({
       url,
       fetch,

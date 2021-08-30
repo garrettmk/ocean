@@ -1,5 +1,5 @@
 import { makeBrowseDocumentsMachine, BrowseDocumentsContext, BrowseDocumentsStates, BrowseDocumentsEvent, BrowseDocumentsMachine } from "@/client/viewmodels";
-import { ClientDocumentsGateway } from "@/server";
+import { ClientDocumentsGateway } from "@/client/interfaces";
 import { createTestPlans, StatesTestFunctions } from '@smartive/xstate-test-toolbox';
 import { TestEventsConfig } from "@xstate/test/lib/types";
 import { interpret, Interpreter } from 'xstate';

@@ -1,5 +1,5 @@
 import { DocumentHeader } from '@/domain';
-import { ClientDocumentsGateway } from '@/server/interfaces';
+import { ClientDocumentsGateway } from '@/client/interfaces';
 import { createMachine, assign, ErrorPlatformEvent } from 'xstate';
 
 

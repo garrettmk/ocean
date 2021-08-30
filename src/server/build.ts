@@ -10,8 +10,8 @@ const users = new MemoryUserRepository(authors);
 
 // For dev purposes, add a single, default user
 users.save({
-  id: 'lukeskywalker',
-  name: 'Luke Skywalker'
+  id: 'SINGLE_USER',
+  name: 'Single User'
 });
 
 const app = new OceanServer(users, documents, 'secret');

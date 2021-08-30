@@ -1,5 +1,5 @@
 import { Document, DocumentHeader } from '@/domain';
-import { ClientDocumentsGateway } from "@/server";
+import { ClientDocumentsGateway } from "@/client/interfaces";
 import { TestPromise } from "./TestPromise";
 
 type Mock = ReturnType<typeof jest.fn>;

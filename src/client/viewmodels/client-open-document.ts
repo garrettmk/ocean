@@ -1,11 +1,21 @@
 import { Document, ID, UpdateDocumentInput } from '@/domain';
-import { ClientDocumentsGateway } from '@/server/interfaces';
+import { ClientDocumentsGateway } from '@/client/interfaces';
 import { createMachine, assign, DoneEvent, ErrorPlatformEvent } from 'xstate';
 
 
 export type OpenDocumentContext = {
   document?: Document,
   error?: Error
+}
+
+type HasDocumentContext = {
+  document: Document,
+  error?: Error,
+}
+
+function assertHasDocument(ctx: OpenDocumentContext) : asserts ctx is HasDocumentContext {
+  if (!ctx.document)
+    throw new Error('document is undefined');
 }
 
 
@@ -56,11 +66,16 @@ export function makeOpenDocumentMachine(gateway: ClientDocumentsGateway) {
   }, {
     services: {
       async saveDocument(context, event) {
-        // Use the gateway
+        assertHasDocument(context);
+        const { document } = context;
+
+        return await gateway.updateDocument(document.id, document);
       },
 
       async openDocument(context, event) {
-        // Use the gateway
+        const id = event.payload;
+
+        return await gateway.getDocument(id);
       },
     },
 
