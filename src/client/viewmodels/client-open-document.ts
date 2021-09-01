@@ -21,7 +21,8 @@ function assertHasDocument(ctx: OpenDocumentContext) : asserts ctx is HasDocumen
 
 export type OpenDocumentEvent = 
   | { type: 'open', payload: ID }
-  | { type: 'edit', payload: UpdateDocumentInput };
+  | { type: 'edit', payload: UpdateDocumentInput }
+  | { type: 'save' };
   
 
 export function makeOpenDocumentMachine(gateway: ClientDocumentsGateway) {
@@ -45,13 +46,15 @@ export function makeOpenDocumentMachine(gateway: ClientDocumentsGateway) {
 
       open: {
         on: {
+          open: { target: 'opening' },
           edit: { target: 'edited', actions: ['assignEdits'] }
         }
       },
 
       edited: {
         on: {
-          edit: { target: 'edited', internal: false }
+          edit: { actions: ['assignEdits'] },
+          save: { target: 'saving' }
         }
       },
 
@@ -69,7 +72,11 @@ export function makeOpenDocumentMachine(gateway: ClientDocumentsGateway) {
         assertHasDocument(context);
         const { document } = context;
 
-        return await gateway.updateDocument(document.id, document);
+        return await gateway.updateDocument(document.id, {
+          title: document.title,
+          contentType: document.contentType,
+          content: document.content
+        });
       },
 
       async openDocument(context, event) {
@@ -86,6 +93,10 @@ export function makeOpenDocumentMachine(gateway: ClientDocumentsGateway) {
 
       assignError: assign({
         error: (ctx, event) => event.error
+      }),
+
+      assignEdits: assign({
+        document: (ctx, event) => ({ ...ctx.document, ...event.payload })
       })
     }
   })

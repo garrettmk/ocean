@@ -4,8 +4,9 @@ import { makeBrowseDocumentsMachine } from '@/client/viewmodels';
 import { useMachine } from '@xstate/react';
 import { useServices } from '@/react-web/services';
 import { Button } from '@chakra-ui/react';
-import { Link, Route, Switch } from 'wouter';
+import { Link, Route, Switch, useLocation } from 'wouter';
 import { Editor } from '../Editor';
+import { DocumentList } from '../DocumentList';
 
 
 export function App() {
@@ -13,10 +14,7 @@ export function App() {
   const browseMachine = React.useMemo(() => makeBrowseDocumentsMachine(services.documents), []);
   const [state, send] = useMachine(browseMachine);
   const docs = state.context.documents;
-
-  const newDocument = React.useCallback(() => {
-    services.documents.createDocument({});
-  }, []);
+  const [location, setLocation] = useLocation();
   
   return (
     <Grid
@@ -25,19 +23,7 @@ export function App() {
       templateColumns='300px 1fr'
       templateRows='1fr'
     >
-      <GridItem
-        bg='blue.500'
-        p='4'
-      >
-        {docs.map(header => (
-          <Box>
-            <Link href={`/doc/${header.id}`}>
-              {header.title}
-            </Link>
-          </Box>
-        ))}
-        <Button onClick={newDocument}>New Document</Button>
-      </GridItem>
+      <DocumentList/>
 
       <GridItem
         bg='green.500'
