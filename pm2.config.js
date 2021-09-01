@@ -13,10 +13,16 @@ module.exports = {
       watch: ['webpack.react-config.js']
     },
     {
-      name: 'serve',
-      script: 'npm run start',
+      name: 'serve-server',
+      script: 'npm run serve:server',
       instances: 1,
       watch: ['dist/server.bundle.js']
+    },
+    {
+      name: 'serve-react',
+      script: 'npm run serve:react',
+      instances: 1,
+      watch: ['webpack.react-config.js']
     }
   ]
 }

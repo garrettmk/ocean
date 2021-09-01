@@ -7,7 +7,8 @@
     "test": "jest",
     "build:server": "webpack --config webpack.server-config.js --watch",
     "build:react": "webpack --config webpack.react-config.js --watch",
-    "start": "node ./dist/server.bundle.js",
+    "serve:react": "webpack serve --config webpack.react-config.js",
+    "serve:server": "node ./dist/server.bundle.js",
     "dev": "pm2 start pm2.config.js && pm2 monit",
     "stop": "pm2 kill",
     "monitor": "pm2 monit"
@@ -45,7 +46,8 @@
     "ts-loader": "^9.2.4",
     "typescript": "^4.3.5",
     "webpack": "^5.48.0",
-    "webpack-cli": "^4.7.2"
+    "webpack-cli": "^4.7.2",
+    "webpack-dev-server": "^4.0.0"
   },
   "dependencies": {
     "@chakra-ui/react": "^1.6.7",

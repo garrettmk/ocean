@@ -9,11 +9,22 @@ module.exports = {
   entry: './src/react-web/index.tsx',
 
   output: {
-    path: path.join(__dirname, 'dist'),
-    filename: 'public/react-web.bundle.js',
+    path: path.resolve(__dirname, 'dist'),
+    filename: path.join('public', 'react-web.bundle.js'),
+    publicPath: path.join(__dirname, 'dist', 'public'),
   },
 
   devtool: 'inline-source-map',
+  devServer: {
+    static: {
+      directory: path.resolve(__dirname, 'dist', 'public')
+    },
+    port: 3001,
+    proxy: {
+      '/graphql': 'http://localhost:3000'
+    },
+    hot: true
+  },
 
   resolve: {
     extensions: ['.ts', '.tsx', '.js', '.jsx'],
