@@ -91,13 +91,12 @@ export class ArangoDocumentRepository extends ArangoUtility implements DocumentR
   async update(id: ID, input: UpdateDocumentInput) {
     validateUpdateDocumentInput(input);
 
-    const updates = Object.entries(input).reduce((res, [key, value]) => 
-      res + `${key}: ${value}\n`, ''
-    );
+    const updates = Object.entries(input)
+      .reduce((res, [key, value]) => aql`${res}${key}: ${value},\n`, aql``);
 
     const arangoDoc = await this.firstOrUndefined(aql`
       UPDATE ${id} WITH {
-        ${aql.literal(updates)}
+        ${updates}
       } IN ${this.collection}
       RETURN NEW
     `);
