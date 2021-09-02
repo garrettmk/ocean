@@ -16,7 +16,7 @@ export class UrqlGraphQLClient implements GraphQLClient {
       fetch,
       exchanges: [
         dedupExchange,
-        cacheExchange,
+        // cacheExchange,
         authExchange({
           async getAuth({ authState }) {
             return await authenticator.getAccessToken();
