@@ -3,7 +3,7 @@ import { useServices } from "@/react-web/services";
 import React from "react";
 import { useMachine } from '@xstate/react';
 import { Box } from "@chakra-ui/layout";
-import { Button, Input, Textarea } from "@chakra-ui/react";
+import { Button, Container, Flex, Input, Textarea } from "@chakra-ui/react";
 
 
 export function Editor({
@@ -39,15 +39,19 @@ export function Editor({
     return <>'Loading...'</>;
 
   return (
-    <Box>
-      <Input size='lg' value={document.title} onChange={editTitle}/>
-      <Textarea value={document.content} onChange={editContent}/>
-      <Button
-        disabled={!state.matches('edited')}
-        onClick={saveDocument}
-      >
-        Save
-      </Button>
+    <Box p={8}>
+      <Container maxW='container.md'>
+        <Flex minH={8} alignItems='center'>
+          <Input size='lg' value={document.title} onChange={editTitle}/>
+          <Button
+            disabled={!state.matches('edited')}
+            onClick={saveDocument}
+          >
+            Save
+          </Button>
+        </Flex>
+        <Textarea pt={8} value={document.content} onChange={editContent}/>
+      </Container>
       <pre>
         {JSON.stringify(state, null, '  ')}
       </pre>

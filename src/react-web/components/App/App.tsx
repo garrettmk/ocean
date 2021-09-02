@@ -20,14 +20,12 @@ export function App() {
     <Grid
       w='100vw'
       h='100vh'
-      templateColumns='300px 1fr'
+      templateColumns='400px 1fr'
       templateRows='1fr'
     >
       <DocumentList/>
 
-      <GridItem
-        bg='green.500'
-      >
+      <GridItem>
         <Switch>
           <Route path='/doc/:id' component={Editor}/>
           <Route path='/' component={Box}/>
