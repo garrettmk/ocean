@@ -50,7 +50,7 @@ export function Editor({
             Save
           </Button>
         </Flex>
-        <Textarea pt={8} value={document.content} onChange={editContent}/>
+        <Textarea pt={8} value={document.content as string} onChange={editContent}/>
       </Container>
       <pre>
         {JSON.stringify(state, null, '  ')}
