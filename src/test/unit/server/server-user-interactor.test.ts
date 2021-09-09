@@ -1,4 +1,3 @@
-import e from "cors";
 import { MemoryAuthorRepository, MemoryUserRepository } from "../../../server/interfaces";
 import { ServerUserInteractor, validateUser } from "../../../server/usecases";
 
@@ -11,8 +10,8 @@ describe('Testing ServerUserInteractor', () => {
 
   beforeEach(() => {
     authors = new MemoryAuthorRepository();
-    users = new MemoryUserRepository(authors);
-    interactor = new ServerUserInteractor(users);
+    users = new MemoryUserRepository();
+    interactor = new ServerUserInteractor(users, authors);
   });
 
 

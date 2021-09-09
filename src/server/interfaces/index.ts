@@ -4,3 +4,6 @@ export * from './memory-user-repository';
 export * from './server-documents-api';
 export * from './server-users-api';
 export * from './server-api';
+export * from './arango-author-repository';
+export * from './arango-user-repository';
+export * from './arango-document-repository';

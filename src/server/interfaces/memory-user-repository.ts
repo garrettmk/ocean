@@ -1,41 +1,32 @@
-import { Author, AuthorRepository, ID, NotFoundError } from '@/domain';
-import { SaveUserInput, User, UserRepository, validateSaveUserInput } from '@/server/usecases';
+import { AuthorRepository, ID, NotFoundError } from '@/domain';
+import { CreateUserInput, UpdateUserInput, User, UserRepository, validateCreateUserInput, validateUpdateUserInput, validateUser, validateUserId } from '@/server/usecases';
 
 
 export class MemoryUserRepository implements UserRepository {
-  private authors: AuthorRepository;
   private users: {
     [key: string]: User
   }
 
 
-  constructor(authors: AuthorRepository) {
-    this.authors = authors;
+  constructor() {
     this.users = {};
   }
 
 
-  async save(input: SaveUserInput) {
-    validateSaveUserInput(input);
+  async create(id: ID, input: CreateUserInput) : Promise<User> {
+    validateUserId(id);
+    validateCreateUserInput(input);
 
-    const existing = this.users[input.id];
+    const user: User = {
+      id,
+      name: input.name,
+      author: input.author
+    };
 
-    if (existing) {
-      const modified = {
-        ...existing,
-        name: input.name
-      };
+    validateUser(user);
+    this.users[id] = user;
 
-      this.users[existing.id] = modified;
-      return modified;
-
-    } else {
-      const author = await this.authors.create({ name: input.name });
-      const user: User = { ...input, author };
-
-      this.users[user.id] = user;
-      return user;
-    }
+    return user;
   }
 
     
@@ -54,5 +45,28 @@ export class MemoryUserRepository implements UserRepository {
       throw new NotFoundError(`author.id ${id}`);
 
     return user;
+  }
+
+
+  async update(id: ID, input: UpdateUserInput) : Promise<User> {
+    validateUpdateUserInput(input);
+
+    const existing = await this.getById(id);
+    const modifiedUser: User = {
+      ...existing,
+      ...input
+    };
+
+    validateUser(modifiedUser);
+    this.users[id] = modifiedUser;
+
+    return modifiedUser;
+  }
+
+
+  async delete(id: ID) : Promise<User> {
+    const existing = await this.getById(id);
+    delete this.users[id];
+    return existing;
   }
 }

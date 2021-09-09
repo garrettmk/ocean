@@ -1,4 +1,4 @@
-import { DocumentRepository } from "@/domain";
+import { AuthorRepository, DocumentRepository } from "@/domain";
 import cors from 'cors';
 import express, { Express } from 'express';
 import { graphqlHTTP, RequestInfo } from 'express-graphql';
@@ -15,10 +15,10 @@ export class OceanServer {
   private app: Express;
   private server?: Server;
 
-  constructor(users: UserRepository, documents: DocumentRepository, secret: string) {
+  constructor(users: UserRepository, authors: AuthorRepository, documents: DocumentRepository, secret: string) {
     // Create the interactors
     const documentInteractor = new ServerDocumentInteractor(documents, users);
-    const userInteractor = new ServerUserInteractor(users);
+    const userInteractor = new ServerUserInteractor(users, authors);
 
     // Create the api
     const serverApi = new ServerApi(userInteractor, documentInteractor);

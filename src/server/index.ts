@@ -1,37 +1,36 @@
 import { Database } from 'arangojs';
-import { ArangoAuthorRepository } from './interfaces/arango-author-repository';
-import { ArangoDocumentRepository } from './interfaces/arango-document-repository';
-import { ArangoUserRepository } from './interfaces/arango-user-repository';
+import { ArangoAuthorRepository, ArangoDocumentRepository, ArangoUserRepository } from './interfaces';
 import { OceanServer } from './ocean-server';
+import { AlreadyExistsError } from './usecases';
 export { AuthorizationError } from './usecases';
 
-
-// Connect to the database
-const systemDb = new Database({
-  url: 'http://localhost:8529',
-});
-
-const existingDatabases = await systemDb.listDatabases();
-const oceanDb = existingDatabases.includes('ocean') 
-  ? systemDb.database('ocean')
-  : await systemDb.createDatabase('ocean');
-
+const db = new Database({ url: 'http://localhost:8529', databaseName: 'ocean' });
+const config = {
+  db,
+  collectionNames: {
+    authors: 'authors',
+    users: 'users',
+    documents: 'documents'
+  }
+}
 
 // Create the repositories
-const authors = new ArangoAuthorRepository(oceanDb);
+const authors = new ArangoAuthorRepository(config);
 await authors.initialize();
 
-const users = new ArangoUserRepository(authors, oceanDb);
+const users = new ArangoUserRepository(authors, config);
 await users.initialize();
 
-const documents = new ArangoDocumentRepository(authors, oceanDb);
+try {
+  const author = await authors.create({ name: 'Luke S.' });
+  const user = await users.create('lukeskywalker', { name: 'Luke Skywalker', author });
+} catch (error) {
+  if (!(error instanceof AlreadyExistsError))
+    throw error;
+}
+
+const documents = new ArangoDocumentRepository(authors, config);
 await documents.initialize();
 
-// For dev purposes, add a single, default user
-users.save({
-  id: 'lukeskywalker',
-  name: 'Luke Skywalker'
-});
-
-const app = new OceanServer(users, documents, 'secret');
-app.listen(3000);//
+const app = new OceanServer(users, authors, documents, 'secret');
+app.listen(3000);

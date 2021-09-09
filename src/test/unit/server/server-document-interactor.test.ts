@@ -1,5 +1,4 @@
-import { AuthorRepository, DocumentRepository, NotFoundError, Document, validateDocument, ValidationError, UpdateDocumentInput } from "@/domain";
-import e from "cors";
+import { AuthorRepository, Document, DocumentRepository, NotFoundError, UpdateDocumentInput, validateDocument, ValidationError } from "@/domain";
 import { MemoryAuthorRepository, MemoryDocumentRepository, MemoryUserRepository } from "../../../server/interfaces";
 import { CreateDocumentInput, ServerDocumentInteractor, User, UserRepository } from "../../../server/usecases";
 import { AuthorizationError } from "../../../server/usecases/server-errors";
@@ -14,7 +13,7 @@ describe('Testing ServerDocumentInteractor', () => {
 
   beforeEach(() => {
     authors = new MemoryAuthorRepository();
-    users = new MemoryUserRepository(authors);
+    users = new MemoryUserRepository();
     documents = new MemoryDocumentRepository(authors);
     interactor = new ServerDocumentInteractor(documents, users);
   });
@@ -24,9 +23,9 @@ describe('Testing ServerDocumentInteractor', () => {
     const names = ['Luke', 'Leia', 'Han', 'Chewie'];
 
     const usrs = await Promise.all(
-      names.map(async name => await users.save({
-        id: name.toLowerCase(),
+      names.map(async name => await users.create(name.toLowerCase(), {
         name,
+        author: await authors.create({ name })
       }))
     );
 
@@ -47,7 +46,8 @@ describe('Testing ServerDocumentInteractor', () => {
     let input: CreateDocumentInput;
 
     beforeEach(async () =>{
-      user = await users.save({ id: 'user-id', name: 'username' });
+      const author = await authors.create({ name: 'username' });
+      user = await users.create('user-id', { name: 'username', author });
       input = {};
     });
 

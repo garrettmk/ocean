@@ -9,13 +9,20 @@ export interface User {
 
 
 export interface UserRepository {
-  save(input: SaveUserInput) : Promise<User>,
+  create(id: ID, input: CreateUserInput) : Promise<User>,
   getById(id: ID) : Promise<User>,
-  getByAuthorId(id: ID) : Promise<User>
+  getByAuthorId(id: ID) : Promise<User>,
+  update(id: ID, input: UpdateUserInput) : Promise<User>,
+  delete(id: ID) : Promise<User>
 }
 
 
-export type SaveUserInput = {
-  id: ID,
+export type CreateUserInput = {
   name: string,
+  author: Author
+}
+
+
+export type UpdateUserInput = {
+  name: string
 }

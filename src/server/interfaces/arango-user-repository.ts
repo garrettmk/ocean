@@ -1,125 +1,182 @@
-import { AuthorRepository, ID, NotFoundError } from "@/domain";
+import { Author, AuthorRepository, ID, NotFoundError } from "@/domain";
 import { aql, Database } from "arangojs";
-import { DocumentCollection, CollectionType } from "arangojs/collection";
-import { Document as ArangoDocument,  } from "arangojs/documents";
-import { SaveUserInput, User, UserRepository, validateSaveUserInput, validateUser } from "../usecases";
-import { ArangoUtility } from './arango-utility';
+import { CollectionType, DocumentCollection } from "arangojs/collection";
+import { Document as ArangoDocument } from 'arangojs/documents';
+import { CreateUserInput, UpdateUserInput, User, UserRepository, validateUser, validateCreateUserInput, validateUpdateUserInput, AlreadyExistsError, validateUserId } from "../usecases";
 
 
-type ArangoUserDocument = ArangoDocument<Omit<User, 'author'> & { authorId: ID }>;
+type DbUser = {
+  id: ID,
+  name: string,
+  authorId: ID,
+}
 
 
-export class ArangoUserRepository extends ArangoUtility implements UserRepository {
+export type ArangoUserRepoConfig = {
+  db: Database,
+  collectionNames: {
+    users: string,
+  }
+}
+
+export class ArangoUserRepository implements UserRepository {
   private authors: AuthorRepository;
-  private collection: DocumentCollection;
+  private db: Database;
+
+  public collection: DocumentCollection<DbUser>;
 
 
-  constructor(authors: AuthorRepository, db: Database, collectionName: string = 'users') {
-    super(db);
+  constructor(authors: AuthorRepository, config: ArangoUserRepoConfig) {
+    const { db, collectionNames } = config;
+
     this.authors = authors;
-    this.collection = db.collection(collectionName);
+    this.db = db;
+    this.collection = db.collection(collectionNames.users);
   }
 
-
+  
   async initialize() {
     const collectionExists = await this.collection.exists();
-    if (collectionExists) return;
-
-    await this.collection.create({
-      type: CollectionType.DOCUMENT_COLLECTION
-    });
+    if (!collectionExists)
+      await this.collection.create({
+        type: CollectionType.DOCUMENT_COLLECTION
+      });
   }
 
 
-  async save(input: SaveUserInput) {
-    validateSaveUserInput(input);
-
-    const existing = await this.getById(input.id).catch(error => {
+  async create(id: ID, input: CreateUserInput) : Promise<User> {
+    const existing = await this.getById(id).catch(error => {
       if (error instanceof NotFoundError)
-        return null;
-      
+       return null;
+
       throw error;
     });
 
-    const user = existing 
-      ? await this.updateExistingUser(existing, input) 
-      : await this.createUser(input);
+    if (existing)
+      throw new AlreadyExistsError(`user id ${id}`);
+      
+    validateCreateUserInput(input);
 
-    validateUser(user);
-    return user; 
-  }
-
-
-  async getById(id: ID) {
-    const arangoUser = await this.firstOrUndefined(aql`
-      FOR user IN ${this.collection}
-        FILTER user.id == ${id}
-        RETURN user
-    `);
-
-    if (!arangoUser)
-      throw new NotFoundError(`user id: ${id}`);
-
-    return await this.fromArangoDocument(arangoUser);
-  }
-
-
-  async getByAuthorId(id: ID) {
-    const arangoUser = await this.firstOrUndefined(aql`
-      FOR user IN ${this.collection}
-        FILTER user.authorId == ${id}
-        RETURN user
-    `);
-
-    if (!arangoUser)
-      throw new NotFoundError(`user with authorId: ${id}`);
-    
-    return await this.fromArangoDocument(arangoUser);
-  }
-
-
-  private async updateExistingUser(existing: User, input: SaveUserInput) : Promise<User> {
-    const query = aql`
-      FOR user IN ${this.collection}
-        FILTER user.id == ${existing.id}
-        UPDATE user WITH {
-          name: ${input.name}
-        } IN ${this.collection}
-        RETURN NEW
-    `;
-
-    const arangoUser = await this.firstOrUndefined<ArangoUserDocument>(query);
-    const user = await this.fromArangoDocument(arangoUser!);
-
-    return user;
-  }
-
-
-  private async createUser(input: SaveUserInput) : Promise<User> {
-    const author = await this.authors.create({
-      name: input.name
-    });
-    
-    const query = aql`
+    const user = await this.db.query(aql`
       INSERT {
-        id: ${input.id},
+        id: ${id},
         name: ${input.name},
-        authorId: ${author.id}
+        authorId: ${input.author.id}
       } INTO ${this.collection}
       RETURN NEW
-    `;
+    `)
+    .then(cursor => cursor.all())
+    .then(values => this.fromDocument(values[0], input.author));
 
-    const arangoUser = await this.firstOrUndefined(query);
-    const user = await this.fromArangoDocument(arangoUser);
+    validateUser(user);
 
     return user;
   }
+
   
+  async getById(id: ID) : Promise<User> {
+    validateUserId(id);
+    
+    const user = await this.db.query(aql`
+      RETURN FIRST(
+        FOR user IN ${this.collection}
+          FILTER user.id == ${id}
+          RETURN user
+      )
+    `)
+    .then(cursor => cursor.all())
+    .then(([value]) => {
+      if (!value)
+        throw new NotFoundError(`user id ${id}`);
 
-  private async fromArangoDocument(doc: ArangoUserDocument) : Promise<User> {
+      return this.fromDocument(value);
+    });
+
+    validateUser(user);
+
+    return user;
+  }
+
+
+  async getByAuthorId(id: ID) : Promise<User> {
+    const user = await this.db.query(aql`
+      RETURN FIRST(
+        FOR user IN ${this.collection}
+          FILTER user.authorId == ${id}
+          RETURN user
+      )
+    `)
+    .then(cursor => cursor.all())
+    .then(([value]) => {
+      if (!value)
+        throw new NotFoundError();
+
+      return this.fromDocument(value);
+    });
+
+    validateUser(user);
+
+    return user;
+  }
+
+
+  async update(id: ID, input: UpdateUserInput) : Promise<User> {
+    validateUpdateUserInput(input);
+
+    const user = await this.db.query(aql`
+      RETURN FIRST(
+        FOR user IN ${this.collection}
+          FILTER user.id == ${id}
+          UPDATE user WITH {
+            name: ${input.name}
+          } IN ${this.collection}
+          RETURN NEW
+      )
+    `)
+    .then(cursor => cursor.all())
+    .then(([value]) => {
+      if (!value)
+        throw new NotFoundError(`user id ${id}`);
+
+      return this.fromDocument(value)
+    });
+
+    validateUser(user);
+
+    return user;
+  }
+
+
+  async delete(id: ID) : Promise<User> {
+    const user = await this.db.query(aql`
+      RETURN FIRST(
+        FOR user IN ${this.collection}
+          FILTER user.id == ${id}
+          REMOVE user IN ${this.collection}
+          RETURN OLD
+      )
+    `)
+    .then(cursor => cursor.all())
+    .then(([value]) => {
+      if (!value)
+        throw new NotFoundError(`user id ${id}`);
+
+      return this.fromDocument(value)
+    });
+
+    validateUser(user);
+
+    return user;
+  }
+
+
+  private async fromDocument(doc: ArangoDocument<DbUser>, author?: Author) : Promise<User> {
     const { _id, _key, _rev, authorId, ...userFields } = doc;
-    const author = await this.authors.getById(authorId);
+    const _author = author || await this.authors.getById(authorId);
 
-    return { ...userFields, author };
+    return { 
+      author: _author,
+      ...userFields,
+    };
   }
 }

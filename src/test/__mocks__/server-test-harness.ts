@@ -26,9 +26,9 @@ export class ServerTestHarness {
 
   constructor() {
     this.authorRepo = new MemoryAuthorRepository();
-    this.userRepo = new MemoryUserRepository(this.authorRepo);
+    this.userRepo = new MemoryUserRepository();
     this.documentRepo = new MemoryDocumentRepository(this.authorRepo);
-    this.server = new OceanServer(this.userRepo, this.documentRepo, 'secret');
+    this.server = new OceanServer(this.userRepo, this.authorRepo, this.documentRepo, 'secret');
 
     this.authenticator = new TestAuthenticator(undefined, 'secret');
     this.graphql = new UrqlGraphQLClient('http://127.0.0.1:3000/graphql', this.authenticator, fetch as any);
@@ -40,10 +40,10 @@ export class ServerTestHarness {
     const names = ['Luke', 'Leia', 'Han', 'Chewie'];
 
     this.users = await Promise.all(
-      names.map(async name => await this.userRepo.save({
-        id: name.toLowerCase(),
-        name,
-      }))
+      names.map(async name => {
+        const author = await this.authorRepo.create({ name });
+        return await this.userRepo.create(name.toLowerCase(), { name, author });
+      })
     );
 
     this.docs = await Promise.all(this.users.flatMap(user => 
