@@ -1,41 +1,54 @@
-import { AuthorRepository, CreateDocumentInput, Document, DocumentRepository, ID, NotFoundError, UpdateDocumentInput, validateCreateDocumentInput, validateDocument, validateUpdateDocumentInput } from "@/domain";
+import { Author, AuthorRepository, CreateDocumentInput, Document, DocumentHeader, DocumentRepository, ID, NotFoundError, UpdateDocumentInput, validateCreateDocumentInput, validateDocument, validateDocumentHeader, validateUpdateDocumentInput } from "@/domain";
 import { aql, Database } from "arangojs";
 import { CollectionType, DocumentCollection } from "arangojs/collection";
-import { Document as ArangoDocument } from "arangojs/documents";
-import { ArangoUtility } from './arango-utility';
+import { Document as ArangoDocument } from 'arangojs/documents';
 
 
-type ArangoDocumentDoc = ArangoDocument<Omit<Document, 'id' | 'author'> & {
-  authorId: ID
-}>;
+type DbDocument = {
+  authorId: ID,
+  isPublic: boolean,
+  title: string,
+  contentType: string,
+  content: any
+}
 
 
-export class ArangoDocumentRepository extends ArangoUtility implements DocumentRepository {
+export type ArangoDocumentRepoConfig = {
+  db: Database,
+  collectionNames: {
+    documents: string,
+  }
+}
+
+
+export class ArangoDocumentRepository implements DocumentRepository {
   private authors: AuthorRepository;
-  private collection: DocumentCollection<ArangoDocumentDoc>;
+  private db: Database;
+  private collection: DocumentCollection<DbDocument>;
 
+  constructor(authors: AuthorRepository, config: ArangoDocumentRepoConfig) {
+    const { db, collectionNames } = config;
 
-  constructor(authors: AuthorRepository, db: Database, collectionName: string = 'documents') {
-    super(db);
     this.authors = authors;
-    this.collection = db.collection(collectionName);
+    this.db = db;
+    this.collection = db.collection(collectionNames.documents);
   }
 
 
   async initialize() {
     const collectionExists = await this.collection.exists();
-    if (collectionExists) return;
-
-    await this.collection.create({
-      type: CollectionType.DOCUMENT_COLLECTION
-    });
+    if (!collectionExists)
+      await this.collection.create({
+        type: CollectionType.DOCUMENT_COLLECTION
+      });
   }
 
 
-  async create(authorId: ID, input: CreateDocumentInput) {
+  async create(authorId: ID, input: CreateDocumentInput) : Promise<Document> {
     validateCreateDocumentInput(input);
 
-    const arangoDocument = await this.firstOrUndefined<ArangoDocumentDoc>(aql`
+    const author = await this.authors.getById(authorId);
+    const document = await this.db.query(aql`
       INSERT {
         authorId: ${authorId},
         isPublic: ${input.isPublic ?? false},
@@ -44,85 +57,135 @@ export class ArangoDocumentRepository extends ArangoUtility implements DocumentR
         content: ${'content' in input ? input.content : '' }
       } INTO ${this.collection}
       RETURN NEW
-    `);
+    `)
+    .then(cursor => cursor.all())
+    .then(values => this.fromDocument(values[0], author));
 
-    const document = await this.fromArangoDocument(arangoDocument!);
     validateDocument(document);
 
     return document;
   }
 
 
-  async getById(id: ID) {
-    const arangoId = `${this.collection.name}/${id}`;
-    const arangoDoc = await this.firstOrUndefined(aql`
-      RETURN DOCUMENT(${arangoId})
-    `);
+  async getById(id: ID) : Promise<Document> {
+    const documentId = this.getDatabaseId(id);
+    const document = await this.db.query(aql`
+      RETURN DOCUMENT(${documentId})
+    `)
+    .then(cursor => cursor.all())
+    .then(([value]) => {
+      if (!value)
+        throw new NotFoundError(`document id ${id}`);
 
-    if (!arangoDoc)
-      throw new NotFoundError(`document id: ${id}`);
+      return this.fromDocument(value);
+    });
 
-    return await this.fromArangoDocument(arangoDoc);
+    validateDocument(document);
+
+    return document;
   }
 
 
-  async listByAuthor(id: ID) {
-    const results = await this.db.query(aql`
+  async listByAuthor(authorId: ID) : Promise<DocumentHeader[]> {
+    const author = await this.authors.getById(authorId);
+    const documents = await this.db.query(aql`
       FOR doc IN ${this.collection}
-        FILTER doc.authorId == ${id}
-        RETURN doc
-    `).then(cursor => cursor.all());
+        FILTER doc.authorId == ${authorId}
+        RETURN UNSET(doc, 'content')
+    `)
+    .then(cursor => cursor.all())
+    .then(values => values.map(async value => {
+      const doc = await this.fromDocument(value, author);
+      validateDocument(doc);
+      return doc;
+    }));
 
-    return Promise.all(results.map(doc => this.fromArangoDocument(doc)));
+    return Promise.all(documents);
   }
 
 
-  async listPublic() {
-    const results = await this.db.query(aql`
+  async listPublic() : Promise<DocumentHeader[]> {
+    const documents = await this.db.query(aql`
       FOR doc IN ${this.collection}
-        FILTER doc.isPublic == true
-        RETURN doc
-    `).then(cursor => cursor.all());
+        FILTER doc.isPublic
+        RETURN UNSET(doc, 'content')
+    `)
+    .then(cursor => cursor.all())
+    .then(values => values.map(async value => {
+      const doc = await this.fromDocument(value);
+      validateDocumentHeader(doc);
+      return doc;
+    }));
 
-    return Promise.all(results.map(doc => this.fromArangoDocument(doc)));
+    return Promise.all(documents);
   }
 
 
-  async update(id: ID, input: UpdateDocumentInput) {
+  async listById(ids: ID[]) : Promise<DocumentHeader[]> {
+    const documentIds = ids.map(id => this.getDatabaseId(id));
+    const documents = await this.db.query(aql`
+      FOR doc IN ${this.collection}
+        FILTER POSITION(${documentIds}, doc.id)
+        RETURN UNSET(doc, 'content')
+    `)
+    .then(cursor => cursor.all())
+    .then(values => values.map(async value => {
+      const doc = await this.fromDocument(value);
+      validateDocumentHeader(doc);
+      return doc;
+    }));
+
+    return Promise.all(documents);
+  }
+
+
+  async update(id: ID, input: UpdateDocumentInput) : Promise<Document> {
     validateUpdateDocumentInput(input);
 
     const updates = Object.entries(input)
-      .reduce((res, [key, value]) => aql`${res}${key}: ${value},\n`, aql``);
+    .reduce((res, [key, value]) => aql`${res}${key}: ${value},\n`, aql``);
 
-    const arangoDoc = await this.firstOrUndefined(aql`
+    const document = await this.db.query(aql`
       UPDATE ${id} WITH {
         ${updates}
       } IN ${this.collection}
       RETURN NEW
-    `);
+    `)
+    .then(cursor => cursor.all())
+    .then(values => this.fromDocument(values[0]));
 
-    return await this.fromArangoDocument(arangoDoc);
+    validateDocument(document);
+
+    return document;
   }
 
 
-  async delete(id: ID) {
-    const deleted = await this.firstOrUndefined(aql`
+  async delete(id: ID) : Promise<Document> {
+    const document = await this.db.query(aql`
       REMOVE ${id} IN ${this.collection}
       RETURN OLD
-    `);
+    `)
+    .then(cursor => cursor.all())
+    .then(values => this.fromDocument(values[0]));
 
-    return !!deleted;
+    validateDocument(document);
+
+    return document;
   }
 
 
-  private async fromArangoDocument(doc: ArangoDocumentDoc) : Promise<Document> {
-    const { _id, _key, _rev, authorId, ...docFields } = doc;
-    const author = await this.authors.getById(authorId);
+  private getDatabaseId(id: ID) : ID {
+    return `${this.collection.name}/${id}`;
+  }
+
+
+  private async fromDocument(doc: ArangoDocument<DbDocument>, author?: Author) : Promise<Document> {
+    const { _id, _key, _rev, authorId, ...documentFields } = doc;
 
     return {
       id: _key,
-      author,
-      ...docFields
+      author: author ?? await this.authors.getById(authorId),
+      ...documentFields
     };
   }
 }

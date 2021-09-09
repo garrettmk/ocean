@@ -1,4 +1,4 @@
-import { Document, CreateDocumentInput, DocumentRepository, ID, UpdateDocumentInput, NotImplementedError, NotFoundError, ValidationError, validateCreateDocumentInput, validateDocument, validateUpdateDocumentInput } from "@/domain";
+import { Document, CreateDocumentInput, DocumentRepository, ID, UpdateDocumentInput, NotImplementedError, NotFoundError, ValidationError, validateCreateDocumentInput, validateDocument, validateUpdateDocumentInput, DocumentHeader } from "@/domain";
 import { AuthorRepository } from "src/domain";
 
 
@@ -63,6 +63,11 @@ export class MemoryDocumentRepository implements DocumentRepository {
   }
 
 
+  async listById(ids: ID[]) : Promise<DocumentHeader[]> {
+    return Object.values(this.docs).filter(doc => ids.includes(doc.id));
+  }
+
+
   async update(documentId: ID, input: UpdateDocumentInput) {
     validateUpdateDocumentInput(input);
 
@@ -79,7 +84,8 @@ export class MemoryDocumentRepository implements DocumentRepository {
 
 
   async delete(documentId: ID) {
+    const doc = this.docs[documentId];
     delete this.docs[documentId];
-    return true;
+    return doc;
   }
 }

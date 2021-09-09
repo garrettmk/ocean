@@ -1,7 +1,13 @@
-import { ValidationError, validateAuthor, validateCreateAuthorInput, validateDocumentHeader, validateDocument, validateCreateDocumentInput,
-validateUpdateDocumentInput } from '@/domain';
-import { NotImplementedError } from '@/domain';
-import e from 'cors';
+import {
+  validateAuthor,
+  validateCreateAuthorInput,
+  validateCreateDocumentInput,
+  validateDocument,
+  validateDocumentHeader,
+  validateDocumentLink,
+  validateUpdateDocumentInput,
+  ValidationError
+} from '@/domain';
 
 
 const INVALID_OBJECTS = [null, undefined, NaN, 0, '', 123, 'hello', []];
@@ -297,4 +303,43 @@ describe('Testing validateUpdateDocumentInput', () => {
 
     expect(() => validateUpdateDocumentInput(testValue)).toThrow(ValidationError.name);
   });
+})
+
+
+describe('Testing validateDocumentLink', () => {
+  const VALID_INPUT = {
+    from: 'one',
+    to: 'two',
+    meta: {}
+  };
+
+
+  it.each([VALID_INPUT])('should not throw an error if given a valid input', value => {
+    expect.assertions(1);
+    expect(() => validateDocumentLink(value)).not.toThrow();
+  });
+
+
+  it.each([INVALID_IDS])('should throw ValidationError if given from: %p', value => {
+    expect.assertions(1);
+    const testValue = { ...VALID_INPUT, from: value };
+
+    expect(() => validateDocumentLink(testValue)).toThrow(ValidationError.name);
+  });
+
+
+  it.each([INVALID_IDS])('should throw ValidationError if given to: %p', value => {
+    expect.assertions(1);
+    const testValue = { ...VALID_INPUT, to: value };
+
+    expect(() => validateDocumentLink(testValue)).toThrow(ValidationError.name);
+  });
+
+
+  it.each([INVALID_OBJECTS])('should throw ValidationError if given meta: %p', value => {
+    expect.assertions(1);
+    const testValue = { ...VALID_INPUT, meta: value };
+
+    expect(() => validateDocumentLink(testValue)).toThrow(ValidationError.name);
+  })
 })

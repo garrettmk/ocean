@@ -1,5 +1,5 @@
-import { assign, boolean, object, optional, pattern, refine, string, union, unknown, type } from 'superstruct';
-import { Author, CreateAuthorInput, CreateDocumentInput, Document, DocumentHeader, UpdateDocumentInput } from './domain-models';
+import { assign, boolean, object, optional, pattern, refine, string, union, unknown, type, array, number, nullable, literal, record, any } from 'superstruct';
+import { Author, CreateAuthorInput, CreateDocumentInput, Document, DocumentGraph, DocumentHeader, DocumentLink, UpdateDocumentInput } from './domain-models';
 import { validate } from './domain-utils';
 
 
@@ -21,7 +21,7 @@ export function validateAuthor(value: any) : asserts value is Author {
 }
 
 
-const CreateAuthorInputSchema = object({
+const CreateAuthorInputSchema = type({
   name: NonEmptyString
 });
 
@@ -89,3 +89,24 @@ const UpdateDocumentInputSchema = union([
 export function validateUpdateDocumentInput(value: any) : asserts value is UpdateDocumentInput {
   validate(value, UpdateDocumentInputSchema);
 };
+
+
+const DocumentLinkSchema = type({
+  from: IDSchema,
+  to: IDSchema,
+  meta: record(string(), any()),
+});
+
+export function validateDocumentLink(value: any) : asserts value is DocumentLink {
+  validate(value, DocumentLinkSchema);
+}
+
+
+const DocumentGraphSchema = type({
+  documents: array(DocumentHeaderSchema),
+  links: array(DocumentLinkSchema)
+});
+
+export function validateDocumentGraph(value: any) : asserts value is DocumentGraph {
+  validate(value, DocumentGraphSchema);
+}

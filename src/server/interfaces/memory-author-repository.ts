@@ -35,4 +35,14 @@ export class MemoryAuthorRepository implements AuthorRepository {
 
     return author;
   }
+
+  
+  async listById(ids: ID[]) {
+    return ids.map(id => {
+      if (!(id in this.authors))
+        throw new NotFoundError(`author id ${id}`);
+      
+      return this.authors[id];
+    })
+  }
 }
