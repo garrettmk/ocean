@@ -33,4 +33,4 @@ const documents = new ArangoDocumentRepository(authors, config);
 await documents.initialize();
 
 const app = new OceanServer(users, authors, documents, 'secret');
-app.listen(3000);
+app.listen(3000);//

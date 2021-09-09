@@ -54,7 +54,7 @@ export class ArangoDocumentRepository implements DocumentRepository {
         isPublic: ${input.isPublic ?? false},
         title: ${input.title ?? 'Untitled' },
         contentType: ${'contentType' in input ? input.contentType : 'text/plain' },
-        content: ${'content' in input ? input.content : '' }
+        content: ${'content' in input ? input.content : null }
       } INTO ${this.collection}
       RETURN NEW
     `)

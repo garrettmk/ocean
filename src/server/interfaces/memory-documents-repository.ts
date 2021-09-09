@@ -30,7 +30,7 @@ export class MemoryDocumentRepository implements DocumentRepository {
       isPublic: input.isPublic ?? false,
       title: input.title ?? 'Untitled',
       contentType: 'contentType' in input ? input.contentType : 'text/plain',
-      content: 'content' in input ? input.content : ''
+      content: 'content' in input ? input.content : null
     };
 
     validateDocument(doc);

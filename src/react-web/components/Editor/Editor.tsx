@@ -18,22 +18,22 @@ export function Editor({
 
   React.useEffect(() => {
     send({ type: 'open', payload: id });
-  }, [id]);
+  }, [id, send]);
 
   const editTitle = React.useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     send({ type: 'edit', payload: { title: event.target.value } });
-  }, []);
+  }, [send]);
 
   const editContent = React.useCallback((event: React.ChangeEvent<HTMLTextAreaElement>) => {
     send({ type: 'edit', payload: {
       contentType: 'text/plain',
       content: event.target.value,
     }})
-  }, []);
+  }, [send]);
 
   const saveDocument = React.useCallback(() => {
     send({ type: 'save' })
-  }, []);
+  }, [send]);
 
   if (!document)
     return <>'Loading...'</>;

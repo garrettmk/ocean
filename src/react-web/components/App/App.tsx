@@ -7,6 +7,7 @@ import { Button } from '@chakra-ui/react';
 import { Link, Route, Switch, useLocation } from 'wouter';
 import { Editor } from '../Editor';
 import { DocumentList } from '../DocumentList';
+import { SlateEditor } from '../SlateEditor/SlateEditor';
 
 
 export function App() {
@@ -27,7 +28,7 @@ export function App() {
 
       <GridItem>
         <Switch>
-          <Route path='/doc/:id' component={Editor}/>
+          <Route path='/doc/:id' component={SlateEditor}/>
           <Route path='/' component={Box}/>
         </Switch>
       </GridItem>

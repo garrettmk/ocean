@@ -4,6 +4,8 @@ import { makeExecutableSchema } from '@graphql-tools/schema';
 import { GraphQLSchema } from 'graphql';
 import gql from 'graphql-tag';
 import { AuthorizationError } from '../usecases/server-errors';
+import { JSONResolver } from 'graphql-scalars';
+
 
 
 export type ServerDocumentsApiContext = () => {
@@ -30,6 +32,8 @@ export class ServerDocumentsApi {
 
     return makeExecutableSchema<ServerDocumentsApiContext>({
       typeDefs: gql`
+        scalar JSON
+
         type Author {
           id: ID!
           name: String!
@@ -49,19 +53,19 @@ export class ServerDocumentsApi {
           isPublic: Boolean!
           title: String!
           contentType: String!
-          content: String!
+          content: JSON
         }
 
         input CreateDocumentInput {
           title: String,
           contentType: String,
-          content: String
+          content: JSON
         }
 
         input UpdateDocumentInput {
           title: String,
           contentType: String,
-          content: String
+          content: JSON
         }
 
         type Mutation {
@@ -77,6 +81,8 @@ export class ServerDocumentsApi {
       `,
 
       resolvers: {
+        JSON: JSONResolver,
+
         Query: {
           listDocuments: (root, args, context, info) => {
             const { userId } = context();

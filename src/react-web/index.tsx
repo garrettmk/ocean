@@ -5,12 +5,12 @@ import { extendTheme } from '@chakra-ui/react';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { App } from './components/App';
-import { apiConfig } from './config';
+// import { apiConfig } from './config';
 import { ServicesProvider } from './services';
 
 
 const auth = new TestAuthenticator('lukeskywalker');
-const client = new UrqlGraphQLClient(apiConfig.url, auth);
+const client = new UrqlGraphQLClient('http://localhost:3000/graphql', auth);
 const documents = new DocumentsGraphQLClient(client);
 
 
