@@ -1,13 +1,13 @@
 import { assign, boolean, object, optional, pattern, refine, string, union, unknown, type, array, number, nullable, literal, record, any } from 'superstruct';
 import { Author, CreateAuthorInput, CreateDocumentInput, Document, DocumentGraph, DocumentHeader, DocumentLink, UpdateDocumentInput } from './domain-models';
-import { validate } from './domain-utils';
+import { mimeTypeRegex, validate } from './domain-utils';
 
 
 
 // Some common types
 const NonEmptyString = refine(string(), 'nonemptystring', value => value.length > 0);
 const IDSchema = pattern(string(), /.+/);
-const ContentTypeSchema = pattern(string(), /\w+\/\w+/);
+const ContentTypeSchema = pattern(string(), mimeTypeRegex);
 
 
 // Author validation
