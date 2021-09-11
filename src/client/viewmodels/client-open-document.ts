@@ -54,7 +54,8 @@ export function makeOpenDocumentMachine(gateway: ClientDocumentsGateway) {
       edited: {
         on: {
           edit: { actions: ['assignEdits'] },
-          save: { target: 'saving' }
+          save: { target: 'saving' },
+          open: { target: 'opening' }
         }
       },
 
