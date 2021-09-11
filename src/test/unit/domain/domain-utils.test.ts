@@ -25,17 +25,19 @@ const INVALID_MIME_TYPES = [
 
 describe('Testing parseMIMEType()', () => {
   it.each(VALID_MIME_TYPES)('should correctly parse valid MIME types', value => {
-    const expectedMimeType = value.split(';')[0];
+    expect.assertions(4);
+    
+    const expectedType = value.split(';')[0].split('/')[0];
+    const expectedSubType = value.split(';')[0].split('/')[1];
     const expectedParameterName = value.split(';')[1]?.split('=')?.[0];
     const expectedParameterValue = value.split(';')[1]?.split('=')?.[1];
 
     const result = parseMIMEType(value);
 
-    expect(result.mimeType).toBe(expectedMimeType);
-    if (expectedParameterName) {
-      expect(result.parameter).toHaveProperty(expectedParameterName);
-      expect(result.parameter[expectedParameterName]).toBe(expectedParameterValue);
-    }
+    expect(result.type).toBe(expectedType);
+    expect(result.subType).toBe(expectedSubType);
+    expect(result.parameter).toBe(expectedParameterName);
+    expect(result.value).toBe(expectedParameterValue);
   });
 
 

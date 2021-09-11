@@ -66,7 +66,7 @@ describe('Testing DefaultMigrationManager', () => {
   });
 
 
-  describe('Testing listAvailableMigrations()', () => {
+  describe('Testing listNextMigrations()', () => {
     let fromTextMigrations: ContentTypeMigration[];
 
 
@@ -80,7 +80,7 @@ describe('Testing DefaultMigrationManager', () => {
       await populate();
       const fromType = parseContentType('text/plain');
 
-      await expect(manager.listAvailableMigrations(fromType)).resolves.toMatchObject(fromTextMigrations);
+      await expect(manager.listNextMigrations(fromType)).resolves.toMatchObject(fromTextMigrations);
     });
   });
 
