@@ -2,6 +2,7 @@
 
 // The parsed contentType
 export type ContentType = {
+  name: string,
   value: string,
   type: string,
   subType: string,
@@ -16,8 +17,7 @@ export interface ContentTypeMigration {
   from: ContentType,
   to: ContentType,
 
-  up(content: any) : Promise<any>,
-  down(content: any) : Promise<any>
+  migrate(content: any) : Promise<any>,
 }
 
 // Describes a list of migrations from one content type to another
@@ -32,7 +32,7 @@ export type ContentTypeMigrationPath = {
 export interface ContentMigrationManager {
   registerMigration(migration: ContentTypeMigration, replace?: boolean) : Promise<boolean>,
   listAllMigrations() : Promise<ContentTypeMigration[]>,
-  listAvailableMigrations(from: ContentType) : Promise<ContentTypeMigration[]>,
-  getMigrationPaths(from: ContentType, to: ContentType) : Promise<ContentTypeMigrationPath[]>,
+  listNextMigrations(from: ContentType) : Promise<ContentTypeMigration[]>,
+  getMigrationPaths(from: ContentType, to?: ContentType) : Promise<ContentTypeMigrationPath[]>,
   migrate(content: any, path: ContentTypeMigrationPath, direction?: 'up' | 'down') : Promise<any> 
 }

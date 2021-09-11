@@ -8,12 +8,7 @@ export class TextPlainToTextMarkdown implements ContentTypeMigration {
   public to = textMarkdown;
 
 
-  async up(content: any) {
-    return '' + content;
-  }
-
-
-  async down(content: any) {
+  async migrate(content: any) {
     return '' + content;
   }
 }

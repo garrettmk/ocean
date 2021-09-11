@@ -9,7 +9,7 @@ export class TextPlainToSlate001 implements ContentTypeMigration {
   public to = slate001;
 
 
-  async up(content: any) {
+  async migrate(content: any) {
     const text = '' + content;
 
     return [
@@ -20,12 +20,5 @@ export class TextPlainToSlate001 implements ContentTypeMigration {
         ]
       }
     ]
-  }
-
-
-  async down(content: any) {
-    const nodes: any[] = content ?? [];
-
-    return nodes.map(n => Node.string(n)).join('\n');
   }
 }

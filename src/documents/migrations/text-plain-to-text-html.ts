@@ -8,12 +8,7 @@ export class TextPlainToTextHTML implements ContentTypeMigration {
   public to = textHTML;
 
 
-  async up(content: any) {
-    return '' + content;
-  }
-
-
-  async down(content: any) {
+  async migrate(content: any) {
     return '' + content;
   }
 }

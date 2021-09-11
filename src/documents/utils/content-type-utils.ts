@@ -6,6 +6,7 @@ export function parseContentType(value: string) : ContentType {
   const mimeType = parseMIMEType(value);
   
   return {
+    name: value,
     value,
     type: mimeType.type,
     subType: mimeType.subType,

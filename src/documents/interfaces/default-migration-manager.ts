@@ -30,14 +30,14 @@ export class DefaultMigrationManager implements ContentMigrationManager {
   }
 
 
-  async listAvailableMigrations(fromType: ContentType) {
+  async listNextMigrations(fromType: ContentType) {
     return this.migrations
       .filter(m => m.from.value === fromType.value);
   }
 
 
-  async getMigrationPaths(from: ContentType, to: ContentType) {
-    const initialMigrations = await this.listAvailableMigrations(from);
+  async getMigrationPaths(from: ContentType, to?: ContentType) {
+    const initialMigrations = await this.listNextMigrations(from);
     const initialPaths: ContentTypeMigrationPath[] = initialMigrations.map(m => ({
       from,
       to: m.to,
@@ -46,11 +46,8 @@ export class DefaultMigrationManager implements ContentMigrationManager {
 
     const recursivelyFollowPaths: (paths: ContentTypeMigrationPath[]) => Promise<ContentTypeMigrationPath[]> = async (paths: ContentTypeMigrationPath[]) => {
       return (await Promise.all(paths.map(async path => {
-        const nextMigrations = (await this.listAvailableMigrations(path.to))
-          .filter(m => !path.migrations.includes(m));
-
-        if (!nextMigrations.length)
-          return path;
+        const nextMigrations = (await this.listNextMigrations(path.to))
+          .filter(m => m.to.value !== from.value && !path.migrations.includes(m));
 
         const nextPaths: ContentTypeMigrationPath[] = nextMigrations.map(m => ({
           from: path.from,
@@ -58,22 +55,26 @@ export class DefaultMigrationManager implements ContentMigrationManager {
           migrations: [...path.migrations, m]
         }));
 
-        return await recursivelyFollowPaths(nextPaths);
+        return [path, ...await recursivelyFollowPaths(nextPaths)];
       }))).flat();
     }
 
     const paths = await recursivelyFollowPaths(initialPaths);
     const viablePaths = paths
-      .filter(path => path.to.value === to.value)
-      .sort((a, b) => b.migrations.length - a.migrations.length);
+      .filter(path => to ? path.to.value === to.value : true)
+      .sort((a, b) => a.migrations.length - b.migrations.length)
+      .filter((path, index, array) => {
+        const existingToIndex = array.findIndex(p => p.to.value === path.to.value);
+        return existingToIndex === index;
+      });
 
     return viablePaths;
   }
 
 
-  async migrate(content: any, path: ContentTypeMigrationPath, direction: 'up' | 'down' = 'up') {
-    const newContent = path.migrations.reduce((currentContent, migration) => {
-      return migration[direction](currentContent);
+  async migrate(content: any, path: ContentTypeMigrationPath) {
+    const newContent = await path.migrations.reduce(async (currentContent, migration) => {
+      return await migration.migrate(await currentContent);
     }, content);
 
     return newContent;
