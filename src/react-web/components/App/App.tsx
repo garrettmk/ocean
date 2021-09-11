@@ -1,13 +1,11 @@
-import React from 'react';
-import { Grid, GridItem, Box } from '@chakra-ui/layout';
 import { makeBrowseDocumentsMachine } from '@/client/viewmodels';
-import { useMachine } from '@xstate/react';
 import { useServices } from '@/react-web/services';
-import { Button } from '@chakra-ui/react';
-import { Link, Route, Switch, useLocation } from 'wouter';
-import { Editor } from '../Editor';
+import { Box, Grid, GridItem } from '@chakra-ui/layout';
+import { useMachine } from '@xstate/react';
+import React from 'react';
+import { Route, Switch, useLocation } from 'wouter';
+import { DocumentEditor } from '../DocumentEditor';
 import { DocumentList } from '../DocumentList';
-import { SlateEditor } from '../SlateEditor/SlateEditor';
 
 
 export function App() {
@@ -26,12 +24,10 @@ export function App() {
     >
       <DocumentList/>
 
-      <GridItem>
-        <Switch>
-          <Route path='/doc/:id' component={SlateEditor}/>
-          <Route path='/' component={Box}/>
-        </Switch>
-      </GridItem>
+      <Switch>
+        <Route path='/doc/:id' component={DocumentEditor}/>
+        <Route path='/' component={Box}/>
+      </Switch>
     </Grid>
   )
 }
