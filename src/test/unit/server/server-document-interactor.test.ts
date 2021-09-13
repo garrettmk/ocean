@@ -1,5 +1,6 @@
-import { AuthorRepository, Document, DocumentRepository, NotFoundError, UpdateDocumentInput, validateDocument, ValidationError } from "@/domain";
-import { MemoryAuthorRepository, MemoryDocumentRepository, MemoryUserRepository } from "../../../server/interfaces";
+import { ContentAnalysisManager, DefaultAnalysisManager, defaultAnalyzers } from "@/documents";
+import { AuthorRepository, Document, DocumentLinkRepository, DocumentRepository, NotFoundError, UpdateDocumentInput, validateDocument, ValidationError } from "@/domain";
+import { MemoryAuthorRepository, MemoryDocumentLinkRepository, MemoryDocumentRepository, MemoryUserRepository } from "../../../server/interfaces";
 import { CreateDocumentInput, ServerDocumentInteractor, User, UserRepository } from "../../../server/usecases";
 import { AuthorizationError } from "../../../server/usecases/server-errors";
 
@@ -10,12 +11,16 @@ describe('Testing ServerDocumentInteractor', () => {
   let documents: DocumentRepository;
   let users: UserRepository;
   let authors: AuthorRepository;
+  let analysis: ContentAnalysisManager;
+  let links: DocumentLinkRepository;
 
   beforeEach(() => {
     authors = new MemoryAuthorRepository();
     users = new MemoryUserRepository();
     documents = new MemoryDocumentRepository(authors);
-    interactor = new ServerDocumentInteractor(documents, users);
+    analysis = new DefaultAnalysisManager(defaultAnalyzers);
+    links = new MemoryDocumentLinkRepository();
+    interactor = new ServerDocumentInteractor(documents, users, analysis, links);
   });
 
 

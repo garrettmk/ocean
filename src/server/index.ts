@@ -1,5 +1,6 @@
+import { DefaultAnalysisManager, defaultAnalyzers } from '@/documents';
 import { Database } from 'arangojs';
-import { ArangoAuthorRepository, ArangoDocumentRepository, ArangoUserRepository } from './interfaces';
+import { ArangoAuthorRepository, ArangoDocumentLinkRepository, ArangoDocumentRepository, ArangoUserRepository, MemoryDocumentLinkRepository } from './interfaces';
 import { OceanServer } from './ocean-server';
 import { AlreadyExistsError } from './usecases';
 export { AuthorizationError } from './usecases';
@@ -10,7 +11,8 @@ const config = {
   collectionNames: {
     authors: 'authors',
     users: 'users',
-    documents: 'documents'
+    documents: 'documents',
+    documentLinks: 'documentLinks'
   }
 }
 
@@ -32,5 +34,14 @@ try {
 const documents = new ArangoDocumentRepository(authors, config);
 await documents.initialize();
 
-const app = new OceanServer(users, authors, documents, 'secret');
+const links = new ArangoDocumentLinkRepository(documents, config);
+await links.initialize();
+
+
+// Create analysis tools
+const analysis = new DefaultAnalysisManager(defaultAnalyzers);
+
+
+// Create and start the server
+const app = new OceanServer(users, authors, documents, 'secret', analysis, links);
 app.listen(3000);//

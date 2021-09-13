@@ -56,6 +56,17 @@ export class ServerDocumentsApi {
           content: JSON
         }
 
+        type DocumentLink {
+          from: ID!
+          to: ID!
+          meta: JSON
+        }
+
+        type DocumentGraph {
+          documents: [DocumentHeader!]!
+          links: [DocumentLink!]!
+        }
+
         input CreateDocumentInput {
           title: String,
           contentType: String,
@@ -69,14 +80,17 @@ export class ServerDocumentsApi {
         }
 
         type Mutation {
-          createDocument(input: CreateDocumentInput!): Document
+          createDocument(input: CreateDocumentInput!): Document!
           updateDocument(id: ID!, input: UpdateDocumentInput!): Document!
           deleteDocument(id: ID!): Document!
+          linkDocuments(fromId: ID!, toId: ID!, meta: JSON): DocumentLink!
+          unlinkDocuments(fromId: ID!, toId: ID!): DocumentLink!
         }
 
         type Query {
           listDocuments: [DocumentHeader!]!
           getDocument(id: ID!): Document!
+          getRecommendedLinks(id: ID!) : DocumentGraph!
         }
       `,
 
@@ -94,6 +108,13 @@ export class ServerDocumentsApi {
             const { id: documentId } = args;
 
             return this.interactor.getDocument(userId, documentId);
+          },
+
+          getRecommendedLinks: (root, args, context, info) => {
+            const { userId } = context();
+            const { id: documentId } = args;
+
+            return this.interactor.getRecommendedLinks(userId!, documentId);
           }
         },
 
@@ -117,6 +138,20 @@ export class ServerDocumentsApi {
             const { id } = args;
 
             return this.interactor.deleteDocument(userId, id);
+          },
+
+          linkDocuments: (root, args, context, info) => {
+            const userId = getAuthenticatedUserId(context);
+            const { fromId, toId, meta } = args;
+
+            return this.interactor.linkDocuments(userId, fromId, toId, meta);
+          },
+
+          unlinkDocuments: (root, args, context, info) => {
+            const userId = getAuthenticatedUserId(context);
+            const { fromId, toId } = args;
+
+            return this.interactor.unlinkDocuments(userId, fromId, toId);
           }
         }
       }

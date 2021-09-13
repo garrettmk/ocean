@@ -1,16 +1,23 @@
-import { Document, DocumentHeader, DocumentRepository, ID } from "@/domain";
+import { ContentAnalysisManager } from "@/documents";
+import { Document, DocumentGraph, DocumentHeader, DocumentLink, DocumentLinkRepository, DocumentRepository, ID, JSONSerializable } from "@/domain";
 import { AuthorizationError } from "./server-errors";
 import { UserRepository } from './server-user-models';
+import urlparse from 'url-parse';
+import { matches } from "lodash";
 
 
 export class ServerDocumentInteractor {
   private documents: DocumentRepository;
   private users: UserRepository;
+  private analysis: ContentAnalysisManager;
+  private links: DocumentLinkRepository;
 
 
-  constructor(documents: DocumentRepository, users: UserRepository) {
+  constructor(documents: DocumentRepository, users: UserRepository, analysis: ContentAnalysisManager, links: DocumentLinkRepository) {
     this.documents = documents;
     this.users = users;
+    this.analysis = analysis; 
+    this.links = links;
   }
 
 
@@ -70,6 +77,70 @@ export class ServerDocumentInteractor {
     await this.documents.delete(document.id);
 
     return document;
+  }
+
+
+  async getRecommendedLinks(userId: ID, documentId: ID) : Promise<DocumentGraph> {
+    const user = await this.users.getById(userId);
+    const document = await this.documents.getById(documentId);
+    const { content, ...documentHeader } = document;
+
+    const canRead = document.author.id === user.author.id || document.isPublic;
+    if (!canRead)
+      throw new AuthorizationError(`user ${userId} is not authorized to read document ${documentId}`);
+    
+    const { links = [] } = await this.analysis.analyze(document.contentType, document.content);
+    const linkedIds: ID[] = links
+      .map(link => link.url.match(/^\/doc\/(.+)/))
+      .filter(matches => matches?.[1])
+      .map(matches => matches![1]);
+
+    const linkedDocuments = await this.documents.listById(linkedIds);
+
+    const graph: DocumentGraph = {
+      documents: [documentHeader, ...linkedDocuments],
+      links: linkedDocuments.map(({ id }) => ({
+        from: document.id,
+        to: id,
+        meta: {}
+      }))
+    };
+
+    return graph;
+  }
+
+
+  async linkDocuments(userId: ID, fromId: ID, toId: ID, meta?: Record<string, JSONSerializable>) : Promise<DocumentLink> {
+    const user = await this.users.getById(userId);
+    const fromDoc = await this.documents.getById(fromId);
+    const toDoc = await this.documents.getById(toId);
+
+    const canLink = 
+      fromDoc.author.id === user.author.id &&
+      (toDoc.author.id === user.author.id || toDoc.isPublic);
+    if (!canLink)
+      throw new AuthorizationError(`User does not have permission to link these documents`);
+
+    const link = await this.links.link(fromId, toId, meta);
+
+    return link;
+  }
+
+
+  async unlinkDocuments(userId: ID, fromId: ID, toId: ID) : Promise<DocumentLink> {
+    const user = await this.users.getById(userId);
+    const fromDoc = await this.documents.getById(fromId);
+    const toDoc = await this.documents.getById(toId);
+
+    const canUnlink = 
+      fromDoc.author.id === user.author.id &&
+      (toDoc.author.id === user.author.id || toDoc.isPublic);
+    if (!canUnlink)
+      throw new AuthorizationError(`User does not have permission to unlink these documents`);
+
+    const link = await this.links.unlink(fromId, toId);
+
+    return link;
   }
 }
 
