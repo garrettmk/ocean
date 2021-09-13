@@ -13,6 +13,15 @@ export function Leaf({
 
   if (leaf.bold)
     children = <strong>{children}</strong>;
+
+  if (leaf.italic)
+    children = <em>{children}</em>;
+  
+  if (leaf.underline)
+    children = <u>{children}</u>;
+
+  if (leaf.strikethrough)
+    children = <del>{children}</del>;
   
   return <span style={style} {...attributes}>{children}</span>;
 }

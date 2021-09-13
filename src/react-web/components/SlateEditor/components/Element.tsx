@@ -1,3 +1,4 @@
+import { Link } from '@chakra-ui/react';
 import { RenderElementProps } from "slate-react";
 
 
@@ -29,7 +30,7 @@ export function Element({
       }
     
     case 'link':
-      return <a {...attributes} href={element.url}>{children}</a>;
+      return <Link {...attributes} href={element.url}>{children}</Link>;
 
     default:
       return <p {...attributes}>{children}</p>;

@@ -2,7 +2,7 @@ import { Grid } from '@chakra-ui/react';
 import React from 'react';
 import { createEditor } from 'slate';
 import { Editable, Slate, withReact } from 'slate-react';
-import { EditorToolbar, Element, Leaf } from './components';
+import { EditorToolbar, Element, FloatingElementEditor, Leaf, LinkElementEditor } from './components';
 import { withCustom } from './withCustom';
 
 
@@ -24,6 +24,9 @@ export function SlateEditor({
   onChange: (newContent: any) => void
 }) : JSX.Element {
   const editor = React.useMemo(() => withCustom(withReact(createEditor())), []);
+  const elementEditors = React.useMemo(() => ({
+    link: LinkElementEditor
+  }), []);
 
   return (
     <Slate
@@ -38,6 +41,7 @@ export function SlateEditor({
         gap={4}
       >
         <EditorToolbar/>
+        <FloatingElementEditor {...{ elementEditors }}/>
         <Editable
           renderElement={Element}
           renderLeaf={Leaf}
@@ -47,10 +51,3 @@ export function SlateEditor({
     </Slate>
   );
 }
-
-
-
-
-
-
-

@@ -8,6 +8,7 @@ import React from "react";
 import { SlateEditor } from "../SlateEditor";
 import { TextPlainEditor } from "../TextPlainEditor";
 import { ApplicationJSONEditor } from "../ApplicationJSONEditor";
+import { RecommendedLinks } from "../RecommendedLinks";
 
 
 export function DocumentEditor({
@@ -39,6 +40,10 @@ export function DocumentEditor({
 
   // Change the content
   const setContent = React.useCallback(newContent => {
+    if (document?.contentType && newContent) {
+      const analysis = services.analysis.analyze(document.contentType, newContent);
+    }
+    
     send({
       type: 'edit',
       payload: {
@@ -112,23 +117,25 @@ export function DocumentEditor({
 
   return (
     <Grid
-      templateRows='auto 1fr'
+      templateRows='auto auto 1fr'
       templateColumns='1fr auto'
       templateAreas={`
         "title buttons"
+        "links links"
         "content content"
       `}
       gap={4}
       p={8}
     >
       <Input
-       size='lg'
-       value={document?.title ?? ''}
-       onChange={setTitle}
-       disabled={!document}
+        gridArea='title'
+        size='lg'
+        value={document?.title ?? ''}
+        onChange={setTitle}
+        disabled={!document}
       />
 
-      <Flex alignItems='center'>
+      <Flex gridArea='buttons' alignItems='center'>
         <Select mr={2} value={document?.contentType} onChange={setContentType}>
           {contentTypeOptions.map(contentType => (
             <option
@@ -146,6 +153,8 @@ export function DocumentEditor({
           Save
         </Button>
       </Flex>
+
+      <RecommendedLinks/>
 
       <ContentEditorComponent
         content={document?.content as string}

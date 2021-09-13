@@ -1,5 +1,5 @@
 import type { ClientDocumentsGateway } from "@/client/interfaces";
-import { ContentMigrationManager } from "@/documents";
+import { ContentAnalysisManager, ContentMigrationManager } from "@/documents";
 import { TestAuthenticator } from "@/test/__mocks__/test-authenticator";
 import React from "react";
 
@@ -7,7 +7,8 @@ import React from "react";
 export type Services = {
   auth: TestAuthenticator,
   documents: ClientDocumentsGateway,
-  migrations: ContentMigrationManager
+  migrations: ContentMigrationManager,
+  analysis: ContentAnalysisManager,
 }
 
 
@@ -18,12 +19,14 @@ export function ServicesProvider({
   auth,
   documents,
   migrations,
+  analysis,
   children
 }: React.PropsWithChildren<Services>) {
   const value = React.useMemo(() => ({
     auth,
     documents,
-    migrations
+    migrations,
+    analysis,
   }), [auth, documents, migrations]);
 
   return (

@@ -1,5 +1,5 @@
 import { DocumentsGraphQLClient, UrqlGraphQLClient } from '@/client/interfaces';
-import { DefaultMigrationManager, defaultMigrations } from '@/documents';
+import { DefaultAnalysisManager, defaultAnalyzers, DefaultMigrationManager, defaultMigrations } from '@/documents';
 import { TestAuthenticator } from '@/test/__mocks__/test-authenticator';
 import { ChakraProvider } from '@chakra-ui/provider';
 import { extendTheme } from '@chakra-ui/react';
@@ -14,6 +14,7 @@ const auth = new TestAuthenticator('lukeskywalker');
 const client = new UrqlGraphQLClient('http://localhost:3000/graphql', auth);
 const documents = new DocumentsGraphQLClient(client);
 const migrations = new DefaultMigrationManager(defaultMigrations);
+const analysis = new DefaultAnalysisManager(defaultAnalyzers);
 
 
 const rootEl = document.getElementById('root');
@@ -29,11 +30,12 @@ const theme = extendTheme({ config: {
 
 
 ReactDOM.render(
-  <ServicesProvider
-    auth={auth}
-    documents={documents}
-    migrations={migrations}
-  >
+  <ServicesProvider {...{
+    auth,
+    documents,
+    migrations,
+    analysis
+  }}>
     <ChakraProvider
       theme={theme}
     >
