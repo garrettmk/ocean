@@ -122,11 +122,10 @@ export class ArangoDocumentRepository implements DocumentRepository {
 
 
   async listById(ids: ID[]) : Promise<DocumentHeader[]> {
-    const documentIds = ids.map(id => this.getDatabaseId(id));
     const documents = await this.db.query(aql`
-      FOR doc IN ${this.collection}
-        FILTER POSITION(${documentIds}, doc.id)
-        RETURN UNSET(doc, 'content')
+    FOR doc IN ${this.collection}
+    FILTER POSITION(${ids}, doc._key)
+    RETURN UNSET(doc, 'content')
     `)
     .then(cursor => cursor.all())
     .then(values => values.map(async value => {
@@ -174,7 +173,7 @@ export class ArangoDocumentRepository implements DocumentRepository {
   }
 
 
-  private getDatabaseId(id: ID) : ID {
+  public getDatabaseId(id: ID) : ID {
     return `${this.collection.name}/${id}`;
   }
 

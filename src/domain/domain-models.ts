@@ -36,20 +36,6 @@ export interface Document extends DocumentHeader {
 }
 
 
-export interface DocumentLink {
-  from: ID,
-  to: ID,
-  meta: {
-    [key: string]: JSONSerializable
-  }
-}
-
-export interface DocumentGraph {
-  documents: DocumentHeader[],
-  links: DocumentLink[]
-}
-
-
 export interface DocumentRepository {
   create(authorId: ID, input: CreateDocumentInput) : Promise<Document>,
   getById(documentId: ID) : Promise<Document>,
@@ -59,11 +45,6 @@ export interface DocumentRepository {
   update(documentId: ID, input: UpdateDocumentInput) : Promise<Document>,
   delete(documentId: ID) : Promise<Document>,
   
-  // link(from: ID, to: ID, meta?: DocumentLink['meta']) : Promise<DocumentLink>,
-  // getLink(from: ID, to: ID) : Promise<DocumentLink[]>,
-  // listLinks(center: ID) : Promise<DocumentLink[]>,
-  // updateLink(from: ID, to: ID, meta: DocumentLink['meta']) : Promise<DocumentLink>,
-  // unlink(from: ID, to: ID) : Promise<DocumentLink>,
 }
 
 
@@ -85,3 +66,25 @@ type UpdateInput = {
 export type CreateDocumentInput = CreateInput | (CreateInput & ContentInput);
 
 export type UpdateDocumentInput = UpdateInput | (UpdateInput & ContentInput);
+
+
+export interface DocumentLinkRepository {
+  link(from: ID, to: ID, meta?: DocumentLinkMeta) : Promise<DocumentLink>,
+  getLink(from: ID, to: ID) : Promise<DocumentLink>,
+  listLinks(center: ID) : Promise<DocumentLink[]>,
+  updateLink(from: ID, to: ID, meta: DocumentLinkMeta) : Promise<DocumentLink>,
+  unlink(from: ID, to: ID) : Promise<DocumentLink>,  
+}
+
+
+export type DocumentLinkMeta = Record<string, JSONSerializable>;
+export interface DocumentLink {
+  from: ID,
+  to: ID,
+  meta: DocumentLinkMeta
+}
+
+export interface DocumentGraph {
+  documents: DocumentHeader[],
+  links: DocumentLink[]
+}
