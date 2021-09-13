@@ -36,3 +36,28 @@ export interface ContentMigrationManager {
   getMigrationPaths(from: ContentType, to?: ContentType) : Promise<ContentTypeMigrationPath[]>,
   migrate(content: any, path: ContentTypeMigrationPath, direction?: 'up' | 'down') : Promise<any> 
 }
+
+
+
+// Content analysis
+export type ContentAnalysis = {
+  subject?: string[],
+  links?: OutboundLink[]
+}
+
+export type OutboundLink = {
+  url: string
+}
+
+export interface ContentAnalyzer {
+  contentTypes: string[],
+  analyze(contentType: string, content: any) : Promise<ContentAnalysis>
+}
+
+
+export interface ContentAnalysisManager {
+  registerAnalyzer(analyzer: ContentAnalyzer, replace?: boolean) : Promise<boolean>,
+  listAllAnalyzers() : Promise<ContentAnalyzer[]>,
+  getAnalyzer(contentType: string) : Promise<ContentAnalyzer>,
+  analyze(contentType: string, content: any) : Promise<ContentAnalysis>
+}
