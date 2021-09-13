@@ -1,4 +1,4 @@
-import { Document, DocumentHeader } from '@/domain';
+import { Document, DocumentHeader, DocumentLink } from '@/domain';
 import { ClientDocumentsGateway } from "@/client/interfaces";
 import { TestPromise } from "./TestPromise";
 
@@ -11,6 +11,9 @@ export class TestClientGateway implements MockClientDocumentsGateway {
   public updateDocument: Mock;
   public deleteDocument: Mock;
   public listDocuments: Mock;
+  public getRecommendedLinks: Mock;
+  public linkDocuments: Mock;
+  public unlinkDocuments: Mock;
 
   constructor() {
     this.getDocument = jest.fn(() => { return new TestPromise<Document>(); });
@@ -18,6 +21,9 @@ export class TestClientGateway implements MockClientDocumentsGateway {
     this.updateDocument = jest.fn(() => { return new TestPromise<Document>(); });
     this.deleteDocument = jest.fn(() => { return new TestPromise<Document>(); });
     this.listDocuments = jest.fn(() => { return new TestPromise<DocumentHeader[]>(); });
+    this.getRecommendedLinks = jest.fn(() => { return new TestPromise<DocumentLink[]>(); });
+    this.linkDocuments = jest.fn(() => { return new TestPromise<DocumentLink>(); });
+    this.unlinkDocuments = jest.fn(() => { return new TestPromise<DocumentLink>(); });
   }
 
   public getLastResult<T>(key: keyof MockClientDocumentsGateway) : T | undefined {
@@ -33,5 +39,7 @@ export class TestClientGateway implements MockClientDocumentsGateway {
     this.updateDocument.mockClear();
     this.deleteDocument.mockClear();
     this.listDocuments.mockClear();
+    this.linkDocuments.mockClear();
+    this.unlinkDocuments.mockClear();
   }
 }

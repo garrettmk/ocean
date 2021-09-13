@@ -1,4 +1,4 @@
-import { ID, validateCreateDocumentInput, validateUpdateDocumentInput, CreateDocumentInput } from "@/domain";
+import { ID, validateCreateDocumentInput, validateUpdateDocumentInput, CreateDocumentInput, DocumentLinkMeta } from "@/domain";
 import { ClientDocumentsGateway, AuthorizationError } from "@/client/interfaces";
 import { CombinedError } from "@urql/core";
 import { DocumentNode, GraphQLError } from "graphql";
@@ -158,6 +158,75 @@ export class DocumentsGraphQLClient implements ClientDocumentsGateway {
       throw fromCombinedError(result.error);
 
     return result?.data?.deleteDocument;
+  }
+
+
+  async getRecommendedLinks(id: ID) {
+    const query = gql`
+      query($id: ID!) {
+        getRecommendedLinks(id: $id) {
+          documents {
+            id
+            author {
+              id
+              name
+            }
+            isPublic
+            title
+            contentType
+          }
+          links {
+            from
+            to
+            meta
+          }
+        }
+      }
+    `;
+
+    const result = await this.client.query(query, { id });
+    if (result.error)
+      throw fromCombinedError(result.error);
+
+    return result!.data!.getRecommendedLinks
+  }
+
+
+  async linkDocuments(fromId: ID, toId: ID, meta: DocumentLinkMeta = {}) {
+    const query = gql`
+      mutation($fromId: ID!, $toId: ID!, $meta: JSON) {
+        linkDocuments(fromId: $fromId, toId: $toId, meta: $meta) {
+          from
+          to
+          meta
+        }
+      }
+    `;
+
+    const result = await this.client.mutation(query, { fromId, toId, meta });
+    if (result.error)
+      throw fromCombinedError(result.error);
+
+    return result.data!.linkDocuments
+  }
+
+
+  async unlinkDocuments(fromId: ID, toId: ID) {
+    const query = gql`
+      mutation($fromId: ID!, $toId: ID!) {
+        unlinkDocuments(fromId: $fromId, toId: $toId) {
+          from
+          to
+          meta
+        }
+      }
+    `;
+
+    const result = await this.client.mutation(query, { fromId, toId });
+    if (result.error)
+      throw fromCombinedError(result.error);
+
+    return result.data!.linkDocuments
   }
 }
 
