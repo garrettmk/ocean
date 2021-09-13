@@ -1,5 +1,4 @@
-import { ContentAnalysisManager } from "@/documents";
-import { Document, DocumentGraph, DocumentHeader, DocumentLink, DocumentLinkRepository, DocumentRepository, ID, JSONSerializable } from "@/domain";
+import { Document, DocumentGraph, DocumentHeader, DocumentLink, DocumentLinkRepository, DocumentRepository, ID, JSONSerializable, ContentAnalysisManager } from "@/domain";
 import { AuthorizationError } from "./server-errors";
 import { UserRepository } from './server-user-models';
 import urlparse from 'url-parse';

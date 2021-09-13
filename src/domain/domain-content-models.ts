@@ -1,5 +1,4 @@
 
-
 // The parsed contentType
 export type ContentType = {
   name: string,
@@ -9,7 +8,6 @@ export type ContentType = {
   parameter?: string,
   parameterValue?: string,
 }
-
 
 // A migration between content types
 export interface ContentTypeMigration {
@@ -36,8 +34,6 @@ export interface ContentMigrationManager {
   getMigrationPaths(from: ContentType, to?: ContentType) : Promise<ContentTypeMigrationPath[]>,
   migrate(content: any, path: ContentTypeMigrationPath, direction?: 'up' | 'down') : Promise<any> 
 }
-
-
 
 // Content analysis
 export type ContentAnalysis = {

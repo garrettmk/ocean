@@ -1,5 +1,5 @@
 import { AlreadyExistsError } from "@/server/usecases";
-import { ContentMigrationManager, ContentType, ContentTypeMigration, ContentTypeMigrationPath } from "./document-content-models";
+import { ContentMigrationManager, ContentType, ContentTypeMigration, ContentTypeMigrationPath } from "@/domain";
 
 
 export class DefaultMigrationManager implements ContentMigrationManager {

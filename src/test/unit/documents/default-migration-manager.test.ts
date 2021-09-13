@@ -1,4 +1,5 @@
-import { ContentTypeMigration, DefaultMigrationManager } from "@/documents"
+import { ContentTypeMigration } from "@/domain";
+import { DefaultMigrationManager } from "@/documents"
 import * as migrationClasses from '@/documents/migrations';
 import { parseContentType } from "@/documents/utils/content-type-utils";
 import { AlreadyExistsError } from "@/server/usecases";

@@ -1,4 +1,4 @@
-import { ContentAnalysis, ContentAnalyzer } from "../interfaces";
+import { ContentAnalysis, ContentAnalyzer } from "@/domain";
 import { slate001, slate002 } from '../content-types';
 import { Editor, createEditor, Node, LinkElement } from "slate";
 

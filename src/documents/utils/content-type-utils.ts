@@ -1,5 +1,4 @@
-import { parseMIMEType } from "@/domain";
-import { ContentType } from "../interfaces/document-content-models";
+import { parseMIMEType, ContentType } from "@/domain";
 
 
 export function parseContentType(value: string) : ContentType {

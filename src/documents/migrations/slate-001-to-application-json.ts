@@ -1,5 +1,5 @@
 import { applicationJSON, slate001 } from "../content-types";
-import { ContentTypeMigration } from "../interfaces/document-content-models";
+import { ContentTypeMigration } from "@/domain";
 
 
 export class Slate001ToApplicationJSON implements ContentTypeMigration {

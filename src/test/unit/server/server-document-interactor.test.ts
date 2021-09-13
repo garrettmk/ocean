@@ -1,4 +1,5 @@
-import { ContentAnalysisManager, DefaultAnalysisManager, defaultAnalyzers } from "@/documents";
+import { ContentAnalysisManager } from "@/domain";
+import { DefaultAnalysisManager, defaultAnalyzers } from "@/documents";
 import { AuthorRepository, Document, DocumentLinkRepository, DocumentRepository, NotFoundError, UpdateDocumentInput, validateDocument, ValidationError } from "@/domain";
 import { MemoryAuthorRepository, MemoryDocumentLinkRepository, MemoryDocumentRepository, MemoryUserRepository } from "../../../server/interfaces";
 import { CreateDocumentInput, ServerDocumentInteractor, User, UserRepository } from "../../../server/usecases";

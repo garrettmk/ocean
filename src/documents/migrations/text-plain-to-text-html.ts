@@ -1,5 +1,5 @@
 import { textHTML, textPlain } from "../content-types";
-import { ContentTypeMigration } from "../interfaces/document-content-models";
+import { ContentTypeMigration } from "@/domain";
 
 
 export class TextPlainToTextHTML implements ContentTypeMigration {

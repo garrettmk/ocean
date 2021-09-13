@@ -1,5 +1,5 @@
 import { textPlain, applicationJSON } from "../content-types";
-import { ContentTypeMigration } from "../interfaces/document-content-models";
+import { ContentTypeMigration } from "@/domain";
 
 
 export class TextPlainToApplicationJson implements ContentTypeMigration {

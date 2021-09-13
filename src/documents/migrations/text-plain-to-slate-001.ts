@@ -1,6 +1,5 @@
-import { ContentTypeMigration } from "../interfaces/document-content-models";
+import { ContentTypeMigration } from "@/domain";
 import { textPlain, slate001 } from "../content-types";
-import { Node } from "slate";
 
 
 export class TextPlainToSlate001 implements ContentTypeMigration {

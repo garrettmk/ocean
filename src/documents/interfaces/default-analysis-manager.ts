@@ -1,6 +1,6 @@
 import { NotFoundError } from "@/domain";
 import { AlreadyExistsError } from "@/server/usecases";
-import { ContentAnalysisManager, ContentAnalyzer } from "./document-content-models";
+import { ContentAnalysisManager, ContentAnalyzer } from '@/domain';
 
 
 export class DefaultAnalysisManager implements ContentAnalysisManager {
