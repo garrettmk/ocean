@@ -5,7 +5,7 @@ import { OceanServer } from "@/server/ocean-server";
 import { User, UserRepository } from "@/server/usecases";
 import { TestAuthenticator } from "./test-authenticator";
 import fetch from "node-fetch";
-import { DefaultAnalysisManager, defaultAnalyzers } from "@/documents";
+import { DefaultAnalysisManager, defaultAnalyzers } from "@/content";
 
 
 export class ServerTestHarness {

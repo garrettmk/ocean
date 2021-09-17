@@ -1,12 +1,10 @@
 import { textPlain, applicationJSON } from "../content-types";
-import { ContentTypeMigration } from "@/domain";
+import { ContentMigration } from "@/domain";
 
 
-export class TextPlainToApplicationJson implements ContentTypeMigration {
-  public name = 'Plain text to JSON';
+export class TextPlainToApplicationJson implements ContentMigration {
   public from = textPlain;
   public to = applicationJSON;
-
 
   async migrate(content: any) {
     return JSON.parse(content);

@@ -1,4 +1,6 @@
 import { assign, boolean, object, optional, pattern, refine, string, union, unknown, type, array, number, nullable, literal, record, any } from 'superstruct';
+import { ID } from './domain-common-types';
+import { DocumentLinkMeta } from './domain-link-models';
 import { Author, CreateAuthorInput, CreateDocumentInput, Document, DocumentGraph, DocumentHeader, DocumentLink, UpdateDocumentInput } from './domain-models';
 import { mimeTypeRegex, validate } from './domain-utils';
 
@@ -31,6 +33,16 @@ export function validateCreateAuthorInput(value: any) : asserts value is CreateA
 
 
 // Document validation
+export function validateDocumentId(value: any) : asserts value is ID {
+  validate(value, IDSchema);
+}
+
+
+export function validateContentType(value: any) : asserts value is string {
+  validate(value, ContentTypeSchema);
+};
+
+
 const DocumentHeaderSchema = type({
   id: IDSchema,
   author: AuthorSchema,
@@ -91,14 +103,21 @@ export function validateUpdateDocumentInput(value: any) : asserts value is Updat
 };
 
 
+const DocumentLinkMetaSchema = record(string(), any());
+
 const DocumentLinkSchema = type({
   from: IDSchema,
   to: IDSchema,
-  meta: record(string(), any()),
+  meta: DocumentLinkMetaSchema
 });
 
 export function validateDocumentLink(value: any) : asserts value is DocumentLink {
   validate(value, DocumentLinkSchema);
+}
+
+
+export function validateDocumentLinkMeta(value: any) : asserts value is DocumentLinkMeta {
+  validate(value, DocumentLinkMetaSchema);
 }
 
 

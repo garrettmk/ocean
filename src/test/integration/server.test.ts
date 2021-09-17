@@ -2,7 +2,7 @@ import { DocumentHeader, NotFoundError, NotImplementedError, validateDocument, V
 import { AuthorizationError } from "@/client/interfaces";
 import { UpdateDocumentInput } from "@/server/usecases";
 import e from "cors";
-import { ServerTestHarness } from "../__mocks__/server-test-harness";
+import { ServerTestHarness } from "../__utils__/server-test-harness";
 
 
 describe('Testing OceanServer', () => {

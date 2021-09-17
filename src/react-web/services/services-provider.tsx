@@ -1,6 +1,6 @@
 import type { ClientDocumentsGateway } from "@/client/interfaces";
 import { ContentAnalysisManager, ContentMigrationManager } from "@/domain";
-import { TestAuthenticator } from "@/test/__mocks__/test-authenticator";
+import { TestAuthenticator } from "@/test/__utils__/test-authenticator";
 import React from "react";
 
 

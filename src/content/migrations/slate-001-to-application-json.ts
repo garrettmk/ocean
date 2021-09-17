@@ -1,12 +1,10 @@
 import { applicationJSON, slate001 } from "../content-types";
-import { ContentTypeMigration } from "@/domain";
+import { ContentMigration } from "@/domain";
 
 
-export class Slate001ToApplicationJSON implements ContentTypeMigration {
-  public name = 'Slate v1 to JSON';
+export class Slate001ToApplicationJSON implements ContentMigration {
   public from = slate001;
   public to = applicationJSON;
-
 
   async migrate(content: any) {
     return content;

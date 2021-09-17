@@ -1,25 +1,17 @@
 import { ArangoDocumentRepository, MemoryAuthorRepository } from "@/server/interfaces";
-import { Database } from "arangojs";
+import { TestArangoDb } from "@/test/__utils__/TestArangoDb";
 import { testDocumentRepository } from "../domain/domain-document-repository-tests";
 
 
 testDocumentRepository({
   implementationName: ArangoDocumentRepository.prototype.constructor.name,
 
-  beforeAll: async () => new Database({
-    url: 'http://localhost:8529',
-    databaseName: 'test'
-  }),
+  beforeAll: async () => new TestArangoDb(),
 
   beforeEach: async (db) => {
-    const collection = await db!.collection('documents');
-    if (await collection.exists()) {
-      await collection.truncate();
-    }
-
     const authorRepository = new MemoryAuthorRepository();
     const repository = new ArangoDocumentRepository(authorRepository, {
-      db: db!,
+      db: db!.db,
       collectionNames: {
         documents: 'documents'
       }
@@ -31,5 +23,9 @@ testDocumentRepository({
       authorRepository,
       repository
     }
+  },
+
+  afterEach: async (db) => {
+    await db!.emptyCollectionIfExists('documents');
   }
 });

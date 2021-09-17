@@ -1,9 +1,8 @@
-import { ContentTypeMigration } from "@/domain";
+import { ContentMigration } from "@/domain";
 import { textPlain, slate001 } from "../content-types";
 
 
-export class TextPlainToSlate001 implements ContentTypeMigration {
-  public name = 'Plain text to Slate001';
+export class TextPlainToSlate001 implements ContentMigration {
   public from = textPlain;
   public to = slate001;
 

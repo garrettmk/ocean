@@ -1,6 +1,6 @@
 import { makeOpenDocumentMachine } from "@/client/viewmodels";
 import { ContentType } from "@/domain";
-import { parseContentType } from "@/documents/utils/content-type-utils";
+import { parseContentType } from "@/content/utils/content-type-utils";
 import { useServices } from "@/react-web/services";
 import { Box, Button, Flex, Grid, Input, Select, Textarea } from "@chakra-ui/react";
 import { useMachine } from "@xstate/react";

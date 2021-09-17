@@ -3,14 +3,14 @@ import { ClientDocumentsGateway } from "@/client/interfaces";
 import { createTestPlans, StatesTestFunctions } from '@smartive/xstate-test-toolbox';
 import { TestEventsConfig } from "@xstate/test/lib/types";
 import { interpret, Interpreter } from 'xstate';
-import { TestPromise } from '@/test/__mocks__/TestPromise';
+import { TestPromise } from '@/test/__utils__/TestPromise';
 import { DocumentHeader } from "@/domain";
-import { TestClientGateway } from '../../__mocks__/TestClientGateway';
+import { TestClientGateway } from '../../__utils__/TestClientGateway';
 
 
 
 
-describe('Testing BrowseDocumentsMachine...', () => {
+describe.skip('Testing BrowseDocumentsMachine...', () => {
   let gateway = new TestClientGateway();  
   let machine = makeBrowseDocumentsMachine(gateway as ClientDocumentsGateway);
   let service: Interpreter<BrowseDocumentsContext, BrowseDocumentsStates, BrowseDocumentsEvent>;

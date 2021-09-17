@@ -1,4 +1,4 @@
-import { DefaultAnalysisManager, defaultAnalyzers } from '@/documents';
+import { DefaultAnalysisManager, defaultAnalyzers } from '@/content';
 import { Database } from 'arangojs';
 import { ArangoAuthorRepository, ArangoDocumentLinkRepository, ArangoDocumentRepository, ArangoUserRepository, MemoryDocumentLinkRepository } from './interfaces';
 import { OceanServer } from './ocean-server';

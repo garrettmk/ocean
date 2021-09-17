@@ -9,6 +9,7 @@ import {
   NotFoundError,
   validateDocument
 } from "@/domain";
+import { sortById } from "@/test/__utils__/sorting";
 
 
 const INVALID_OBJECTS = [null, undefined, NaN, 123, '', 'a string'];
@@ -21,17 +22,19 @@ const INVALID_AUTHOR_ID = 'vader';
 export type DocumentRepositoryTestConfig<T extends any> = {
   implementationName: string,
   beforeAll?: () => Promise<T>,
-  beforeEach: (t?: T) => Promise<{
+  beforeEach: (t: T) => Promise<{
     repository: DocumentRepository,
     authorRepository: AuthorRepository
-  }>
+  }>,
+  afterEach?: (t: T) => Promise<void>,
 }
 
 
 export function testDocumentRepository<T extends any>({
   implementationName,
   beforeAll: _beforeAll,
-  beforeEach: _beforeEach
+  beforeEach: _beforeEach,
+  afterEach: _afterEach,
 }: DocumentRepositoryTestConfig<T>) {
   describe(`Testing DocumentRepository implementation: ${implementationName}`, () => {
     let beforeAllResult: T;
@@ -52,6 +55,11 @@ export function testDocumentRepository<T extends any>({
       authorRepository = result.authorRepository;
       authors = await Promise.all(AUTHOR_NAMES.map(name => authorRepository.create({ name })));
       repository = result.repository;
+    });
+
+    afterEach(async () => {
+      if (_afterEach)
+        await _afterEach(beforeAllResult);
     });
 
 
@@ -191,7 +199,9 @@ export function testDocumentRepository<T extends any>({
           .filter(doc => doc.author.id === author.id)
           .map(({ content, ...header }) => header);
     
-        await expect(repository.listByAuthor(author.id)).resolves.toMatchObject(expected);
+        const result = await repository.listByAuthor(author.id);
+
+        expect(result.sort(sortById)).toMatchObject(expected.sort(sortById));
       });
     })
   
@@ -207,7 +217,9 @@ export function testDocumentRepository<T extends any>({
           .filter(doc => doc.isPublic)
           .map(({ content, ...header }) => header);
 
-        await expect(repository.listPublic()).resolves.toMatchObject(expected);
+        const result = await repository.listPublic();
+
+        expect(result.sort(sortById)).toMatchObject(expected.sort(sortById));
       });
     });
   

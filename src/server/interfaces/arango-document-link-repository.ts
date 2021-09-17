@@ -1,7 +1,8 @@
-import { DocumentLink, DocumentLinkMeta, DocumentLinkRepository, ID, validateDocumentLink } from "@/domain";
+import { DocumentLink, DocumentLinkMeta, DocumentLinkRepository, ID, NotFoundError, validateDocumentId, validateDocumentLink, validateDocumentLinkMeta } from "@/domain";
 import { aql, Database } from "arangojs";
 import { CollectionType, EdgeCollection } from "arangojs/collection";
 import { Document as ArangoDocument } from 'arangojs/documents';
+import { AlreadyExistsError } from "../usecases";
 import { ArangoDocumentRepository } from "./arango-document-repository";
 
 
@@ -44,6 +45,20 @@ export class ArangoDocumentLinkRepository implements DocumentLinkRepository {
 
 
   async link(from: ID, to: ID, meta: DocumentLinkMeta = {}) {
+    validateDocumentId(from);
+    validateDocumentId(to);
+    validateDocumentLinkMeta(meta);
+
+    const existingLink = await this.getLink(from, to).catch(error => {
+      if (error instanceof NotFoundError)
+        return undefined;
+      
+      throw error;
+    });
+
+    if (existingLink)
+      throw new AlreadyExistsError(`link from document ${from} to document ${to}`);
+
     const fromId = this.documents.getDatabaseId(from);
     const toId = this.documents.getDatabaseId(to);
 
@@ -66,6 +81,12 @@ export class ArangoDocumentLinkRepository implements DocumentLinkRepository {
 
 
   async unlink(from: ID, to: ID) {
+    validateDocumentId(from);
+    validateDocumentId(to);
+
+    // If the link isn't found it will throw NotFoundError
+    const existingLink = await this.getLink(from, to);
+
     const fromId = this.documents.getDatabaseId(from);
     const toId = this.documents.getDatabaseId(to);
 
@@ -87,6 +108,9 @@ export class ArangoDocumentLinkRepository implements DocumentLinkRepository {
 
 
   async getLink(from: ID, to: ID) {
+    validateDocumentId(from);
+    validateDocumentId(to);
+
     const fromId = this.documents.getDatabaseId(from);
     const toId = this.documents.getDatabaseId(to);
 
@@ -98,7 +122,12 @@ export class ArangoDocumentLinkRepository implements DocumentLinkRepository {
     `)
     .then(cursor => cursor.all())
     .then(values => values[0])
-    .then(doc => this.fromDocument(doc));
+    .then(doc => {
+      if (!doc)
+        throw new NotFoundError(`document link from ${from} to ${to}`);
+      
+      return this.fromDocument(doc);
+    });
 
     validateDocumentLink(link);
 
@@ -107,11 +136,13 @@ export class ArangoDocumentLinkRepository implements DocumentLinkRepository {
 
 
   async listLinks(from: ID) {
+    validateDocumentId(from);
+
     const fromId = this.documents.getDatabaseId(from);
 
     const links = await this.db.query(aql`
       FOR link IN ${this.collection}
-        FILTER link._from == ${fromId}
+        FILTER link._from == ${fromId} || link._to == ${fromId}
         RETURN link
     `)
     .then(cursor => cursor.all())
@@ -126,6 +157,10 @@ export class ArangoDocumentLinkRepository implements DocumentLinkRepository {
 
 
   async updateLink(from: ID, to: ID, meta: DocumentLinkMeta) {
+    validateDocumentId(from);
+    validateDocumentId(to);
+    validateDocumentLinkMeta(meta);
+
     const fromId = this.documents.getDatabaseId(from);
     const toId = this.documents.getDatabaseId(to);
 
@@ -135,12 +170,17 @@ export class ArangoDocumentLinkRepository implements DocumentLinkRepository {
         FILTER link._to == ${toId}
         UPDATE link WITH {
           meta: ${meta}
-        }
+        } IN ${this.collection}
         RETURN NEW
     `)
     .then(cursor => cursor.all())
     .then(values => values[0])
-    .then(doc => this.fromDocument(doc));
+    .then(doc => {
+      if (!doc)
+        throw new NotFoundError(`document link from ${from} to ${to}`);
+      
+      return this.fromDocument(doc);
+    });
 
     validateDocumentLink(link);
 

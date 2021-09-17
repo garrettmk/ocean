@@ -1,10 +1,13 @@
 import {
+  DocumentLinkMeta,
   validateAuthor,
   validateCreateAuthorInput,
   validateCreateDocumentInput,
   validateDocument,
   validateDocumentHeader,
+  validateDocumentId,
   validateDocumentLink,
+  validateDocumentLinkMeta,
   validateUpdateDocumentInput,
   ValidationError
 } from '@/domain';
@@ -77,6 +80,21 @@ describe('Testing validateCreateAuthorInput', () => {
     const testInput = { ...VALID_INPUT, name: value };
 
     expect(() => validateCreateAuthorInput(testInput)).toThrow(ValidationError.name);
+  });
+});
+
+
+describe('Testing validateDocumentId', () => {
+  const VALID_IDS = ['0', '1', 'one', 'two'];
+  
+  it.each(VALID_IDS)(`should not throw  an error if given valid id: %p`, value => {
+    expect.assertions(1);
+    expect(() => validateDocumentId(value)).not.toThrow();
+  });
+
+  it.each(INVALID_IDS)(`should throw ValidationError if given %p`, value => {
+    expect.assertions(1);
+    expect(() => validateDocumentId(value)).toThrow(ValidationError.name);
   });
 });
 
@@ -342,4 +360,21 @@ describe('Testing validateDocumentLink', () => {
 
     expect(() => validateDocumentLink(testValue)).toThrow(ValidationError.name);
   })
+});
+
+
+describe('Testing validateDocumentLinkMeta', () => {
+  const INVALID_METAS = [null, NaN, 0, 123, '', 'a string'];
+  const VALID_METAS = [{}, {a: 1}, {a: '1'}, {a: {}}];
+
+  it.each(VALID_METAS)(`should not throw an error when given %p`, value => {
+    expect.assertions(1);
+    expect(() => validateDocumentLinkMeta(value)).not.toThrow();
+  });
+
+
+  it.each(INVALID_METAS)(`should throw ValidationError when given %p`, value => {
+    expect.assertions(1);
+    expect(() => validateDocumentLinkMeta(value as unknown as DocumentLinkMeta)).toThrow(ValidationError.name);
+  });
 })

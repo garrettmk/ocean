@@ -1,6 +1,6 @@
 import { DocumentsGraphQLClient, UrqlGraphQLClient } from '@/client/interfaces';
-import { DefaultAnalysisManager, defaultAnalyzers, DefaultMigrationManager, defaultMigrations } from '@/documents';
-import { TestAuthenticator } from '@/test/__mocks__/test-authenticator';
+import { DefaultAnalysisManager, defaultAnalyzers, DefaultMigrationManager, defaultMigrations } from '@/content';
+import { TestAuthenticator } from '@/test/__utils__/test-authenticator';
 import { ChakraProvider } from '@chakra-ui/provider';
 import { extendTheme } from '@chakra-ui/react';
 import React from 'react';

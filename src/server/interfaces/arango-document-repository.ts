@@ -1,5 +1,6 @@
-import { Author, AuthorRepository, CreateDocumentInput, Document, DocumentHeader, DocumentRepository, ID, NotFoundError, UpdateDocumentInput, validateCreateDocumentInput, validateDocument, validateDocumentHeader, validateUpdateDocumentInput } from "@/domain";
+import { Author, AuthorRepository, CreateDocumentInput, Document, DocumentHeader, DocumentRepository, ID, NotFoundError, UpdateDocumentInput, validateCreateDocumentInput, validateDocument, validateDocumentHeader, validateDocumentId, validateUpdateDocumentInput } from "@/domain";
 import { aql, Database } from "arangojs";
+import { ArangoError } from "arangojs/error";
 import { CollectionType, DocumentCollection } from "arangojs/collection";
 import { Document as ArangoDocument } from 'arangojs/documents';
 
@@ -68,6 +69,8 @@ export class ArangoDocumentRepository implements DocumentRepository {
 
 
   async getById(id: ID) : Promise<Document> {
+    validateDocumentId(id);
+
     const documentId = this.getDatabaseId(id);
     const document = await this.db.query(aql`
       RETURN DOCUMENT(${documentId})
@@ -139,6 +142,7 @@ export class ArangoDocumentRepository implements DocumentRepository {
 
 
   async update(id: ID, input: UpdateDocumentInput) : Promise<Document> {
+    validateDocumentId(id);
     validateUpdateDocumentInput(input);
 
     const updates = Object.entries(input)
@@ -151,7 +155,11 @@ export class ArangoDocumentRepository implements DocumentRepository {
       RETURN NEW
     `)
     .then(cursor => cursor.all())
-    .then(values => this.fromDocument(values[0]));
+    .then(values => this.fromDocument(values[0]))
+    .catch(error => {
+      if (error instanceof ArangoError && error.code === 1202)
+        throw new NotFoundError(`document id ${id}`);
+    });
 
     validateDocument(document);
 
@@ -165,7 +173,11 @@ export class ArangoDocumentRepository implements DocumentRepository {
       RETURN OLD
     `)
     .then(cursor => cursor.all())
-    .then(values => this.fromDocument(values[0]));
+    .then(values => this.fromDocument(values[0]))
+    .catch(error => {
+      if (error instanceof ArangoError && error.code === 1202)
+        throw new NotFoundError(`document id ${id}`);
+    });
 
     validateDocument(document);
 

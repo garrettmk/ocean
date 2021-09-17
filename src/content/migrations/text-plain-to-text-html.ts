@@ -1,12 +1,10 @@
 import { textHTML, textPlain } from "../content-types";
-import { ContentTypeMigration } from "@/domain";
+import { ContentMigration } from "@/domain";
 
 
-export class TextPlainToTextHTML implements ContentTypeMigration {
-  public name = 'Plain text to HTML';
+export class TextPlainToTextHTML implements ContentMigration {
   public from = textPlain;
   public to = textHTML;
-
 
   async migrate(content: any) {
     return '' + content;

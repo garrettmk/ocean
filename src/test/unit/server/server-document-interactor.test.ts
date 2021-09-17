@@ -1,5 +1,5 @@
-import { ContentAnalysisManager } from "@/domain";
-import { DefaultAnalysisManager, defaultAnalyzers } from "@/documents";
+import { ContentAnalysisManager, NotImplementedError } from "@/domain";
+import { DefaultAnalysisManager, defaultAnalyzers } from "@/content";
 import { AuthorRepository, Document, DocumentLinkRepository, DocumentRepository, NotFoundError, UpdateDocumentInput, validateDocument, ValidationError } from "@/domain";
 import { MemoryAuthorRepository, MemoryDocumentLinkRepository, MemoryDocumentRepository, MemoryUserRepository } from "../../../server/interfaces";
 import { CreateDocumentInput, ServerDocumentInteractor, User, UserRepository } from "../../../server/usecases";
@@ -238,6 +238,27 @@ describe('Testing ServerDocumentInteractor', () => {
       const document = docs[0];
 
       await expect(interactor.deleteDocument('leia', document.id)).rejects.toBeInstanceOf(AuthorizationError);
+    })
+  });
+
+
+  describe('Testing getRecommendedLinks', () => {
+    it('should have written tests', () => {
+      throw new NotImplementedError();
+    });
+  });
+
+
+  describe('Testing linkDocuments()', () => {
+    it('should have written tests', () => {
+      throw new NotImplementedError();
+    });
+  });
+
+  
+  describe('Testing unlinkDocuments()', () => {
+    it('should have written tests', () => {
+      throw new NotImplementedError();
     })
   })
 });

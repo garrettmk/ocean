@@ -1,17 +1,19 @@
 import { AlreadyExistsError } from "@/server/usecases";
-import { ContentMigrationManager, ContentType, ContentTypeMigration, ContentTypeMigrationPath } from "@/domain";
+import { ContentMigrationManager, ContentType, ContentMigration, ContentMigrationPath, validateContentMigration, validateParsedContentType, validateContentMigrationPath } from "@/domain";
 
 
 export class DefaultMigrationManager implements ContentMigrationManager {
-  private migrations: ContentTypeMigration[];
+  private migrations: ContentMigration[];
 
 
-  constructor(migrations: ContentTypeMigration[] = []) {
+  constructor(migrations: ContentMigration[] = []) {
     this.migrations = migrations;
   }
 
 
-  async registerMigration(migration: ContentTypeMigration, replace: boolean = false) {
+  async registerMigration(migration: ContentMigration, replace: boolean = false) {
+    validateContentMigration(migration);
+
     const index = this.migrations.findIndex(m => this.isEqualMigration(m, migration));
     if (index >= 0 && !replace) {
       throw new AlreadyExistsError(`Migration from ${migration.from.value} to ${migration.to.value}`);
@@ -37,19 +39,22 @@ export class DefaultMigrationManager implements ContentMigrationManager {
 
 
   async getMigrationPaths(from: ContentType, to?: ContentType) {
+    validateParsedContentType(from);
+    to && validateParsedContentType(to);
+
     const initialMigrations = await this.listNextMigrations(from);
-    const initialPaths: ContentTypeMigrationPath[] = initialMigrations.map(m => ({
+    const initialPaths: ContentMigrationPath[] = initialMigrations.map(m => ({
       from,
       to: m.to,
       migrations: [m]
     }));
 
-    const recursivelyFollowPaths: (paths: ContentTypeMigrationPath[]) => Promise<ContentTypeMigrationPath[]> = async (paths: ContentTypeMigrationPath[]) => {
+    const recursivelyFollowPaths: (paths: ContentMigrationPath[]) => Promise<ContentMigrationPath[]> = async (paths: ContentMigrationPath[]) => {
       return (await Promise.all(paths.map(async path => {
         const nextMigrations = (await this.listNextMigrations(path.to))
           .filter(m => m.to.value !== from.value && !path.migrations.includes(m));
 
-        const nextPaths: ContentTypeMigrationPath[] = nextMigrations.map(m => ({
+        const nextPaths: ContentMigrationPath[] = nextMigrations.map(m => ({
           from: path.from,
           to: m.to,
           migrations: [...path.migrations, m]
@@ -72,7 +77,9 @@ export class DefaultMigrationManager implements ContentMigrationManager {
   }
 
 
-  async migrate(content: any, path: ContentTypeMigrationPath) {
+  async migrate(content: any, path: ContentMigrationPath) {
+    validateContentMigrationPath(path);
+    
     const newContent = await path.migrations.reduce(async (currentContent, migration) => {
       return await migration.migrate(await currentContent);
     }, content);
@@ -81,7 +88,7 @@ export class DefaultMigrationManager implements ContentMigrationManager {
   }
 
 
-  private isEqualMigration(m1: ContentTypeMigration, m2: ContentTypeMigration) : boolean {
+  private isEqualMigration(m1: ContentMigration, m2: ContentMigration) : boolean {
     return m1.from.value == m2.from.value && m1.to.value === m2.to.value;
   }
 }

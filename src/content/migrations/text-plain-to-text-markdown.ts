@@ -1,12 +1,10 @@
 import { textMarkdown, textPlain } from "../content-types";
-import { ContentTypeMigration } from '@/domain';
+import { ContentMigration } from '@/domain';
 
 
-export class TextPlainToTextMarkdown implements ContentTypeMigration {
-  public name = 'Plain text to Markdown';
+export class TextPlainToTextMarkdown implements ContentMigration {
   public from = textPlain;
   public to = textMarkdown;
-
 
   async migrate(content: any) {
     return '' + content;

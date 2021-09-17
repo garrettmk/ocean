@@ -10,8 +10,7 @@ export type ContentType = {
 }
 
 // A migration between content types
-export interface ContentTypeMigration {
-  name: string,
+export interface ContentMigration {
   from: ContentType,
   to: ContentType,
 
@@ -19,20 +18,20 @@ export interface ContentTypeMigration {
 }
 
 // Describes a list of migrations from one content type to another
-export type ContentTypeMigrationPath = {
+export type ContentMigrationPath = {
   from: ContentType,
   to: ContentType,
-  migrations: ContentTypeMigration[]
+  migrations: ContentMigration[]
 }
 
 
 // Manages migrations
 export interface ContentMigrationManager {
-  registerMigration(migration: ContentTypeMigration, replace?: boolean) : Promise<boolean>,
-  listAllMigrations() : Promise<ContentTypeMigration[]>,
-  listNextMigrations(from: ContentType) : Promise<ContentTypeMigration[]>,
-  getMigrationPaths(from: ContentType, to?: ContentType) : Promise<ContentTypeMigrationPath[]>,
-  migrate(content: any, path: ContentTypeMigrationPath, direction?: 'up' | 'down') : Promise<any> 
+  registerMigration(migration: ContentMigration, replace?: boolean) : Promise<boolean>,
+  listAllMigrations() : Promise<ContentMigration[]>,
+  listNextMigrations(from: ContentType) : Promise<ContentMigration[]>,
+  getMigrationPaths(from: ContentType, to?: ContentType) : Promise<ContentMigrationPath[]>,
+  migrate(content: any, path: ContentMigrationPath, direction?: 'up' | 'down') : Promise<any> 
 }
 
 // Content analysis
