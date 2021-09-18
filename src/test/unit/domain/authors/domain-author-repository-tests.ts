@@ -5,33 +5,30 @@ const INVALID_OBJECTS = [null, undefined, NaN, 0, 123, '', 'a string'];
 const INVALID_NAMES = [null, undefined, NaN, {}, [], 0, 123, ''];
 
 
-export type AuthorRepositoryTestConfig<T extends any> = {
+export type AuthorRepositoryTestConfig = {
   implementationName: string,
-  beforeAll?: () => Promise<T>,
-  beforeEach: (t?: T) => Promise<{
+  beforeEach: () => Promise<{
     repository: AuthorRepository
   }>,
+  afterEach: () => Promise<void>,
 }
 
 
-export function testAuthorRepository<T extends any>({
+export function testAuthorRepository({
   implementationName,
-  beforeAll: _beforeAll,
   beforeEach: _beforeEach,
-}: AuthorRepositoryTestConfig<T>) {
+  afterEach: _afterEach,
+}: AuthorRepositoryTestConfig) {
   describe(`Testing AuthorRepository implementation: ${implementationName}`, () => {
     let repository: AuthorRepository;
-    let beforeAllResult: any;
-
-    beforeAll(async () => {
-      if (_beforeAll)
-        beforeAllResult = await _beforeAll();
+    
+    beforeEach(async () => {
+      const result = await _beforeEach();
+      repository = result.repository;
     });
 
-
-    beforeEach(async () => {
-      const result = await _beforeEach(beforeAllResult);
-      repository = result.repository;
+    afterEach(async () => {
+      return _afterEach();
     });
 
     

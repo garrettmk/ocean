@@ -2,16 +2,18 @@ import { ArangoDocumentLinkRepository, ArangoDocumentRepository, MemoryAuthorRep
 import { TestArangoDb } from '../../__utils__/TestArangoDb';
 import { testDocumentLinkRepository } from "../domain/documents/domain-document-link-repository-tests";
 
+let db: TestArangoDb;
 
 testDocumentLinkRepository({
   implementationName: ArangoDocumentRepository.prototype.constructor.name,
 
-  beforeAll: async () => new TestArangoDb(),
+  beforeEach: async () => {
+    db = new TestArangoDb();
+    await db.initialize();
 
-  beforeEach: async (db) => {
     const authorRepository = new MemoryAuthorRepository();
     const documentRepository = new ArangoDocumentRepository(authorRepository, {
-      db: db!.db,
+      db: db.db!,
       collectionNames: {
         documents: 'documents'
       }
@@ -20,7 +22,7 @@ testDocumentLinkRepository({
     await documentRepository.initialize();
     
     const repository = new ArangoDocumentLinkRepository(documentRepository, {
-      db: db!.db,
+      db: db.db!,
       collectionNames: {
         documentLinks: 'documentLinks'
       }
@@ -33,8 +35,7 @@ testDocumentLinkRepository({
     }
   },
 
-  afterEach: async (db) => {
-    await db.emptyCollectionIfExists('documents');
-    await db.emptyCollectionIfExists('documentLinks');
+  afterEach: async () => {
+    await db.drop();
   }
 });

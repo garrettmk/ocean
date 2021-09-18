@@ -13,4 +13,5 @@ testUserRepository({
       repository
     };
   },
+  afterEach: async () => {}
 });

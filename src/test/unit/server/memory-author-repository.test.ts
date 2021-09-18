@@ -5,6 +5,7 @@ testAuthorRepository({
   implementationName: 'MemoryAuthorRepository',
   beforeEach: async () => ({
     repository: new MemoryAuthorRepository()
-  })
+  }),
+  afterEach: async () => {}
 });
 

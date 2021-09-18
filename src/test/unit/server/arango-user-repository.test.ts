@@ -4,17 +4,18 @@ import { Database } from "arangojs";
 import { testUserRepository } from "./server-user-repository-tests";
 
 
+let db: TestArangoDb;
+
 testUserRepository({
   implementationName: ArangoUserRepository.prototype.constructor.name,
   
-  beforeAll: async () => new TestArangoDb(),
-
-  beforeEach: async (db) => {
-    await db?.emptyCollectionIfExists('users');
-
+  beforeEach: async () => {
+    db = new TestArangoDb();
+    await db.initialize();
+    
     const authorRepository = new MemoryAuthorRepository();
     const repository = new ArangoUserRepository(authorRepository, {
-      db: db!.db,
+      db: db.db!,
       collectionNames: {
         users: 'users'
       }
@@ -27,4 +28,8 @@ testUserRepository({
       authorRepository
     }
   },
+
+  afterEach: async () => {
+    await db.drop();
+  }
 });

@@ -4,37 +4,34 @@ import { CreateUserInput, UserRepository, validateUser } from '../../../server/u
 const INVALID_IDS = [null, undefined, 0, '', 123, {}, []];
 
 
-export type UserRepositoryTestConfig<T extends any> = {
+export type UserRepositoryTestConfig= {
   implementationName: string,
-  beforeAll?: () => Promise<T>,
-  beforeEach: (t?: T) => Promise<{
+  beforeEach: () => Promise<{
     repository: UserRepository,
     authorRepository: AuthorRepository
-  }>
+  }>,
+  afterEach: () => Promise<void>,
 }
 
 
-export function testUserRepository<T extends any>({
+export function testUserRepository({
   implementationName,
-  beforeAll: _beforeAll,
-  beforeEach: _beforeEach
-}: UserRepositoryTestConfig<T>) {
+  beforeEach: _beforeEach,
+  afterEach: _afterEach,
+}: UserRepositoryTestConfig) {
   describe(`Testing UserRepository implementation: ${implementationName}`, () => {
-    let beforeAllResult: T;
     let repository: UserRepository;
     let authorRepository: AuthorRepository;
 
 
-    beforeAll(async () => {
-      if (_beforeAll)
-        beforeAllResult = await _beforeAll();
-    });
-
-
     beforeEach(async () => {
-      const result = await _beforeEach(beforeAllResult);
+      const result = await _beforeEach();
       repository = result.repository;
       authorRepository = result.authorRepository;
+    });
+
+    afterEach(async () => {
+      await _afterEach();
     });
 
 

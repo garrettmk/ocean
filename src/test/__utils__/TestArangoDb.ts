@@ -2,23 +2,23 @@ import { Database } from "arangojs";
 
 
 export class TestArangoDb {
-  public readonly db: Database;
   public readonly url: string = 'http://localhost:8529';
-  public readonly databaseName: string = 'test';
+  public db?: Database;
+
+  private sys: Database;
+  private dbName: string;
+
 
   constructor() {
-    this.db = new Database({
-      url: this.url,
-      databaseName: this.databaseName
-    });
+    this.dbName = `test-${new Date().getTime()}`;
+    this.sys = new Database({ url: this.url });
   }
 
+  async initialize() {
+    this.db = await this.sys.createDatabase(this.dbName);
+  }
 
-  async emptyCollectionIfExists(name: string) {
-    const collection = this.db.collection(name);
-    const collectionExists = await collection.exists();
-    if (collectionExists) {
-      await collection.truncate();
-    }
+  async drop() {
+    return this.sys.dropDatabase(this.dbName);
   }
 }
