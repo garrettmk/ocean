@@ -1,5 +1,5 @@
 import { MemoryDocumentLinkRepository } from "@/server/interfaces";
-import { testDocumentLinkRepository } from "../domain/domain-document-link-repository-tests";
+import { testDocumentLinkRepository } from "../domain/documents/domain-document-link-repository-tests";
 
 
 testDocumentLinkRepository({

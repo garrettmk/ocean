@@ -1,5 +1,5 @@
 import { ValidationError } from "@/domain";
-import { parseMIMEType } from "@/domain/domain-utils";
+import { parseMIMEType } from "@/domain";
 
 
 const VALID_MIME_TYPES = [

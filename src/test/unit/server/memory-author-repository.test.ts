@@ -1,5 +1,5 @@
 import { MemoryAuthorRepository } from '@/server/interfaces';
-import { testAuthorRepository } from '../domain/domain-author-repository-tests';
+import { testAuthorRepository } from '../domain/authors/domain-author-repository-tests';
 
 testAuthorRepository({
   implementationName: 'MemoryAuthorRepository',

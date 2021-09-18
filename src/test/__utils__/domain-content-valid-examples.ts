@@ -1,15 +1,9 @@
-import { parseContentType } from "@/content/utils/content-type-utils";
+import { parseContentType } from "@/content/utils";
 import { ContentType, ContentMigration, ContentMigrationPath, ContentAnalyzer } from "@/domain";
+import * as VALID from './domain-valid-examples';
 
 
-export const CONTENT_TYPES: string[] = [
-  'text/format-a',
-  'text/format-b;foo=bar',
-  'text/format-c',
-  'text/format-d;foo=bar-2'
-];
-
-export const PARSED_CONTENT_TYPES: ContentType[] = CONTENT_TYPES.map(parseContentType);
+export const PARSED_CONTENT_TYPES: ContentType[] = VALID.CONTENT_TYPES.map(parseContentType);
 
 export const CONTENT_MIGRATIONS: ContentMigration[] = [
   {
@@ -71,14 +65,14 @@ export const CONTENT_MIGRATION_PATHS: ContentMigrationPath[] = [
 
 export const CONTENT_ANALYZERS: ContentAnalyzer[] = [
   {
-    contentTypes: [CONTENT_TYPES[0]],
+    contentTypes: [VALID.CONTENT_TYPES[0]],
     analyze: jest.fn().mockReturnValue({
       subject: [],
       links: []
     })
   },
   {
-    contentTypes: [CONTENT_TYPES[3]],
+    contentTypes: [VALID.CONTENT_TYPES[3]],
     analyze: jest.fn().mockReturnValue({
       subject: [],
       links: []

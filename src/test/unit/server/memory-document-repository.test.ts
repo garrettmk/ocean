@@ -1,4 +1,4 @@
-import { testDocumentRepository } from "../domain/domain-document-repository-tests";
+import { testDocumentRepository } from "../domain/documents/domain-document-repository-tests";
 import { MemoryAuthorRepository, MemoryDocumentRepository } from "@/server/interfaces";
 import { AuthorRepository } from "@/domain";
 

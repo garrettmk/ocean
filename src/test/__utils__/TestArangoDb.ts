@@ -15,8 +15,9 @@ export class TestArangoDb {
 
 
   async emptyCollectionIfExists(name: string) {
-    const collection = await this.db.collection(name);
-    if (await collection.exists()) {
+    const collection = this.db.collection(name);
+    const collectionExists = await collection.exists();
+    if (collectionExists) {
       await collection.truncate();
     }
   }

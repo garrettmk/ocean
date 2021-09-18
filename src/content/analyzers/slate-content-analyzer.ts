@@ -1,12 +1,15 @@
 import { ContentAnalysis, ContentAnalyzer } from "@/domain";
-import { slate001, slate002 } from '../content-types';
-import { Editor, createEditor, Node, LinkElement } from "slate";
+import { createEditor, Node } from "slate";
+import { slateContentType, LinkElement } from "../content-types/content-type-slate";
+import { validateSlateContent } from "../validators";
 
 
 export class SlateContentAnalyzer implements ContentAnalyzer {
-  public contentTypes = [slate001.value, slate002.value];
+  public contentTypes = [slateContentType.value];
 
   async analyze(contentType: string, content: any) : Promise<ContentAnalysis> {
+    validateSlateContent(content);
+    
     const editor = createEditor();
     editor.children = content;
 

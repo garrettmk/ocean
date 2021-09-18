@@ -1,25 +1,19 @@
 import { ArangoAuthorRepository } from "@/server/interfaces";
-import { Database } from "arangojs";
-import { testAuthorRepository } from "../domain/domain-author-repository-tests";
+import { TestArangoDb } from "@/test/__utils__/TestArangoDb";
+import { testAuthorRepository } from "../domain/authors/domain-author-repository-tests";
 
 
 testAuthorRepository({
   implementationName: 'ArangoAuthorRepository',
 
-  beforeAll: async () => new Database({
-    url: 'http://localhost:8529',
-    databaseName: 'test'
-  }),
+  beforeAll: async () => new TestArangoDb(),
 
 
   beforeEach: async (db) => {
-    const collection = await db!.collection('authors');
-    if (await collection.exists()) {
-      await collection.truncate();
-    }
+    await db!.emptyCollectionIfExists('authors');
 
     const repository = new ArangoAuthorRepository({
-      db: db!,
+      db: db!.db,
       collectionNames: {
         authors: 'authors'
       }

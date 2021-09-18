@@ -1,5 +1,4 @@
-import { ID } from '@/domain';
-import { validate } from '@/domain/domain-utils';
+import { ID, validate } from '@/domain';
 import { object, pattern, refine, string, type } from 'superstruct';
 import { CreateUserInput, UpdateUserInput, User } from './server-user-models';
 

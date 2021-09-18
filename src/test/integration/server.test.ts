@@ -1,7 +1,6 @@
 import { DocumentHeader, NotFoundError, NotImplementedError, validateDocument, ValidationError, CreateDocumentInput } from "@/domain";
 import { AuthorizationError } from "@/client/interfaces";
 import { UpdateDocumentInput } from "@/server/usecases";
-import e from "cors";
 import { ServerTestHarness } from "../__utils__/server-test-harness";
 
 
