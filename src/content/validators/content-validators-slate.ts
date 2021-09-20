@@ -1,9 +1,9 @@
 import { validate } from '@/domain';
-import { object, literal, lazy, string, optional, boolean, array, enums, union } from 'superstruct';
+import { object, literal, lazy, string, optional, boolean, array, enums, union, type } from 'superstruct';
 import type { SlateContent } from '../content-types';
 
 
-const TextElementSchema = object({
+const TextElementSchema = type({
   text: string(),
   bold: optional(boolean()),
   italic: optional(boolean()),
@@ -13,11 +13,11 @@ const TextElementSchema = object({
 
 const ParagraphElementSchema = object({
   type: literal('paragraph'),
-  chilren: array(TextElementSchema),
+  children: array(TextElementSchema),
 });
 
 const HeadingElementSchema = object({
-  type: literal('paragraph'),
+  type: literal('heading'),
   level: enums([1, 2, 3, 4, 5, 6]),
   children: array(TextElementSchema),
 });

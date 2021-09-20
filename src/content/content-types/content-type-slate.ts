@@ -19,3 +19,4 @@ export type SlateElement = ParagraphElement | HeadingElement | LinkElement;
 export type SlateContent = SlateElement[];
 
 export const slateContentType = Object.freeze({ ...parseContentType('application/json;format=slate001'), name: 'Slate v1' });
+ 
