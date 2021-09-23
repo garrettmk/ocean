@@ -116,3 +116,34 @@ export function useContentEditableBehavior(embed: EmbeddedHTMLRef) {
     stop
   }), [isActive]);
 }
+
+
+export type DeleteElementBehavior = ReturnType<typeof useDeleteElementBehavior>;
+
+export function useDeleteElementBehavior(embed: EmbeddedHTMLRef, selection: SelectionBehavior) {
+  const [isActive, setIsActive] = React.useState(false);
+
+  const start = React.useCallback(() => {
+    setIsActive(true);
+    selection.start();
+  }, []);
+
+
+  const stop = React.useCallback(() => {
+    setIsActive(false);
+    selection.stop();
+  }, []);
+
+
+  React.useEffect(() => {
+    if (isActive && selection.selectedElement) {
+      selection.selectedElement.remove();
+    }
+  }, [selection.hoveredElement, isActive]);
+
+  return {
+    isActive,
+    start,
+    stop
+  };
+}

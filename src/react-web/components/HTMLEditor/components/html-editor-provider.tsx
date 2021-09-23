@@ -1,6 +1,6 @@
 import React from 'react';
 import { HTMLEditorContext } from "./html-editor-context";
-import { EmbeddedHTMLRef, useSelectionBehavior, useReplaceRootBehavior, useContentEditableBehavior } from "./html-editor-behaviors";
+import { EmbeddedHTMLRef, useSelectionBehavior, useReplaceRootBehavior, useContentEditableBehavior, useDeleteElementBehavior } from "./html-editor-behaviors";
 
 
 export type HTMLEditorProviderProps = React.PropsWithChildren<{
@@ -15,13 +15,15 @@ export function HTMLEditorProvider({
   const selection = useSelectionBehavior(embed);
   const replaceRoot = useReplaceRootBehavior(embed, selection);
   const contentEditable = useContentEditableBehavior(embed);
+  const deleteElement = useDeleteElementBehavior(embed, selection);
 
   const value = React.useMemo(() => ({
     embed,
     selection,
     replaceRoot,
-    contentEditable
-  }), [embed, selection, replaceRoot, contentEditable]);
+    contentEditable,
+    deleteElement
+  }), [embed, selection, replaceRoot, contentEditable, deleteElement]);
 
   return (
     <HTMLEditorContext.Provider value={value}>

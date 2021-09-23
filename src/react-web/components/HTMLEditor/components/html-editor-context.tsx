@@ -1,6 +1,6 @@
 import React from 'react';
 import {
-  ContentEditableBehavior, EmbeddedHTMLRef, ReplaceRootBehavior, SelectionBehavior
+  ContentEditableBehavior, DeleteElementBehavior, EmbeddedHTMLRef, ReplaceRootBehavior, SelectionBehavior
 } from './html-editor-behaviors';
 
 
@@ -9,6 +9,7 @@ export type HTMLEditorContextValue = {
   selection: SelectionBehavior,
   replaceRoot: ReplaceRootBehavior,
   contentEditable: ContentEditableBehavior
+  deleteElement: DeleteElementBehavior
 };
 
 // @ts-ignore
