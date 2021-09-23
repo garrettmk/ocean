@@ -21,6 +21,7 @@ function assertHasDocument(ctx: OpenDocumentContext) : asserts ctx is HasDocumen
 
 export type OpenDocumentEvent = 
   | { type: 'open', payload: ID }
+  | { type: 'import', payload: string }
   | { type: 'edit', payload: UpdateDocumentInput }
   | { type: 'save' };
   
@@ -32,7 +33,8 @@ export function makeOpenDocumentMachine(gateway: ClientDocumentsGateway) {
     states: {
       closed: {
         on: {
-          open: { target: 'opening' }
+          open: { target: 'opening' },
+          import: { target: 'importing' }
         }
       },
 
@@ -44,9 +46,18 @@ export function makeOpenDocumentMachine(gateway: ClientDocumentsGateway) {
         }
       },
 
+      importing: {
+        invoke: {
+          src: 'importDocument',
+          onDone: { target: 'open', actions: ['assignDocument'] },
+          onError: { target: 'closed', actions: ['assignError'] }
+        }
+      },
+
       open: {
         on: {
           open: { target: 'opening' },
+          import: { target: 'importing' },
           edit: { target: 'edited', actions: ['assignEdits'] }
         }
       },
@@ -55,7 +66,8 @@ export function makeOpenDocumentMachine(gateway: ClientDocumentsGateway) {
         on: {
           edit: { actions: ['assignEdits'] },
           save: { target: 'saving' },
-          open: { target: 'opening' }
+          open: { target: 'opening' },
+          import: { target: 'importing' },
         }
       },
 

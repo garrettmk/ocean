@@ -1,8 +1,8 @@
-import { Author, AuthorRepository, ID, NotFoundError } from "@/domain";
+import { Author, AuthorRepository, ID, NotFoundError, AlreadyExistsError } from "@/domain";
 import { aql, Database } from "arangojs";
 import { CollectionType, DocumentCollection } from "arangojs/collection";
 import { Document as ArangoDocument } from 'arangojs/documents';
-import { CreateUserInput, UpdateUserInput, User, UserRepository, validateUser, validateCreateUserInput, validateUpdateUserInput, AlreadyExistsError, validateUserId } from "../usecases";
+import { CreateUserInput, UpdateUserInput, User, UserRepository, validateUser, validateCreateUserInput, validateUpdateUserInput, validateUserId } from "../usecases";
 
 
 type DbUser = {

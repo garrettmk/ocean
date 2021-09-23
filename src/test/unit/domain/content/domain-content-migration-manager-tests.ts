@@ -1,5 +1,4 @@
-import { ContentMigration, ContentMigrationManager, ValidationError } from "@/domain";
-import { AlreadyExistsError } from "@/server/usecases";
+import { ContentMigration, ContentMigrationManager, ValidationError, AlreadyExistsError } from "@/domain";
 import * as INVALID from '@/test/__utils__/domain-content-invalid-examples';
 import * as VALID from '@/test/__utils__/domain-content-valid-examples';
 

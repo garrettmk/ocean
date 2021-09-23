@@ -1,13 +1,13 @@
-import React from 'react';
-import { useServices } from "@/react-web/services";
 import { makeBrowseDocumentsMachine } from "@/client/viewmodels";
+import { useServices } from "@/react-web/services";
+import { ChevronDownIcon } from '@chakra-ui/icons';
+import { Box, BoxProps, Button, Flex, Heading, Link, Menu, MenuButton, MenuItem, MenuList, Skeleton, Spinner, StackDivider, Text, VStack } from '@chakra-ui/react';
 import { useMachine } from '@xstate/react';
-import { Box, Button, Text, Link, VStack, StackDivider, Heading, Flex, ButtonGroup, IconButton, Skeleton, Spinner } from '@chakra-ui/react';
+import React from 'react';
 import { Link as RouterLink, useLocation, useRoute } from 'wouter';
-import { AddIcon } from '@chakra-ui/icons';
 
 
-export function DocumentList() {
+export function DocumentList(props: BoxProps) {
   const [location, setLocation] = useLocation();
   const services = useServices();
   const machine = React.useMemo(() => makeBrowseDocumentsMachine(services.documents), []);
@@ -16,6 +16,12 @@ export function DocumentList() {
 
   const createNewDocument = React.useCallback(async () => {
     const { id } = await services.documents.createDocument({});
+    setLocation(`/doc/${id}`);
+    send({ type: 'query' });
+  }, []);//
+
+  const importDocumentFromUrl = React.useCallback(async () => {
+    const { id } = await services.documents.importDocumentFromUrl('https://www.arangodb.com/docs/stable/aql/operations-search.html');
     setLocation(`/doc/${id}`);
     send({ type: 'query' });
   }, []);
@@ -27,6 +33,7 @@ export function DocumentList() {
     <Box
       minW='400px'
       p={8}
+      {...props}
     >
       <Heading
         fontSize='xl'
@@ -40,15 +47,21 @@ export function DocumentList() {
         mb={4}
       >
         {state.matches('loading') ? (
-          <Box flex='1 1 100%'>
+          <Box mr='auto'>
             <Spinner size='sm' color='GrayText'/>
           </Box>
         ) : (
-          <Text color='GrayText' flex='1 1 100%'>{docs.length} documents</Text>
+          <Text color='GrayText' mr='auto'>{docs.length} documents</Text>
         )}
-        <ButtonGroup size='sm' colorScheme='blackAlpha' isDisabled={state.matches('loading')}>
-          <IconButton aria-label='New document' icon={<AddIcon/>} onClick={createNewDocument}/>
-        </ButtonGroup>
+        <Menu>
+          <MenuButton as={Button} rightIcon={<ChevronDownIcon/>} colorScheme='blackAlpha'>
+            New
+          </MenuButton>
+          <MenuList>
+            <MenuItem onClick={createNewDocument}>Text Document</MenuItem>
+            <MenuItem onClick={importDocumentFromUrl}>Import from URL...</MenuItem>
+          </MenuList>
+        </Menu>
       </Flex>
 
       {state.matches('loading') && !docs.length ? (

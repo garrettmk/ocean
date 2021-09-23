@@ -14,6 +14,7 @@ export class TestClientGateway implements MockClientDocumentsGateway {
   public getRecommendedLinks: Mock;
   public linkDocuments: Mock;
   public unlinkDocuments: Mock;
+  public importDocumentFromUrl: Mock;
 
   constructor() {
     this.getDocument = jest.fn(() => { return new TestPromise<Document>(); });
@@ -24,6 +25,7 @@ export class TestClientGateway implements MockClientDocumentsGateway {
     this.getRecommendedLinks = jest.fn(() => { return new TestPromise<DocumentLink[]>(); });
     this.linkDocuments = jest.fn(() => { return new TestPromise<DocumentLink>(); });
     this.unlinkDocuments = jest.fn(() => { return new TestPromise<DocumentLink>(); });
+    this.importDocumentFromUrl = jest.fn(() => { return new TestPromise<Document>(); });
   }
 
   public getLastResult<T>(key: keyof MockClientDocumentsGateway) : T | undefined {
@@ -41,5 +43,6 @@ export class TestClientGateway implements MockClientDocumentsGateway {
     this.listDocuments.mockClear();
     this.linkDocuments.mockClear();
     this.unlinkDocuments.mockClear();
+    this.importDocumentFromUrl.mockClear();
   }
 }

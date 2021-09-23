@@ -1,5 +1,4 @@
-import { DocumentLink, DocumentLinkRepository, ID, DocumentLinkMeta, NotFoundError, validateDocumentId, validateDocumentLinkMeta, validateDocumentLink } from "@/domain";
-import { AlreadyExistsError } from "../usecases";
+import { DocumentLink, DocumentLinkRepository, ID, DocumentLinkMeta, NotFoundError, validateDocumentId, validateDocumentLinkMeta, validateDocumentLink, AlreadyExistsError } from "@/domain";
 
 
 export class MemoryDocumentLinkRepository implements DocumentLinkRepository {

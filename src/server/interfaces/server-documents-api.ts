@@ -85,6 +85,7 @@ export class ServerDocumentsApi {
           deleteDocument(id: ID!): Document!
           linkDocuments(fromId: ID!, toId: ID!, meta: JSON): DocumentLink!
           unlinkDocuments(fromId: ID!, toId: ID!): DocumentLink!
+          importDocumentFromUrl(url: String!): Document!
         }
 
         type Query {
@@ -152,6 +153,13 @@ export class ServerDocumentsApi {
             const { fromId, toId } = args;
 
             return this.interactor.unlinkDocuments(userId, fromId, toId);
+          },
+
+          importDocumentFromUrl: (root, args, context, info) => {
+            const userId = getAuthenticatedUserId(context);
+            const { url } = args;
+
+            return this.interactor.importDocumentFromUrl(userId, url);
           }
         }
       }

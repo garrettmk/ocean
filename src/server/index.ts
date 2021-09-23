@@ -1,8 +1,8 @@
 import { DefaultAnalysisManager, defaultAnalyzers } from '@/content';
+import { AlreadyExistsError } from '@/domain';
 import { Database } from 'arangojs';
-import { ArangoAuthorRepository, ArangoDocumentLinkRepository, ArangoDocumentRepository, ArangoUserRepository, MemoryDocumentLinkRepository } from './interfaces';
+import { ArangoAuthorRepository, ArangoDocumentLinkRepository, ArangoDocumentRepository, ArangoUserRepository } from './interfaces';
 import { OceanServer } from './ocean-server';
-import { AlreadyExistsError } from './usecases';
 export { AuthorizationError } from './usecases';
 
 const db = new Database({ url: 'http://localhost:8529', databaseName: 'ocean' });

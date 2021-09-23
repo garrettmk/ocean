@@ -1,14 +1,15 @@
-import { AuthorRepository, DocumentLinkRepository, DocumentRepository, ContentAnalysisManager } from "@/domain";
+import { AuthorRepository, ContentAnalysisManager, DocumentLinkRepository, DocumentRepository } from "@/domain";
 import cors from 'cors';
 import express, { Express } from 'express';
-import { graphqlHTTP, RequestInfo } from 'express-graphql';
-import { GraphQLError, formatError as defaultFormatError } from "graphql";
+import { graphqlHTTP } from 'express-graphql';
+import { formatError as defaultFormatError, GraphQLError } from "graphql";
 import { createServer, Server } from 'http';
 import morgan from 'morgan';
+import path from 'path';
 import { ServerApi } from "./interfaces";
 import { ServerApiContextMiddleware } from './middleware';
 import { ServerDocumentInteractor, ServerUserInteractor, UserRepository } from "./usecases";
-import path from 'path';
+
 
 export class OceanServer {
   private app: Express;
@@ -30,15 +31,17 @@ export class OceanServer {
     this.app.use(apiContext.middleware);
 
     // Specific assets are in the public folder
-    this.app.use('/public', express.static(__dirname + '/public'))
+    this.app.use('/public', express.static(__dirname + '/public'));
 
     // Route api requests through the GraphQL router
+    this.app.use(express.json({ limit: '1Mb' }));
     this.app.use('/graphql', graphqlHTTP({
       schema: serverApi.getSchema(),
       rootValue: undefined,
       context: apiContext.getContext,
       graphiql: true,
       customFormatErrorFn: this.formatError,
+      
     }));
 
     // All other requests get the SPA

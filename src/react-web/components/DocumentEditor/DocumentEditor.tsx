@@ -9,6 +9,7 @@ import { SlateEditor } from "../SlateEditor";
 import { TextPlainEditor } from "../TextPlainEditor";
 import { ApplicationJSONEditor } from "../ApplicationJSONEditor";
 import { RecommendedLinks } from "../RecommendedLinks";
+import { HTMLEditor } from "../HTMLEditor";
 
 
 export function DocumentEditor({
@@ -110,7 +111,8 @@ export function DocumentEditor({
     return {
       'text/plain': TextPlainEditor,
       'application/json': ApplicationJSONEditor,
-      'application/json;format=slate001': SlateEditor
+      'application/json;format=slate001': SlateEditor,
+      'text/html': HTMLEditor,
     }[contentType] ?? ApplicationJSONEditor;
   }, [document?.contentType]);
 

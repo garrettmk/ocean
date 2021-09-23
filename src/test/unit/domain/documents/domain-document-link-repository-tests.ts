@@ -1,7 +1,6 @@
 import * as VALID from '@/test/__utils__/domain-valid-examples';
 import * as INVALID from '@/test/__utils__/domain-invalid-examples';
-import { DocumentLink, DocumentLinkMeta, DocumentLinkRepository, ID, NotFoundError, ValidationError } from "@/domain";
-import { AlreadyExistsError } from "@/server/usecases";
+import { DocumentLink, DocumentLinkMeta, DocumentLinkRepository, ID, NotFoundError, ValidationError, AlreadyExistsError } from "@/domain";
 
 const optional = (values: any[]) => values.filter(v => v !== undefined);
 

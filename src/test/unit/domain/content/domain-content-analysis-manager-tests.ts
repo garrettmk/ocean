@@ -1,5 +1,4 @@
-import { ContentAnalysisManager, NotFoundError, ValidationError } from "@/domain";
-import { AlreadyExistsError } from "@/server/usecases";
+import { ContentAnalysisManager, NotFoundError, ValidationError, AlreadyExistsError } from "@/domain";
 import * as INVALID from '../../../__utils__/domain-content-invalid-examples';
 import * as VALID from '../../../__utils__/domain-content-valid-examples';
 

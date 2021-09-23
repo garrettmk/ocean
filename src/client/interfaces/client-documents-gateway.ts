@@ -9,5 +9,6 @@ export interface ClientDocumentsGateway {
   deleteDocument(id: ID) : Promise<Document>,
   getRecommendedLinks(id: ID) : Promise<DocumentGraph>,
   linkDocuments(from: ID, to: ID, meta?: DocumentLinkMeta) : Promise<DocumentLink>,
-  unlinkDocuments(from: ID, to: ID) : Promise<DocumentLink>
+  unlinkDocuments(from: ID, to: ID) : Promise<DocumentLink>,
+  importDocumentFromUrl(url: string) : Promise<Document>,
 }

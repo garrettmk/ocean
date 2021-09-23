@@ -1,8 +1,7 @@
-import { Document, DocumentGraph, DocumentHeader, DocumentLink, DocumentLinkRepository, DocumentRepository, ID, JSONSerializable, ContentAnalysisManager } from "@/domain";
+import { ContentAnalysisManager, Document, DocumentGraph, DocumentHeader, DocumentLink, DocumentLinkRepository, DocumentRepository, ID, JSONSerializable } from "@/domain";
+import { WebContentImporter } from "../interfaces/web-content-importer";
 import { AuthorizationError } from "./server-errors";
 import { UserRepository } from './server-user-models';
-import urlparse from 'url-parse';
-import { matches } from "lodash";
 
 
 export class ServerDocumentInteractor {
@@ -10,6 +9,7 @@ export class ServerDocumentInteractor {
   private users: UserRepository;
   private analysis: ContentAnalysisManager;
   private links: DocumentLinkRepository;
+  private importer: WebContentImporter;
 
 
   constructor(documents: DocumentRepository, users: UserRepository, analysis: ContentAnalysisManager, links: DocumentLinkRepository) {
@@ -17,6 +17,7 @@ export class ServerDocumentInteractor {
     this.users = users;
     this.analysis = analysis; 
     this.links = links;
+    this.importer = new WebContentImporter();
   }
 
 
@@ -140,6 +141,19 @@ export class ServerDocumentInteractor {
     const link = await this.links.unlink(fromId, toId);
 
     return link;
+  }
+
+
+  async importDocumentFromUrl(userId: ID, url: string) : Promise<Document> {
+    const user = await this.users.getById(userId);
+    const imported = await this.importer.importContent(url);
+    const document = await this.documents.create(user.author.id, {
+      title: imported.title ?? url,
+      contentType: 'text/html',
+      content: imported.content
+    });
+
+    return document;
   }
 }
 

@@ -1,16 +1,15 @@
-import { ServerUsersApi, ServerUsersApiContext } from "./server-users-api";
-import { ServerDocumentsApi, ServerDocumentsApiContext } from "./server-documents-api";
-import { ServerDocumentInteractor, ServerUserInteractor } from "../usecases";
-import { GraphQLSchema } from "graphql";
 import { mergeSchemas } from "@graphql-tools/merge";
+import { GraphQLSchema } from "graphql";
+import { ServerDocumentInteractor, ServerUserInteractor } from "../usecases";
 import { ServerDebugApi, ServerDebugApiContext } from "./server-debug-api";
+import { ServerDocumentsApi, ServerDocumentsApiContext } from "./server-documents-api";
+import { ServerUsersApi, ServerUsersApiContext } from "./server-users-api";
 
 
 export type ServerApiContext =
   ServerDebugApiContext &
   ServerUsersApiContext &
   ServerDocumentsApiContext;
-
 
 export class ServerApi {
   private debug: ServerDebugApi;

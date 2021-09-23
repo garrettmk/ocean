@@ -1,8 +1,7 @@
-import { DocumentLink, DocumentLinkMeta, DocumentLinkRepository, ID, NotFoundError, validateDocumentId, validateDocumentLink, validateDocumentLinkMeta } from "@/domain";
+import { DocumentLink, DocumentLinkMeta, DocumentLinkRepository, ID, NotFoundError, validateDocumentId, validateDocumentLink, validateDocumentLinkMeta, AlreadyExistsError } from "@/domain";
 import { aql, Database } from "arangojs";
 import { CollectionType, EdgeCollection } from "arangojs/collection";
 import { Document as ArangoDocument } from 'arangojs/documents';
-import { AlreadyExistsError } from "../usecases";
 import { ArangoDocumentRepository } from "./arango-document-repository";
 
 

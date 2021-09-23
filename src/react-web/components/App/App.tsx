@@ -18,11 +18,15 @@ export function App() {
   return (
     <Grid
       w='100vw'
-      h='100vh'
+      minH='100vh'
       templateColumns='400px 1fr'
       templateRows='1fr'
     >
-      <DocumentList/>
+      <DocumentList
+        alignSelf='start'
+        position='sticky'
+        top='0'
+      />
 
       <Switch>
         <Route path='/doc/:id' component={DocumentEditor}/>

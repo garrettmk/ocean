@@ -1,11 +1,7 @@
-import { ID, validateCreateDocumentInput, validateUpdateDocumentInput, CreateDocumentInput, DocumentLinkMeta } from "@/domain";
-import { ClientDocumentsGateway, AuthorizationError } from "@/client/interfaces";
-import { CombinedError } from "@urql/core";
+import { AuthorizationError, ClientDocumentsGateway } from "@/client/interfaces";
+import { CreateDocumentInput, DocumentLinkMeta, ID, NotFoundError, NotImplementedError, UpdateDocumentInput, validateCreateDocumentInput, validateUpdateDocumentInput, ValidationError } from "@/domain";
 import { DocumentNode, GraphQLError } from "graphql";
 import gql from "graphql-tag";
-import { NotFoundError, NotImplementedError, OceanError, ValidationError } from '@/domain';
-import e from "cors";
-import { UpdateDocumentInput } from "@/server/usecases";
 
 
 export interface GraphQLClient {
@@ -227,6 +223,31 @@ export class DocumentsGraphQLClient implements ClientDocumentsGateway {
       throw fromCombinedError(result.error);
 
     return result.data!.linkDocuments
+  }
+
+
+  async importDocumentFromUrl(url: string) {
+    const query = gql`
+      mutation($url: String!) {
+        importDocumentFromUrl(url: $url) {
+          id
+          title
+          author {
+            id
+            name
+          }
+          isPublic
+          contentType
+          content
+        }
+      }
+    `;
+
+    const result = await this.client.mutation(query, { url });
+    if (result.error)
+     throw fromCombinedError(result.error);
+
+    return result.data!.importDocumentFromUrl;
   }
 }
 

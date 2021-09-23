@@ -2,6 +2,7 @@ import { ID } from '@/domain'
 import { BaseEditor } from 'slate'
 import { ReactEditor } from 'slate-react'
 import { SlateElement, TextElement } from '@/content/content-types/content-type-slate';
+import React from 'react';
 
 
 declare module 'slate' {
@@ -18,5 +19,16 @@ declare module 'slate' {
     Element: SlateElement,
 
     Text: TextElement
+  }
+}
+
+
+declare global {
+  namespace JSX {
+    interface IntrinsicElements {
+    'embedded-html': React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLElement> & {
+        html: string
+      }
+    }
   }
 }
