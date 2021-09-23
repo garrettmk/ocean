@@ -1,5 +1,4 @@
-import { NotFoundError, validateContentAnalyzer, validateContentType, validateParsedContentType } from "@/domain";
-import { AlreadyExistsError } from "@/server/usecases";
+import { NotFoundError, validateContentAnalyzer, validateContentType, validateParsedContentType, AlreadyExistsError } from "@/domain";
 import { ContentAnalysisManager, ContentAnalyzer } from '@/domain';
 
 

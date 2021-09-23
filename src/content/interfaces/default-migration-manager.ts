@@ -1,5 +1,4 @@
-import { AlreadyExistsError } from "@/server/usecases";
-import { ContentMigrationManager, ContentType, ContentMigration, ContentMigrationPath, validateContentMigration, validateParsedContentType, validateContentMigrationPath } from "@/domain";
+import { ContentMigrationManager, ContentType, ContentMigration, ContentMigrationPath, validateContentMigration, validateParsedContentType, validateContentMigrationPath, AlreadyExistsError } from "@/domain";
 
 
 export class DefaultMigrationManager implements ContentMigrationManager {

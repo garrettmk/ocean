@@ -17,6 +17,7 @@ export class OceanError extends Error {
 
 export class NotImplementedError extends OceanError {};
 export class NotFoundError extends OceanError {};
+export class AlreadyExistsError extends OceanError {};
 
 export class ValidationError extends OceanError {
   public path: string[];
@@ -30,3 +31,4 @@ export class ValidationError extends OceanError {
     this.recieved = recieved;
   }
 };
+
