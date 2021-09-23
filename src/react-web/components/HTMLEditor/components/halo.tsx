@@ -19,8 +19,8 @@ export function Halo({
     <Portal>
       <Box
         position='absolute'
-        top={rect.top + 'px'}
-        left={rect.left + 'px'}
+        top={rect.top + window.scrollY + 'px'}
+        left={rect.left + window.scrollX + 'px'}
         width={rect.width + 'px'}
         height={rect.height + 'px'}
         pointerEvents='none'
