@@ -24,7 +24,6 @@ export interface DocumentRepository {
   listById(ids: ID[]) : Promise<DocumentHeader[]>,
   update(documentId: ID, input: UpdateDocumentInput) : Promise<Document>,
   delete(documentId: ID) : Promise<Document>,
-  
 }
 
 
@@ -53,7 +52,7 @@ export interface DocumentLinkRepository {
   getLink(from: ID, to: ID) : Promise<DocumentLink>,
   listLinks(center: ID) : Promise<DocumentLink[]>,
   updateLink(from: ID, to: ID, meta: DocumentLinkMeta) : Promise<DocumentLink>,
-  unlink(from: ID, to: ID) : Promise<DocumentLink>,  
+  unlink(from: ID, to: ID) : Promise<DocumentLink>,
 }
 
 

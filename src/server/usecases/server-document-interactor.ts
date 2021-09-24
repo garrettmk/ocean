@@ -80,6 +80,32 @@ export class ServerDocumentInteractor {
   }
 
 
+  async getDocumentGraph(userId: ID, documentId: ID, depth: number = 1) : Promise<DocumentGraph> {
+    const user = await this.users.getById(userId);
+    const document = await this.documents.getById(documentId);
+    const isGetGraphPermitted = 
+      document.author.id === user.author.id ||
+      document.isPublic;
+
+    if (!isGetGraphPermitted)
+      throw new AuthorizationError('You don\'t have permission to view this graph');
+
+    const recursivelyGetLinks: (id: ID) => Promise<DocumentLink[]> = async (id: ID) => {
+      const links = await this.links.listLinks(id);
+      const linkedIds = links.flatMap(link => [link.from, link.to]);
+      const linksFromLinkedIds = (await Promise.all(linkedIds.map(linkedId => recursivelyGetLinks(linkedId)))).flat();
+
+      return [...links, ...linksFromLinkedIds];
+    };
+
+    const links = await recursivelyGetLinks(documentId);
+    const documentIds = [documentId, ...links.map(link => link.from), ...links.map(link => link.to)];
+    const documents = await this.documents.listById(documentIds);
+    
+    return { documents, links };
+  }
+  
+
   async getRecommendedLinks(userId: ID, documentId: ID) : Promise<DocumentGraph> {
     const user = await this.users.getById(userId);
     const document = await this.documents.getById(documentId);
