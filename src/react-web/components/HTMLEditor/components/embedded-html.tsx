@@ -31,8 +31,11 @@ export const EmbeddedHTML = React.forwardRef<HTMLDivElement, EmbeddedHTMLProps>(
 
   // Update the shadow dom's inner html when the html prop changes
   React.useEffect(() => {
-    if (ref.current?.shadowRoot && html !== ref.current.shadowRoot.innerHTML)
-      ref.current.shadowRoot.innerHTML = html;
+    if (ref.current?.shadowRoot && html !== ref.current.shadowRoot.innerHTML) {
+      const template = document.createElement('template');
+      template.innerHTML = html;
+      ref.current.shadowRoot.replaceChildren(template.content);
+    }
   }, [html]);
 
   // Observe changes in the shadow dom
@@ -57,6 +60,9 @@ export const EmbeddedHTML = React.forwardRef<HTMLDivElement, EmbeddedHTMLProps>(
   }, [ref.current]);
 
   return (
-    <Box ref={ref} {...boxProps}/>
+    <Box 
+      ref={ref}
+      {...boxProps}
+    />
   );
 });

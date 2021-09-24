@@ -32,6 +32,7 @@ export function HTMLEditor({
           ref={ref}
           html={content}
           onChange={onChange}
+          overflow='auto'
         />
       </Grid>
     </HTMLEditorProvider>
