@@ -25,7 +25,6 @@ export class WebContentImporter {
 
     await this.resolveLinks(dom, url);
     await this.embedStyles(dom);
-    await this.replaceBody(dom);
     
     const content = await this.sanitizeDOM(dom);
     const title = await this.getTitle(dom);
@@ -81,7 +80,6 @@ export class WebContentImporter {
     return dp.sanitize(dom.serialize(), {
       ADD_ATTR: ['target'],
       WHOLE_DOCUMENT: true,
-      FORCE_BODY: true,
     });
   }
 
@@ -102,15 +100,6 @@ export class WebContentImporter {
       }
     }
     return rule;
-  }
-
-  private replaceBody(dom: JSDOM) {
-    const body = dom.window.document.body;
-    const wasBody = dom.window.document.createElement('div');
-    wasBody.id = 'was-body';
-    // @ts-ignore
-    wasBody.replaceChildren(...body.children);
-    body.prepend(wasBody);
   }
 }
 

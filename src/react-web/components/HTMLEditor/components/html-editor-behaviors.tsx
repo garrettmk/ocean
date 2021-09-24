@@ -82,7 +82,16 @@ export function useReplaceRootBehavior(embed: EmbeddedHTMLRef, selection: Select
 
   React.useEffect(() => {
     if (selection.selectedElement && isActive) {
-      embed.current?.shadowRoot!.querySelector('#was-body')?.replaceChildren(selection.selectedElement);
+      const shadowRoot = embed.current!.shadowRoot!;
+      const { selectedElement } = selection;
+      const keepTags = ['TITLE', 'STYLE'];
+
+      shadowRoot.appendChild(selectedElement);
+
+      Array.from(shadowRoot.children)
+        .filter(el => !(keepTags.includes(el.tagName) || el === selectedElement))
+        .forEach(el => el.remove());
+
       stop();
     }
   }, [selection.selectedElement, isActive]);
@@ -101,12 +110,20 @@ export function useContentEditableBehavior(embed: EmbeddedHTMLRef) {
   const [isActive, setIsActive] = React.useState(false);
   
   const start = React.useCallback(() => {
-    embed.current?.shadowRoot!.querySelector('#was-body')?.setAttribute('contenteditable', 'true');
+    const shadowRoot = embed.current!.shadowRoot!;
+
+    Array.from(shadowRoot.children)
+      .forEach(el => el.setAttribute('contenteditable', 'true'));
+
     setIsActive(true);
   }, []);
 
   const stop = React.useCallback(() => {
-    embed.current?.shadowRoot!.querySelector('#was-body')?.removeAttribute('contenteditable');
+    const shadowRoot = embed.current!.shadowRoot!;
+
+    Array.from(shadowRoot.children)
+      .forEach(el => el.removeAttribute('contenteditable'));
+
     setIsActive(false);
   }, []);
 
