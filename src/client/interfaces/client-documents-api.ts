@@ -226,6 +226,36 @@ export class DocumentsGraphQLClient implements ClientDocumentsGateway {
   }
 
 
+  async getDocumentGraph(id: ID, depth?: number) {
+    const query = gql`
+      query($id: ID!, $depth: Number) {
+        getDocumentGraph(id: $id, depth: $depth) {
+          documents {
+            id
+            author {
+              id
+              name
+            }
+            isPublic
+            title
+            contentType
+          }
+          links {
+            from
+            to
+            meta
+          }
+        }
+      }
+    `;
+
+    const result = await this.client.query(query, { id, depth });
+    if (result.error)
+      throw fromCombinedError(result.error);
+
+    return result.data!.getDocumentGraph;
+  }
+
   async importDocumentFromUrl(url: string) {
     const query = gql`
       mutation($url: String!) {

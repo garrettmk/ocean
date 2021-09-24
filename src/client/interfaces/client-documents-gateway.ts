@@ -11,4 +11,5 @@ export interface ClientDocumentsGateway {
   linkDocuments(from: ID, to: ID, meta?: DocumentLinkMeta) : Promise<DocumentLink>,
   unlinkDocuments(from: ID, to: ID) : Promise<DocumentLink>,
   importDocumentFromUrl(url: string) : Promise<Document>,
+  getDocumentGraph(id: ID, depth?: number) : Promise<DocumentGraph>,
 }

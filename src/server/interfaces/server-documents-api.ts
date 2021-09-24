@@ -86,6 +86,7 @@ export class ServerDocumentsApi {
           linkDocuments(fromId: ID!, toId: ID!, meta: JSON): DocumentLink!
           unlinkDocuments(fromId: ID!, toId: ID!): DocumentLink!
           importDocumentFromUrl(url: String!): Document!
+          getDocumentGraph(id: ID!, depth: Number): DocumentGraph!
         }
 
         type Query {
@@ -116,6 +117,13 @@ export class ServerDocumentsApi {
             const { id: documentId } = args;
 
             return this.interactor.getRecommendedLinks(userId!, documentId);
+          },
+
+          getDocumentGraph: (root, args, context, info) => {
+            const userId = getAuthenticatedUserId(context);
+            const { id, depth } = args;
+
+            return this.interactor.getDocumentGraph(userId, id, depth)
           }
         },
 
