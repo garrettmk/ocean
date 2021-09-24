@@ -9,13 +9,14 @@ export class TextToSlate implements ContentMigration {
 
 
   async migrate(content: any) {
-    validateTextContent(content);
+    const _content = content ?? '';
+    validateTextContent(_content);
 
     const slateContent: SlateContent = [
       {
         type: 'paragraph',
         children: [
-          { text: content }
+          { text: _content }
         ]
       }
     ];
