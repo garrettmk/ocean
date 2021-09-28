@@ -1,20 +1,13 @@
-import { makeBrowseDocumentsMachine } from '@/client/viewmodels';
-import { useServices } from '@/react-web/services';
-import { Box, Grid, GridItem } from '@chakra-ui/layout';
-import { useMachine } from '@xstate/react';
+import { Box, Divider, Grid } from '@chakra-ui/layout';
 import React from 'react';
-import { Route, Switch, useLocation } from 'wouter';
+import { Route, Switch } from 'wouter';
 import { DocumentEditor } from '../DocumentEditor';
+import { DocumentLinks } from '../DocumentLinks';
 import { DocumentList } from '../DocumentList';
+import { AppSidebar } from './components/app-sidebar';
 
 
 export function App() {
-  const services = useServices();
-  const browseMachine = React.useMemo(() => makeBrowseDocumentsMachine(services.documents), []);
-  const [state, send] = useMachine(browseMachine);
-  const docs = state.context.documents;
-  const [location, setLocation] = useLocation();
-  
   return (
     <Grid
       w='100vw'
@@ -22,12 +15,12 @@ export function App() {
       templateColumns='400px 1fr'
       templateRows='1fr'
     >
-      <DocumentList
-        alignSelf='start'
-        position='sticky'
-        top='0'
-      />
-
+      <AppSidebar>
+        <DocumentList/>
+        <Divider borderColor='gray.500' />
+        <DocumentLinks/>
+      </AppSidebar>
+      
       <Switch>
         <Route path='/doc/:id' component={DocumentEditor}/>
         <Route path='/' component={Box}/>
