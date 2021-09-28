@@ -86,13 +86,13 @@ export class ServerDocumentsApi {
           linkDocuments(fromId: ID!, toId: ID!, meta: JSON): DocumentLink!
           unlinkDocuments(fromId: ID!, toId: ID!): DocumentLink!
           importDocumentFromUrl(url: String!): Document!
-          getDocumentGraph(id: ID!, depth: Number): DocumentGraph!
         }
 
         type Query {
           listDocuments: [DocumentHeader!]!
           getDocument(id: ID!): Document!
           getRecommendedLinks(id: ID!) : DocumentGraph!
+          getDocumentGraph(id: ID!, depth: Int): DocumentGraph!
         }
       `,
 

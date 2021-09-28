@@ -90,12 +90,14 @@ export class ServerDocumentInteractor {
     if (!isGetGraphPermitted)
       throw new AuthorizationError('You don\'t have permission to view this graph');
 
-    const recursivelyGetLinks: (id: ID) => Promise<DocumentLink[]> = async (id: ID) => {
+    const recursivelyGetLinks: (id: ID, alreadyVisited?: DocumentLink[]) => Promise<DocumentLink[]> = async (id: ID, alreadyVisited: DocumentLink[] = []) => {
       const links = await this.links.listLinks(id);
-      const linkedIds = links.flatMap(link => [link.from, link.to]);
-      const linksFromLinkedIds = (await Promise.all(linkedIds.map(linkedId => recursivelyGetLinks(linkedId)))).flat();
+      const linksToVisit = links.filter(link => !alreadyVisited.find(l2 => l2.from === link.from && l2.to === link.to));
+      const nextAlreadyVisited = [...alreadyVisited, ...linksToVisit];
+      const linkedIds = linksToVisit.flatMap(link => [link.from, link.to]).filter(id2 => id2 !== id);
+      const linksFromLinkedIds = (await Promise.all(linkedIds.map(linkedId => recursivelyGetLinks(linkedId, nextAlreadyVisited)))).flat();
 
-      return [...links, ...linksFromLinkedIds];
+      return [...linksToVisit, ...linksFromLinkedIds];
     };
 
     const links = await recursivelyGetLinks(documentId);
