@@ -228,7 +228,7 @@ export class DocumentsGraphQLClient implements ClientDocumentsGateway {
 
   async getDocumentGraph(id: ID, depth?: number) {
     const query = gql`
-      query($id: ID!, $depth: Number) {
+      query($id: ID!, $depth: Int) {
         getDocumentGraph(id: $id, depth: $depth) {
           documents {
             id

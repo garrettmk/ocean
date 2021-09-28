@@ -1,4 +1,4 @@
-import { Document, DocumentHeader, DocumentLink } from '@/domain';
+import { Document, DocumentGraph, DocumentHeader, DocumentLink } from '@/domain';
 import { ClientDocumentsGateway } from "@/client/interfaces";
 import { TestPromise } from "./TestPromise";
 
@@ -15,6 +15,7 @@ export class TestClientGateway implements MockClientDocumentsGateway {
   public linkDocuments: Mock;
   public unlinkDocuments: Mock;
   public importDocumentFromUrl: Mock;
+  public getDocumentGraph: Mock;
 
   constructor() {
     this.getDocument = jest.fn(() => { return new TestPromise<Document>(); });
@@ -26,6 +27,7 @@ export class TestClientGateway implements MockClientDocumentsGateway {
     this.linkDocuments = jest.fn(() => { return new TestPromise<DocumentLink>(); });
     this.unlinkDocuments = jest.fn(() => { return new TestPromise<DocumentLink>(); });
     this.importDocumentFromUrl = jest.fn(() => { return new TestPromise<Document>(); });
+    this.getDocumentGraph = jest.fn(() => { return new TestPromise<DocumentGraph>(); });
   }
 
   public getLastResult<T>(key: keyof MockClientDocumentsGateway) : T | undefined {
@@ -44,5 +46,6 @@ export class TestClientGateway implements MockClientDocumentsGateway {
     this.linkDocuments.mockClear();
     this.unlinkDocuments.mockClear();
     this.importDocumentFromUrl.mockClear();
+    this.getDocumentGraph.mockClear();
   }
 }
