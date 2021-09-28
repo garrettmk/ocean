@@ -1,4 +1,4 @@
-import { DocumentGraph, ID } from "@/domain";
+import { DocumentGraph, DocumentLink, ID, ValidationError } from "@/domain";
 import { assign, createMachine } from "xstate";
 import { ClientDocumentsGateway } from "../interfaces";
 
@@ -19,43 +19,67 @@ export type DocumentGraphodelStates = {
 };
 
 
-export type DocumentGraphodelEvent =
-  { type: 'fetch', payload: ID };
+export type GetDocumentGraphEvent = { type: 'getDocumentGraph', payload: ID };
+export type AddDocumentLinkEvent = { type: 'addLink', payload: DocumentLink };
 
+export type DocumentGraphModelEvent = GetDocumentGraphEvent | AddDocumentLinkEvent;
 
-export function makeDocumentGraphodel(gateway: ClientDocumentsGateway) {
-  return createMachine<DocumentGraphodelContext, DocumentGraphodelEvent>({
+export function makeDocumentGraphModel(gateway: ClientDocumentsGateway) {
+  return createMachine<DocumentGraphodelContext, DocumentGraphModelEvent>({
     id: 'document-graph',
-    initial: 'loading',
+    initial: 'idle',
     context: {},
     states: {
       idle: {
         on: {
-          fetch: { target: 'loading' }
+          getDocumentGraph: { target: 'loading.documentGraph' },
+          addLink: { target: 'loading.addLink' },
         }
       },
 
       loading: {
-        invoke: {
-          src: 'getDocumentGraph',
-          onDone: { target: 'idle', actions: ['assignGraph'] },
-          onError: { target: 'error', actions: ['assignError'] }
+        states: {
+          documentGraph: {
+            invoke: {
+              src: 'getDocumentGraph',
+              onDone: { target: '#document-graph.idle', actions: ['assignGraph'] },
+              onError: { target: '#document-graph.error', actions: ['assignError'] }
+            }
+          },
+
+          addLink: {
+            invoke: {
+              src: 'addLink',
+              onDone: { target: '#document-graph.idle', actions: ['assignNewLink'] },
+              onError: { target: '#document-graph.error', actions: ['assignError'] }
+            }
+          }
         }
       },
       
       error: {
         on: {
-          fetch: { target: 'loading' }
+          getDocumentGraph: { target: 'loading.documentGraph' },
+          addLink: { target: 'loading.addLink' }
         }
       }
     }
   }, {
     services: {
       async getDocumentGraph(context, event) {
+        assertFetchEvent(event);
         const id = event.payload;
 
         return await gateway.getDocumentGraph(id);
       },
+
+      async addLink(context, event) {
+        assertAddLinkEvent(event);
+        const { from, to, meta } = event.payload;
+
+        return await gateway.linkDocuments(from, to, meta);
+      }
+
     },
 
     actions: {
@@ -67,7 +91,22 @@ export function makeDocumentGraphodel(gateway: ClientDocumentsGateway) {
       assignError: assign({
         // @ts-ignore
         error: (context, event) => event.error
+      }),
+
+      assignNewLink: assign({
+
       })
     }
   })
+}
+
+
+function assertFetchEvent(event: DocumentGraphModelEvent) : asserts event is GetDocumentGraphEvent {
+  if (event.type !== 'getDocumentGraph')
+    throw new ValidationError('Not a fetch event.', ['event', 'type'], 'fetch', event.type);
+}
+
+function assertAddLinkEvent(event: DocumentGraphModelEvent) : asserts event is AddDocumentLinkEvent {
+  if (event.type !== 'addLink')
+    throw new ValidationError('Wrong event type', ['event', 'type'], 'addLink', event.type);
 }
