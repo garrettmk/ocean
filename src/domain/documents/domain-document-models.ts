@@ -19,9 +19,7 @@ export interface Document extends DocumentHeader {
 export interface DocumentRepository {
   create(authorId: ID, input: CreateDocumentInput) : Promise<Document>,
   getById(documentId: ID) : Promise<Document>,
-  listByAuthor(authorId: ID) : Promise<DocumentHeader[]>,
-  listPublic() : Promise<DocumentHeader[]>,
-  listById(ids: ID[]) : Promise<DocumentHeader[]>,
+  query(query: DocumentQuery) : Promise<DocumentHeader[]>,
   update(documentId: ID, input: UpdateDocumentInput) : Promise<Document>,
   delete(documentId: ID) : Promise<Document>,
 }
@@ -45,6 +43,14 @@ type UpdateInput = {
 export type CreateDocumentInput = CreateInput | (CreateInput & ContentInput);
 
 export type UpdateDocumentInput = UpdateInput | (UpdateInput & ContentInput);
+
+export type DocumentQuery = {
+  id?: ID[],
+  authorId?: ID[],
+  isPublic?: boolean,
+  title?: string[],
+  contentType?: string[]
+}
 
 
 export interface DocumentLinkRepository {

@@ -185,13 +185,21 @@ export function testDocumentRepository<T extends any>({
         await expect(repository.getById(document.id)).resolves.toMatchObject(document);
       });
     });
-  
-  
-    describe('Testing listByAuthor()', () => {
+
+
+    describe('Testing query()', () => {
       beforeEach(async () => {
         await populate();
       });
-  
+
+      it('should return a valid DocumentHeader if given a valid id', async () => {
+        expect.assertions(1);
+        const document = documents[0];
+        const { content, ...documentHeader } = document;
+    
+        await expect(repository.query({ id: [document.id] })).resolves.toMatchObject([documentHeader]);
+      });
+
       it('should return all documents by the given author', async () => {
         expect.assertions(1);
         const { author } = documents[0];
@@ -199,25 +207,18 @@ export function testDocumentRepository<T extends any>({
           .filter(doc => doc.author.id === author.id)
           .map(({ content, ...header }) => header);
     
-        const result = await repository.listByAuthor(author.id);
+        const result = await repository.query({ authorId: [author.id] });
 
         expect(result.sort(sortById)).toMatchObject(expected.sort(sortById));
       });
-    })
-  
-  
-    describe('Testing listPublic()', () => {
-      beforeEach(async () => {
-        await populate();
-      });
-  
+
       it('should return only public documents', async () => {
         expect.assertions(1);
         const expected = documents
           .filter(doc => doc.isPublic)
           .map(({ content, ...header }) => header);
 
-        const result = await repository.listPublic();
+        const result = await repository.query({ isPublic: true });
 
         expect(result.sort(sortById)).toMatchObject(expected.sort(sortById));
       });

@@ -1,4 +1,4 @@
-import { Document, CreateDocumentInput, DocumentRepository, ID, UpdateDocumentInput, NotImplementedError, NotFoundError, ValidationError, validateCreateDocumentInput, validateDocument, validateUpdateDocumentInput, DocumentHeader } from "@/domain";
+import { Document, CreateDocumentInput, DocumentRepository, ID, UpdateDocumentInput, NotImplementedError, NotFoundError, ValidationError, validateCreateDocumentInput, validateDocument, validateUpdateDocumentInput, DocumentHeader, DocumentQuery, validateDocumentQuery } from "@/domain";
 import { AuthorRepository } from "src/domain";
 
 
@@ -53,18 +53,22 @@ export class MemoryDocumentRepository implements DocumentRepository {
   }
 
 
-  async listByAuthor(authorId: ID) {
-    return Object.values(this.docs).filter(doc => doc.author.id === authorId);
-  }
+  async query(query: DocumentQuery) {
+    validateDocumentQuery(query);
 
-  
-  async listPublic() {
-    return Object.values(this.docs).filter(doc => doc.isPublic);
-  }
+    let results = Object.values(this.docs);
+    if ('id' in query)
+      results = results.filter(doc => query.id?.includes(doc.id));
+    if ('authorId' in query)
+      results = results.filter(doc => query.authorId?.includes(doc.author.id));
+    if ('isPublic' in query)
+      results = results.filter(doc => Boolean(doc.isPublic) === query.isPublic);
+    if ('title' in query)
+      results = results.filter(doc => query.title?.reduce((result, keyword) => result || doc.title.includes(keyword), false as boolean));
+    if ('contentType' in query)
+      results = results.filter(doc => query.contentType?.includes(doc.contentType));
 
-
-  async listById(ids: ID[]) : Promise<DocumentHeader[]> {
-    return Object.values(this.docs).filter(doc => ids.includes(doc.id));
+    return results.map(({ content, ...header }) => header);
   }
 
 

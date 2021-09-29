@@ -1,4 +1,4 @@
-import { Author, AuthorRepository, CreateDocumentInput, Document, DocumentHeader, DocumentRepository, ID, NotFoundError, UpdateDocumentInput, validateCreateDocumentInput, validateDocument, validateDocumentHeader, validateDocumentId, validateUpdateDocumentInput } from "@/domain";
+import { Author, AuthorRepository, CreateDocumentInput, Document, DocumentHeader, DocumentQuery, DocumentRepository, ID, NotFoundError, UpdateDocumentInput, validateCreateDocumentInput, validateDocument, validateDocumentHeader, validateDocumentId, validateDocumentQuery, validateUpdateDocumentInput } from "@/domain";
 import { aql, Database } from "arangojs";
 import { ArangoError } from "arangojs/error";
 import { CollectionType, DocumentCollection } from "arangojs/collection";
@@ -89,46 +89,27 @@ export class ArangoDocumentRepository implements DocumentRepository {
   }
 
 
-  async listByAuthor(authorId: ID) : Promise<DocumentHeader[]> {
-    const author = await this.authors.getById(authorId);
+  async query(query: DocumentQuery) : Promise<DocumentHeader[]> {
+    validateDocumentQuery(query);
+
+    const filters = [];
+    if ('id' in query)
+      filters.push(aql`FILTER POSITION(${query.id}, doc._key)`);
+    if ('authorId' in query)
+      filters.push(aql`FILTER POSITION(${query.authorId}, doc.authorId)`);
+    if ('isPublic' in query)
+      filters.push(aql`FILTER TO_BOOL(doc.isPublic) == ${Boolean(query.isPublic)}`);
+    if ('title' in query)
+      filters.push(aql`FILTER ${query.title?.map(keyword => aql`CONTAINS(doc.title, ${keyword})`).reduce((res, cur) => aql`${res} || ${cur}`)}`);
+    if ('contentType' in query)
+      filters.push(aql`FILTER POSITION(${query.contentType}, doc.contentType)`);
+
+    const allFilters = filters.reduce((res, cur) => aql`${res}${cur}\n`, aql``);
+
     const documents = await this.db.query(aql`
       FOR doc IN ${this.collection}
-        FILTER doc.authorId == ${authorId}
+        ${allFilters}
         RETURN UNSET(doc, 'content')
-    `)
-    .then(cursor => cursor.all())
-    .then(values => values.map(async value => {
-      const doc = await this.fromDocument(value, author);
-      validateDocument(doc);
-      return doc;
-    }));
-
-    return Promise.all(documents);
-  }
-
-
-  async listPublic() : Promise<DocumentHeader[]> {
-    const documents = await this.db.query(aql`
-      FOR doc IN ${this.collection}
-        FILTER doc.isPublic
-        RETURN UNSET(doc, 'content')
-    `)
-    .then(cursor => cursor.all())
-    .then(values => values.map(async value => {
-      const doc = await this.fromDocument(value);
-      validateDocumentHeader(doc);
-      return doc;
-    }));
-
-    return Promise.all(documents);
-  }
-
-
-  async listById(ids: ID[]) : Promise<DocumentHeader[]> {
-    const documents = await this.db.query(aql`
-    FOR doc IN ${this.collection}
-    FILTER POSITION(${ids}, doc._key)
-    RETURN UNSET(doc, 'content')
     `)
     .then(cursor => cursor.all())
     .then(values => values.map(async value => {

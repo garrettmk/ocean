@@ -1,4 +1,5 @@
 import { array, assign, boolean, object, optional, record, string, type, union, unknown } from 'superstruct';
+import { DocumentQuery } from '.';
 import { AuthorSchema } from '../authors';
 import { ContentTypeSchema, ID, IDSchema, JSONSerializableSchema, NonEmptyStringSchema, validate } from "../common";
 import { CreateDocumentInput, Document, DocumentGraph, DocumentHeader, DocumentLink, DocumentLinkMeta, UpdateDocumentInput } from './domain-document-models';
@@ -73,6 +74,19 @@ const UpdateDocumentInputSchema = union([
 export function validateUpdateDocumentInput(value: any) : asserts value is UpdateDocumentInput {
   validate(value, UpdateDocumentInputSchema);
 };
+
+
+const DocumentQuerySchema = object({
+  id: optional(array(IDSchema)),
+  authorId: optional(array(IDSchema)),
+  isPublic: optional(boolean()),
+  title: optional(array(NonEmptyStringSchema)),
+  contentType: optional(array(ContentTypeSchema))
+});
+
+export function validateDocumentQuery(value: any) : asserts value is DocumentQuery {
+  validate(value, DocumentQuerySchema);
+}
 
 
 const DocumentLinkMetaSchema = record(string(), JSONSerializableSchema);

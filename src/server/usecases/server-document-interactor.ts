@@ -32,9 +32,9 @@ export class ServerDocumentInteractor {
   async listDocuments(userId?: ID) : Promise<DocumentHeader[]> {
     const user = userId && await this.users.getById(userId);
     if (user)
-      return await this.documents.listByAuthor(user.author.id);
+      return await this.documents.query({ authorId: [user.author.id] });
     else
-      return await this.documents.listPublic();
+      return await this.documents.query({ isPublic: true });
   }
 
 
@@ -102,7 +102,7 @@ export class ServerDocumentInteractor {
 
     const links = await recursivelyGetLinks(documentId);
     const documentIds = [documentId, ...links.map(link => link.from), ...links.map(link => link.to)];
-    const documents = await this.documents.listById(documentIds);
+    const documents = await this.documents.query({ id: documentIds });
     
     return { documents, links };
   }
@@ -123,7 +123,7 @@ export class ServerDocumentInteractor {
       .filter(matches => matches?.[1])
       .map(matches => matches![1]);
 
-    const linkedDocuments = await this.documents.listById(linkedIds);
+    const linkedDocuments = await this.documents.query({ id: linkedIds });
 
     const graph: DocumentGraph = {
       documents: [documentHeader, ...linkedDocuments],
