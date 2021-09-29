@@ -1,8 +1,8 @@
-import { Document, DocumentHeader, CreateDocumentInput, UpdateDocumentInput, ID, DocumentLink, DocumentLinkMeta, DocumentGraph } from '@/domain';
+import { Document, DocumentHeader, CreateDocumentInput, UpdateDocumentInput, ID, DocumentLink, DocumentLinkMeta, DocumentGraph, DocumentQuery } from '@/domain';
 
 
 export interface ClientDocumentsGateway {
-  listDocuments() : Promise<DocumentHeader[]>,
+  listDocuments(query?: Omit<DocumentQuery, 'authorId'>) : Promise<DocumentHeader[]>,
   getDocument(id: ID) : Promise<Document>,
   createDocument(input: CreateDocumentInput) : Promise<Document>,
   updateDocument(id: ID, input: UpdateDocumentInput) : Promise<Document>,

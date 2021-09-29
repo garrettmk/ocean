@@ -1,5 +1,5 @@
 import { AuthorizationError, ClientDocumentsGateway } from "@/client/interfaces";
-import { CreateDocumentInput, DocumentLinkMeta, ID, NotFoundError, NotImplementedError, UpdateDocumentInput, validateCreateDocumentInput, validateUpdateDocumentInput, ValidationError } from "@/domain";
+import { CreateDocumentInput, DocumentLinkMeta, DocumentQuery, ID, NotFoundError, NotImplementedError, UpdateDocumentInput, validateCreateDocumentInput, validateUpdateDocumentInput, ValidationError } from "@/domain";
 import { DocumentNode, GraphQLError } from "graphql";
 import gql from "graphql-tag";
 
@@ -30,10 +30,10 @@ export class DocumentsGraphQLClient implements ClientDocumentsGateway {
   }
 
   
-  async listDocuments() {
-    const query = gql`
-      query {
-        listDocuments {
+  async listDocuments(query: Omit<DocumentQuery, 'authorId'> = {}) {
+    const _query = gql`
+      query($query: DocumentQuery) {
+        listDocuments(query: $query) {
           id
           title
           author {
@@ -46,7 +46,7 @@ export class DocumentsGraphQLClient implements ClientDocumentsGateway {
       }
     `;
 
-    const result = await this.client.query(query);
+    const result = await this.client.query(_query, { query });
     if (result.error)
       throw fromCombinedError(result.error);
 

@@ -1,4 +1,4 @@
-import { DocumentHeader } from '@/domain';
+import { DocumentHeader, DocumentQuery } from '@/domain';
 import { ClientDocumentsGateway } from '@/client/interfaces';
 import { createMachine, assign, ErrorPlatformEvent } from 'xstate';
 
@@ -19,7 +19,7 @@ export type BrowseDocumentsStates = {
 
 
 export type BrowseDocumentsEvent =
-  { type: 'query' };
+  { type: 'query', payload?: Omit<DocumentQuery, 'authorId'> };
 
 
 export function makeBrowseDocumentsMachine(gateway: ClientDocumentsGateway) {
@@ -56,7 +56,8 @@ export function makeBrowseDocumentsMachine(gateway: ClientDocumentsGateway) {
   }, {
     services: {
       async listDocuments(context, event) {
-        return await gateway.listDocuments();
+        const query = event.payload;
+        return await gateway.listDocuments(query);
       }
     },
 

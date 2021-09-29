@@ -56,6 +56,13 @@ export class ServerDocumentsApi {
           content: JSON
         }
 
+        input DocumentQuery {
+          id: [ID!],
+          isPublic: Boolean,
+          title: [String!],
+          contentType: [String!]
+        }
+
         type DocumentLink {
           from: ID!
           to: ID!
@@ -89,7 +96,7 @@ export class ServerDocumentsApi {
         }
 
         type Query {
-          listDocuments: [DocumentHeader!]!
+          listDocuments(query: DocumentQuery): [DocumentHeader!]!
           getDocument(id: ID!): Document!
           getRecommendedLinks(id: ID!) : DocumentGraph!
           getDocumentGraph(id: ID!, depth: Int): DocumentGraph!
@@ -102,7 +109,9 @@ export class ServerDocumentsApi {
         Query: {
           listDocuments: (root, args, context, info) => {
             const { userId } = context();
-            return this.interactor.listDocuments(userId);
+            const { query } = args;
+
+            return this.interactor.listDocuments(userId, query);
           },
 
           getDocument: (root, args, context, info) => {

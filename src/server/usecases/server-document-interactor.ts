@@ -1,4 +1,4 @@
-import { ContentAnalysisManager, Document, DocumentGraph, DocumentHeader, DocumentLink, DocumentLinkRepository, DocumentRepository, ID, JSONSerializable } from "@/domain";
+import { ContentAnalysisManager, Document, DocumentGraph, DocumentHeader, DocumentLink, DocumentLinkRepository, DocumentQuery, DocumentRepository, ID, JSONSerializable } from "@/domain";
 import { WebContentImporter } from "../interfaces/web-content-importer";
 import { AuthorizationError } from "./server-errors";
 import { UserRepository } from './server-user-models';
@@ -29,12 +29,12 @@ export class ServerDocumentInteractor {
   }
 
 
-  async listDocuments(userId?: ID) : Promise<DocumentHeader[]> {
+  async listDocuments(userId?: ID, query: Omit<DocumentQuery, 'authorId'> = {}) : Promise<DocumentHeader[]> {
     const user = userId && await this.users.getById(userId);
     if (user)
-      return await this.documents.query({ authorId: [user.author.id] });
+      return await this.documents.query({ ...query, authorId: [user.author.id] });
     else
-      return await this.documents.query({ isPublic: true });
+      return await this.documents.query({ ...query, isPublic: true });
   }
 
 
