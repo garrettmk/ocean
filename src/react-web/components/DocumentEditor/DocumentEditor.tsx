@@ -10,12 +10,14 @@ import { TextPlainEditor } from "../TextPlainEditor";
 import { ApplicationJSONEditor } from "../ApplicationJSONEditor";
 import { RecommendedLinks } from "../RecommendedLinks";
 import { HTMLEditor } from "../HTMLEditor";
+import { DocumentRouteParams } from "@/react-web/config/routes";
+import { DocumentGraphView } from "../DocumentGraphView";
 
 
 export function DocumentEditor({
-  params: { id }
+  params: { id, view }
 }: {
-  params: { id: string }
+  params: DocumentRouteParams
 }) : JSX.Element {
   const services = useServices();
   const machine = React.useMemo(() => makeOpenDocumentMachine(services.documents), []);
@@ -158,10 +160,14 @@ export function DocumentEditor({
 
       <RecommendedLinks/>
 
-      <ContentEditorComponent
-        content={document?.content as string}
-        onChange={setContent}
-      />
+      {view === 'graph' ? (
+        <DocumentGraphView id={id}/>
+      ) : (
+        <ContentEditorComponent
+          content={document?.content as string}
+          onChange={setContent}
+        />
+      )}
 
     </Grid>
   )

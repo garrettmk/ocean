@@ -1,2 +1,2 @@
 export * from './api';
-export * from './routes';
+export * as routes from './routes';

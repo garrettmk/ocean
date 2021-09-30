@@ -1,4 +1,5 @@
 import { makeBrowseDocumentsMachine } from "@/client/viewmodels";
+import { createDocumentRoute } from "@/react-web/config/routes";
 import { useServices } from "@/react-web/services";
 import { ChevronDownIcon } from '@chakra-ui/icons';
 import { Box, BoxProps, Button, Flex, Heading, Link, Menu, MenuButton, MenuItem, MenuList, Skeleton, Spinner, StackDivider, Text, VStack } from '@chakra-ui/react';
@@ -17,7 +18,7 @@ export function DocumentList(props: BoxProps) {
 
   const createNewDocument = React.useCallback(async () => {
     const { id } = await services.documents.createDocument({});
-    setLocation(`/doc/${id}`);
+    setLocation(createDocumentRoute(id));
     send({ type: 'query' });
   }, []);
 
@@ -30,7 +31,7 @@ export function DocumentList(props: BoxProps) {
     closeImportModal();
     
     const { id } = await services.documents.importDocumentFromUrl(url);
-    setLocation(`/doc/${id}`);
+    setLocation(createDocumentRoute(id));
     send({ type: 'query' });
   }, []);
 

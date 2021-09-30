@@ -19,7 +19,7 @@ export type DocumentGraphodelStates = {
 };
 
 
-export type GetDocumentGraphEvent = { type: 'getDocumentGraph', payload: ID };
+export type GetDocumentGraphEvent = { type: 'getDocumentGraph', payload: ID, depth?: number };
 export type AddDocumentLinkEvent = { type: 'addLink', payload: DocumentLink };
 export type RemoveLinkEvent = { type: 'removeLink', payload: Omit<DocumentLink, 'meta'> };
 
@@ -79,9 +79,9 @@ export function makeDocumentGraphModel(gateway: ClientDocumentsGateway) {
     services: {
       async getDocumentGraph(context, event) {
         assertFetchEvent(event);
-        const id = event.payload;
+        const { payload: id, depth = 1 } = event;
 
-        return await gateway.getDocumentGraph(id);
+        return await gateway.getDocumentGraph(id, depth);
       },
 
       async addLink(context, event) {

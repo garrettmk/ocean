@@ -5,6 +5,7 @@ import { DocumentEditor } from '../DocumentEditor';
 import { DocumentLinks } from '../DocumentLinks';
 import { DocumentList } from '../DocumentList';
 import { AppSidebar } from './components/app-sidebar';
+import { DOCUMENT_ROUTE } from '@/react-web/config/routes';
 
 
 export function App() {
@@ -12,6 +13,7 @@ export function App() {
     <Grid
       w='100vw'
       minH='100vh'
+      maxW='100vw'
       templateColumns='400px 1fr'
       templateRows='1fr'
     >
@@ -22,7 +24,7 @@ export function App() {
       </AppSidebar>
       
       <Switch>
-        <Route path='/doc/:id' component={DocumentEditor}/>
+        <Route path={DOCUMENT_ROUTE} component={DocumentEditor}/>
         <Route path='/' component={Box}/>
       </Switch>
     </Grid>
