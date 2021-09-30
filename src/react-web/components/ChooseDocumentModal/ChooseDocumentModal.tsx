@@ -12,6 +12,10 @@ import {
 import { Button } from "@chakra-ui/button";
 import { Input } from "@chakra-ui/input";
 import { ID } from "@/domain";
+import { useServices } from "@/react-web/services";
+import { makeBrowseDocumentsMachine } from "@/client/viewmodels";
+import { useMachine } from "@xstate/react";
+import { Select } from "@chakra-ui/select";
 
 
 export type ChooseDocumentModalProps = Pick<ModalProps, 'isOpen' | 'onClose'> & {
@@ -23,19 +27,30 @@ export function ChooseDocumentModal({
   onClose,
   onChoose
 }: ChooseDocumentModalProps) {
-  const [idText, setIdText] = React.useState<string>('');
-  const changeIdText = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const services = useServices();
+  const machine = React.useMemo(() => makeBrowseDocumentsMachine(services.documents), []);
+  const [state, send] = useMachine(machine);
+  const docs = state.context.documents ?? [];
+  
+  const [queryText, setQueryText] = React.useState<string>('');
+  const handleQueryInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { value } = event.target;
-    setIdText(value);
+    setQueryText(value);
   }
 
-  const [isValidId, setIsValidId] = React.useState(false);
+  const [selectedId, setSelectedId] = React.useState<ID>();
+  const handleSelectDocument = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedId(event.target.value);
+  }
+  
   React.useEffect(() => {
-     setIsValidId(idText.length > 0);
-  }, [idText]);
+    if (!isOpen) return;
+    
+    send({ type: 'query', payload: queryText ? { title: [queryText] } : undefined });
+  }, [isOpen, queryText]);
 
   const handleChoose = () => {
-    onChoose?.(idText);
+    onChoose?.(selectedId!);
     onClose();
   };
 
@@ -46,17 +61,17 @@ export function ChooseDocumentModal({
         <ModalHeader>Select Document ID</ModalHeader>
         <ModalCloseButton/>
         <ModalBody>
-          <Input
-           value={idText}
-           onChange={changeIdText}
-           placeholder='12345'
-          />
+          <Select placeholder="Select document..." onChange={handleSelectDocument}>
+            {docs.map(doc => (
+              <option key={doc.id} value={doc.id}>{doc.title}</option> 
+            ))}
+          </Select>
         </ModalBody>
         <ModalFooter>
           <Button variant='outline' colorScheme='blue' mr={3} onClick={onClose}>
             Cancel
           </Button>
-          <Button variant='solid' colorScheme='blue' disabled={!isValidId} onClick={handleChoose}>
+          <Button variant='solid' colorScheme='blue' disabled={!selectedId} onClick={handleChoose}>
             Select
           </Button>
         </ModalFooter>

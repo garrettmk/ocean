@@ -6,9 +6,9 @@ import { Box, BoxProps, Flex } from '@chakra-ui/layout';
 import { Heading, IconButton, Link, List, ListIcon, ListItem } from '@chakra-ui/react';
 import { useMachine } from '@xstate/react';
 import React from 'react';
-import { BiArrowFromLeft } from 'react-icons/bi';
+import { BiArrowFromLeft, BiArrowFromRight } from 'react-icons/bi';
 import { MdAdd, MdRemove } from 'react-icons/md';
-import { useRoute } from 'wouter';
+import { useRoute, Link as RouterLink } from 'wouter';
 import { ChooseDocumentModal } from '../ChooseDocumentModal';
 
 export type DocumentLinksProps = BoxProps;
@@ -43,6 +43,16 @@ export function DocumentLinks({
     }});
   }
 
+  const handleRemoveLink = (event: React.MouseEvent<HTMLButtonElement>) => {
+    const from = event.currentTarget.dataset['from'];
+    const to = event.currentTarget.dataset['to'];
+
+    send({ type: 'removeLink', payload: {
+      from,
+      to
+    }});
+  }
+
   return (
     <>
       <ChooseDocumentModal
@@ -62,12 +72,40 @@ export function DocumentLinks({
           <IconButton aria-label='Remove' icon={<MdRemove/>} size='sm'/>
         </Flex>
         <List mb={6} spacing={1}>
-          {graph?.links.map((link, i) => (
-            <ListItem key={i}>
-              <ListIcon as={BiArrowFromLeft} color='blue.500'/>
-              <Link href=''>{link.from} -- {link.to}</Link>
-            </ListItem>
-          ))}
+          {graph?.links.map((link, i) => {
+            const key = `${link.from}-${link.to}`;
+            const icon = link.from === params!.id ? BiArrowFromLeft : BiArrowFromRight;
+            const documentId = link.from === params!.id ? link.to : link.from;
+            const document = graph.documents.find(doc => doc.id === documentId)!;
+            
+            return (
+              <ListItem
+                key={key}
+                overflow="hidden"
+                textOverflow="ellipsis"
+                whiteSpace="nowrap"
+                position="relative"
+                pr="8"
+              >
+                <ListIcon as={icon} color='blue.500'/>
+                <RouterLink href={`/doc/${document.id}`}>
+                  <Link>
+                    {document.title}
+                  </Link>
+                </RouterLink>
+                <IconButton
+                  aria-label="Remove"
+                  icon={<MdRemove/>}
+                  size="xs"
+                  position="absolute"
+                  right="0"
+                  data-from={link.from}
+                  data-to={link.to}
+                  onClick={handleRemoveLink}
+                />
+              </ListItem>
+            )
+          })}
         </List>
       </Box>
     </>

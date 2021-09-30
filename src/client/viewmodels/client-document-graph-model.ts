@@ -21,8 +21,9 @@ export type DocumentGraphodelStates = {
 
 export type GetDocumentGraphEvent = { type: 'getDocumentGraph', payload: ID };
 export type AddDocumentLinkEvent = { type: 'addLink', payload: DocumentLink };
+export type RemoveLinkEvent = { type: 'removeLink', payload: Omit<DocumentLink, 'meta'> };
 
-export type DocumentGraphModelEvent = GetDocumentGraphEvent | AddDocumentLinkEvent;
+export type DocumentGraphModelEvent = GetDocumentGraphEvent | AddDocumentLinkEvent | RemoveLinkEvent;
 
 export function makeDocumentGraphModel(gateway: ClientDocumentsGateway) {
   return createMachine<DocumentGraphodelContext, DocumentGraphModelEvent>({
@@ -34,6 +35,7 @@ export function makeDocumentGraphModel(gateway: ClientDocumentsGateway) {
         on: {
           getDocumentGraph: { target: 'loading.documentGraph' },
           addLink: { target: 'loading.addLink' },
+          removeLink: { target: 'loading.removeLink' },
         }
       },
 
@@ -53,6 +55,14 @@ export function makeDocumentGraphModel(gateway: ClientDocumentsGateway) {
               onDone: { target: '#document-graph.idle', actions: ['assignNewLink'] },
               onError: { target: '#document-graph.error', actions: ['assignError'] }
             }
+          },
+
+          removeLink: {
+            invoke: {
+              src: 'removeLink',
+              onDone: { target: '#document-graph.idle', actions: ['assignRemoveLink'] },
+              onError: { target: '#document-graph.error', actions: ['assignError'] }
+            }
           }
         }
       },
@@ -60,7 +70,8 @@ export function makeDocumentGraphModel(gateway: ClientDocumentsGateway) {
       error: {
         on: {
           getDocumentGraph: { target: 'loading.documentGraph' },
-          addLink: { target: 'loading.addLink' }
+          addLink: { target: 'loading.addLink' },
+          removeLink: { target: 'loading.removeLink' }
         }
       }
     }
@@ -78,8 +89,14 @@ export function makeDocumentGraphModel(gateway: ClientDocumentsGateway) {
         const { from, to, meta } = event.payload;
 
         return await gateway.linkDocuments(from, to, meta);
-      }
+      },
 
+      async removeLink(context, event) {
+        assertRemoveLinkEvent(event);
+        const { from, to } = event.payload;
+
+        return await gateway.unlinkDocuments(from, to);
+      },
     },
 
     actions: {
@@ -95,7 +112,11 @@ export function makeDocumentGraphModel(gateway: ClientDocumentsGateway) {
 
       assignNewLink: assign({
 
-      })
+      }),
+
+      assignRemoveLink: assign({
+
+      }),
     }
   })
 }
@@ -109,4 +130,9 @@ function assertFetchEvent(event: DocumentGraphModelEvent) : asserts event is Get
 function assertAddLinkEvent(event: DocumentGraphModelEvent) : asserts event is AddDocumentLinkEvent {
   if (event.type !== 'addLink')
     throw new ValidationError('Wrong event type', ['event', 'type'], 'addLink', event.type);
+}
+
+function assertRemoveLinkEvent(event: DocumentGraphModelEvent) : asserts event is RemoveLinkEvent {
+  if (event.type !== 'removeLink')
+    throw new ValidationError('Wrong event type', ['event', 'type'], 'removeLink', event.type);
 }
