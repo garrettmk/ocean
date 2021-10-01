@@ -16,6 +16,7 @@ export class TestClientGateway implements MockClientDocumentsGateway {
   public unlinkDocuments: Mock;
   public importDocumentFromUrl: Mock;
   public getDocumentGraph: Mock;
+  public graphByQuery: Mock;
 
   constructor() {
     this.getDocument = jest.fn(() => { return new TestPromise<Document>(); });
@@ -28,6 +29,7 @@ export class TestClientGateway implements MockClientDocumentsGateway {
     this.unlinkDocuments = jest.fn(() => { return new TestPromise<DocumentLink>(); });
     this.importDocumentFromUrl = jest.fn(() => { return new TestPromise<Document>(); });
     this.getDocumentGraph = jest.fn(() => { return new TestPromise<DocumentGraph>(); });
+    this.graphByQuery = jest.fn(() => { return new TestPromise<DocumentGraph>(); });
   }
 
   public getLastResult<T>(key: keyof MockClientDocumentsGateway) : T | undefined {
@@ -47,5 +49,6 @@ export class TestClientGateway implements MockClientDocumentsGateway {
     this.unlinkDocuments.mockClear();
     this.importDocumentFromUrl.mockClear();
     this.getDocumentGraph.mockClear();
+    this.graphByQuery.mockClear();
   }
 }

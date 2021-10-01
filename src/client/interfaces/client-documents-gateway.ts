@@ -1,4 +1,4 @@
-import { Document, DocumentHeader, CreateDocumentInput, UpdateDocumentInput, ID, DocumentLink, DocumentLinkMeta, DocumentGraph, DocumentQuery } from '@/domain';
+import { Document, DocumentHeader, CreateDocumentInput, UpdateDocumentInput, ID, DocumentLink, DocumentLinkMeta, DocumentGraph, DocumentQuery, DocumentGraphQuery } from '@/domain';
 
 
 export interface ClientDocumentsGateway {
@@ -12,4 +12,5 @@ export interface ClientDocumentsGateway {
   unlinkDocuments(from: ID, to: ID) : Promise<DocumentLink>,
   importDocumentFromUrl(url: string) : Promise<Document>,
   getDocumentGraph(id: ID, depth?: number) : Promise<DocumentGraph>,
+  graphByQuery(query: DocumentGraphQuery) : Promise<DocumentGraph>,
 }

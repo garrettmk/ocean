@@ -1,5 +1,5 @@
 import { AuthorizationError, ClientDocumentsGateway } from "@/client/interfaces";
-import { CreateDocumentInput, DocumentLinkMeta, DocumentQuery, ID, NotFoundError, NotImplementedError, UpdateDocumentInput, validateCreateDocumentInput, validateUpdateDocumentInput, ValidationError } from "@/domain";
+import { CreateDocumentInput, DocumentGraphQuery, DocumentLinkMeta, DocumentQuery, ID, NotFoundError, NotImplementedError, UpdateDocumentInput, validateCreateDocumentInput, validateUpdateDocumentInput, ValidationError } from "@/domain";
 import { DocumentNode, GraphQLError } from "graphql";
 import gql from "graphql-tag";
 
@@ -278,6 +278,37 @@ export class DocumentsGraphQLClient implements ClientDocumentsGateway {
      throw fromCombinedError(result.error);
 
     return result.data!.importDocumentFromUrl;
+  }
+
+
+  async graphByQuery(query: DocumentGraphQuery = {}) {
+    const _query = gql`
+      query($query: DocumentGraphQuery) {
+        graphByQuery(query: $query) {
+          documents {
+            id
+            author {
+              id
+              name
+            }
+            isPublic
+            title
+            contentType
+          }
+          links {
+            from
+            to
+            meta
+          }
+        }
+      }
+    `;
+
+    const result = await this.client.query(_query, { query });
+    if (result.error)
+      throw fromCombinedError(result.error);
+
+    return result.data!.graphByQuery;
   }
 }
 
