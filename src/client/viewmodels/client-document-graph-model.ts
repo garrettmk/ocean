@@ -1,16 +1,16 @@
-import { DocumentGraph, DocumentLink, ID, ValidationError } from "@/domain";
+import { DocumentGraph, DocumentGraphQuery, DocumentLink, ID, ValidationError } from "@/domain";
 import { assign, createMachine } from "xstate";
 import { ClientDocumentsGateway } from "../interfaces";
 
 
 
-export type DocumentGraphodelContext = {
+export type GraphModelContext = {
   graph?: DocumentGraph,
   error?: Error
 }
 
 
-export type DocumentGraphodelStates = {
+export type GraphModelStates = {
   states: {
     idle: {},
     loading: {},
@@ -19,21 +19,21 @@ export type DocumentGraphodelStates = {
 };
 
 
-export type GetDocumentGraphEvent = { type: 'getDocumentGraph', payload: ID, depth?: number };
-export type AddDocumentLinkEvent = { type: 'addLink', payload: DocumentLink };
+export type GetGraphEvent = { type: 'getGraph', payload: DocumentGraphQuery };
+export type AddLinkEvent = { type: 'addLink', payload: DocumentLink };
 export type RemoveLinkEvent = { type: 'removeLink', payload: Omit<DocumentLink, 'meta'> };
 
-export type DocumentGraphModelEvent = GetDocumentGraphEvent | AddDocumentLinkEvent | RemoveLinkEvent;
+export type GraphModelEvent = GetGraphEvent | AddLinkEvent | RemoveLinkEvent;
 
-export function makeDocumentGraphModel(gateway: ClientDocumentsGateway) {
-  return createMachine<DocumentGraphodelContext, DocumentGraphModelEvent>({
-    id: 'document-graph',
+export function makeGraphModel(gateway: ClientDocumentsGateway) {
+  return createMachine<GraphModelContext, GraphModelEvent>({
+    id: 'graph-model',
     initial: 'idle',
     context: {},
     states: {
       idle: {
         on: {
-          getDocumentGraph: { target: 'loading.documentGraph' },
+          getGraph: { target: 'loading.getGraph' },
           addLink: { target: 'loading.addLink' },
           removeLink: { target: 'loading.removeLink' },
         }
@@ -41,27 +41,27 @@ export function makeDocumentGraphModel(gateway: ClientDocumentsGateway) {
 
       loading: {
         states: {
-          documentGraph: {
+          getGraph: {
             invoke: {
-              src: 'getDocumentGraph',
-              onDone: { target: '#document-graph.idle', actions: ['assignGraph'] },
-              onError: { target: '#document-graph.error', actions: ['assignError'] }
+              src: 'getGraph',
+              onDone: { target: '#graph-model.idle', actions: ['assignGraph'] },
+              onError: { target: '#graph-model.error', actions: ['assignError'] }
             }
           },
 
           addLink: {
             invoke: {
               src: 'addLink',
-              onDone: { target: '#document-graph.idle', actions: ['assignNewLink'] },
-              onError: { target: '#document-graph.error', actions: ['assignError'] }
+              onDone: { target: '#graph-model.idle', actions: ['assignNewLink'] },
+              onError: { target: '#graph-model.error', actions: ['assignError'] }
             }
           },
 
           removeLink: {
             invoke: {
               src: 'removeLink',
-              onDone: { target: '#document-graph.idle', actions: ['assignRemoveLink'] },
-              onError: { target: '#document-graph.error', actions: ['assignError'] }
+              onDone: { target: '#graph-model.idle', actions: ['assignRemoveLink'] },
+              onError: { target: '#graph-model.error', actions: ['assignError'] }
             }
           }
         }
@@ -69,7 +69,7 @@ export function makeDocumentGraphModel(gateway: ClientDocumentsGateway) {
       
       error: {
         on: {
-          getDocumentGraph: { target: 'loading.documentGraph' },
+          getGraph: { target: 'loading.getGraph' },
           addLink: { target: 'loading.addLink' },
           removeLink: { target: 'loading.removeLink' }
         }
@@ -77,11 +77,11 @@ export function makeDocumentGraphModel(gateway: ClientDocumentsGateway) {
     }
   }, {
     services: {
-      async getDocumentGraph(context, event) {
+      async getGraph(context, event) {
         assertFetchEvent(event);
-        const { payload: id, depth = 1 } = event;
+        const { payload: query } = event;
 
-        return await gateway.getDocumentGraph(id, depth);
+        return await gateway.graphByQuery(query);
       },
 
       async addLink(context, event) {
@@ -122,17 +122,17 @@ export function makeDocumentGraphModel(gateway: ClientDocumentsGateway) {
 }
 
 
-function assertFetchEvent(event: DocumentGraphModelEvent) : asserts event is GetDocumentGraphEvent {
-  if (event.type !== 'getDocumentGraph')
+function assertFetchEvent(event: GraphModelEvent) : asserts event is GetGraphEvent {
+  if (event.type !== 'getGraph')
     throw new ValidationError('Not a fetch event.', ['event', 'type'], 'fetch', event.type);
 }
 
-function assertAddLinkEvent(event: DocumentGraphModelEvent) : asserts event is AddDocumentLinkEvent {
+function assertAddLinkEvent(event: GraphModelEvent) : asserts event is AddLinkEvent {
   if (event.type !== 'addLink')
     throw new ValidationError('Wrong event type', ['event', 'type'], 'addLink', event.type);
 }
 
-function assertRemoveLinkEvent(event: DocumentGraphModelEvent) : asserts event is RemoveLinkEvent {
+function assertRemoveLinkEvent(event: GraphModelEvent) : asserts event is RemoveLinkEvent {
   if (event.type !== 'removeLink')
     throw new ValidationError('Wrong event type', ['event', 'type'], 'removeLink', event.type);
 }
