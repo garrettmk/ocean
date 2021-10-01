@@ -1,4 +1,4 @@
-import { ContentAnalysisManager, Document, DocumentGraph, DocumentHeader, DocumentLink, DocumentLinkRepository, DocumentQuery, DocumentRepository, ID, JSONSerializable } from "@/domain";
+import { ContentAnalysisManager, Document, DocumentGraph, DocumentGraphQuery, DocumentHeader, DocumentLink, DocumentLinkRepository, DocumentQuery, DocumentRepository, ID, JSONSerializable } from "@/domain";
 import { WebContentImporter } from "../interfaces/web-content-importer";
 import { AuthorizationError } from "./server-errors";
 import { UserRepository } from './server-user-models';
@@ -185,6 +185,35 @@ export class ServerDocumentInteractor {
     });
 
     return document;
+  }
+
+
+  async graphByQuery(userId: ID, query: DocumentGraphQuery) : Promise<DocumentGraph> {
+    const { radius, ...documentQuery } = query;
+    const user = await this.users.getById(userId);
+
+    // Get the documents returned by the query, and all of their links
+    let documents = await this.documents.query({ ...documentQuery, authorId: [user.author.id] });
+    let links = (await Promise.all(documents.map(doc => this.links.listLinks(doc.id)))).flat();
+
+    // Filter out duplicate links
+    links = Object.values(links.reduce((result, current) => {
+      const key = `${current.from}-${current.to}`;
+      result[key] = current;
+      return result;
+    }, {} as Record<string, DocumentLink>));
+
+    // Get any documents we didn't already grab
+    const documentIds = documents.map(({ id }) => id);
+    const linkedDocumentIds = links.flatMap(link => [link.from, link.to]);
+    const additionalDocumentIds = Array.from(new Set(linkedDocumentIds.filter(id => !documentIds.includes(id))));
+    const additionalDocuments = await this.documents.query({ id: additionalDocumentIds, authorId: [user.author.id] });
+
+    // Put it all together and return it as a graph
+    return {
+      documents: [...documents, ...additionalDocuments],
+      links: links
+    };
   }
 }
 

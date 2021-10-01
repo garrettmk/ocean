@@ -86,6 +86,14 @@ export class ServerDocumentsApi {
           content: JSON
         }
 
+        input DocumentGraphQuery {
+          id: [ID!]
+          isPublic: Boolean
+          title: [String!],
+          contentType: [String!]
+          radius: Int
+        }
+
         type Mutation {
           createDocument(input: CreateDocumentInput!): Document!
           updateDocument(id: ID!, input: UpdateDocumentInput!): Document!
@@ -100,6 +108,7 @@ export class ServerDocumentsApi {
           getDocument(id: ID!): Document!
           getRecommendedLinks(id: ID!) : DocumentGraph!
           getDocumentGraph(id: ID!, depth: Int): DocumentGraph!
+          graphByQuery(query: DocumentGraphQuery): DocumentGraph!
         }
       `,
 
@@ -133,6 +142,13 @@ export class ServerDocumentsApi {
             const { id, depth } = args;
 
             return this.interactor.getDocumentGraph(userId, id, depth)
+          },
+
+          graphByQuery: (root, args, context, info) => {
+            const userId = getAuthenticatedUserId(context);
+            const { query } = args;
+
+            return this.interactor.graphByQuery(userId, query);
           }
         },
 
