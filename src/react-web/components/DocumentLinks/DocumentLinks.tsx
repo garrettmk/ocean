@@ -1,4 +1,4 @@
-import { makeDocumentGraphModel } from '@/client/viewmodels';
+import { makeGraphModel } from '@/client/viewmodels';
 import { ID } from '@/domain';
 import { DocumentRouteParams, DOCUMENT_ROUTE } from '@/react-web/config/routes';
 import { useServices } from '@/react-web/services';
@@ -18,7 +18,7 @@ export function DocumentLinks({
 }: DocumentLinksProps) {
   const [match, params] = useRoute<DocumentRouteParams>(DOCUMENT_ROUTE);
   const services = useServices();
-  const machine = React.useMemo(() => makeDocumentGraphModel(services.documents), []);
+  const machine = React.useMemo(() => makeGraphModel(services.documents), []);
   const [state, send] = useMachine(machine);
   const { graph, error } = state.context;
 
@@ -26,7 +26,9 @@ export function DocumentLinks({
     if (!match || !params?.id) return;
 
     const { id } = params;
-    send({ type: 'getDocumentGraph', payload: id });
+    send({ type: 'getGraph', payload: {
+      id: [id]
+    } });
   }, [params?.id]);
 
 
@@ -47,10 +49,10 @@ export function DocumentLinks({
     const from = event.currentTarget.dataset['from'];
     const to = event.currentTarget.dataset['to'];
 
-    send({ type: 'removeLink', payload: {
-      from,
-      to
-    }});
+    // send({ type: 'removeLink', payload: {
+    //   from,
+    //   to
+    // }});
   }
 
   return (

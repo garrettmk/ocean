@@ -11,11 +11,10 @@ import { ApplicationJSONEditor } from "../ApplicationJSONEditor";
 import { RecommendedLinks } from "../RecommendedLinks";
 import { HTMLEditor } from "../HTMLEditor";
 import { DocumentRouteParams } from "@/react-web/config/routes";
-import { DocumentGraphView } from "../DocumentGraphView";
 
 
 export function DocumentEditor({
-  params: { id, view }
+  params: { id }
 }: {
   params: DocumentRouteParams
 }) : JSX.Element {
@@ -160,15 +159,11 @@ export function DocumentEditor({
 
       <RecommendedLinks/>
 
-      {view === 'graph' ? (
-        <DocumentGraphView id={id}/>
-      ) : (
-        <ContentEditorComponent
-          content={document?.content as string}
-          onChange={setContent}
-        />
-      )}
+      <ContentEditorComponent
+        content={document?.content as string}
+        onChange={setContent}
+      />
 
     </Grid>
-  )
+  );
 }

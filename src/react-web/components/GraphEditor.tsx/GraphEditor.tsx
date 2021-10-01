@@ -4,24 +4,25 @@ import React from 'react';
 import { ForceGraph2D } from 'react-force-graph';
 import { useMeasure } from 'react-use';
 import { useServices } from '@/react-web/services';
-import { makeDocumentGraphModel } from '@/client/viewmodels';
+import { makeGraphModel } from '@/client/viewmodels';
 import { useMachine } from '@xstate/react';
 
 
-export function DocumentGraphView({
-  id
+export function GraphEditor({
+  params: {}
 }: { 
-  id: ID
+  params: {}
 }) {
   const [ref, { width, height }] = useMeasure<HTMLDivElement>();
   const services = useServices();
-  const machine = React.useMemo(() => makeDocumentGraphModel(services.documents), []);
+  const machine = React.useMemo(() => makeGraphModel(services.documents), []);
   const [state, send] = useMachine(machine);
   const { graph, error } = state.context;
 
   React.useEffect(() => {
-    send({ type: 'getDocumentGraph', payload: id, depth: 2 });
-  }, [id]);
+    send({ type: 'getGraph', payload: {
+    }});
+  }, []);
 
   const graphData = React.useMemo(() => ({
     nodes: graph?.documents ?? [],
@@ -31,7 +32,6 @@ export function DocumentGraphView({
   return (
     <Box
       ref={ref}
-      gridArea="content"
       overflow='hidden'
     >
       <ForceGraph2D

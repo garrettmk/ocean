@@ -5,7 +5,8 @@ import { DocumentEditor } from '../DocumentEditor';
 import { DocumentLinks } from '../DocumentLinks';
 import { DocumentList } from '../DocumentList';
 import { AppSidebar } from './components/app-sidebar';
-import { DOCUMENT_ROUTE } from '@/react-web/config/routes';
+import { GraphEditor } from '../GraphEditor.tsx';
+import { DOCUMENT_ROUTE, GRAPH_ROUTE } from '@/react-web/config/routes';
 
 
 export function App() {
@@ -24,6 +25,7 @@ export function App() {
       </AppSidebar>
       
       <Switch>
+        <Route path={GRAPH_ROUTE} component={GraphEditor}/>
         <Route path={DOCUMENT_ROUTE} component={DocumentEditor}/>
         <Route path='/' component={Box}/>
       </Switch>
