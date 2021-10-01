@@ -73,3 +73,8 @@ export interface DocumentGraph {
   documents: DocumentHeader[],
   links: DocumentLink[]
 }
+
+
+export type DocumentGraphQuery = DocumentQuery & {
+  radius?: number
+}
