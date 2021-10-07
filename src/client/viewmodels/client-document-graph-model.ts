@@ -13,7 +13,13 @@ export type GraphModelContext = {
 export type GraphModelStates = {
   states: {
     idle: {},
-    loading: {},
+    loading: {
+      states: {
+        getGraph: {},
+        addLink: {},
+        removeLink: {}
+      }
+    },
     error: {}
   }
 };

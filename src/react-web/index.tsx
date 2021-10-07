@@ -5,7 +5,7 @@ import { ChakraProvider } from '@chakra-ui/provider';
 import { extendTheme } from '@chakra-ui/react';
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { App } from './components/App';
+import { App } from './components/app';
 // import { apiConfig } from './config';
 import { ServicesProvider } from './services';
 

@@ -222,7 +222,7 @@ export class DocumentsGraphQLClient implements ClientDocumentsGateway {
     if (result.error)
       throw fromCombinedError(result.error);
 
-    return result.data!.linkDocuments
+    return result.data!.unlinkDocuments
   }
 
 

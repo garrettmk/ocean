@@ -1,6 +1,7 @@
 import { Document, ID, UpdateDocumentInput } from '@/domain';
 import { ClientDocumentsGateway } from '@/client/interfaces';
-import { createMachine, assign, DoneEvent, ErrorPlatformEvent } from 'xstate';
+import { createMachine, assign, DoneEvent, ErrorPlatformEvent, DoneInvokeEvent } from 'xstate';
+import { assertEventType } from '../utils';
 
 
 export type OpenDocumentContext = {
@@ -8,26 +9,36 @@ export type OpenDocumentContext = {
   error?: Error
 }
 
-type HasDocumentContext = {
-  document: Document,
-  error?: Error,
-}
-
-function assertHasDocument(ctx: OpenDocumentContext) : asserts ctx is HasDocumentContext {
-  if (!ctx.document)
-    throw new Error('document is undefined');
-}
-
-
+export type OpenEvent = { type: 'open', payload: ID };
+export type ImportEvent = { type: 'import', payload: string };
+export type EditEvent = { type: 'edit', payload: UpdateDocumentInput };
+export type SaveEvent = { type: 'save' };
 export type OpenDocumentEvent = 
-  | { type: 'open', payload: ID }
-  | { type: 'import', payload: string }
-  | { type: 'edit', payload: UpdateDocumentInput }
-  | { type: 'save' };
+  | OpenEvent
+  | ImportEvent
+  | EditEvent
+  | SaveEvent;
+
+
+export type OpenDocumentTypeState =
+  | {
+    value: 'closed' | 'opening' | 'importing',
+    context: {
+      document: undefined,
+      error?: Error
+    }
+  }
+  | {
+    value: 'open' | 'edited' | 'saving',
+    context: {
+      document: Document,
+      error?: Error
+    }
+  };
   
 
 export function makeOpenDocumentMachine(gateway: ClientDocumentsGateway) {
-  return createMachine<OpenDocumentContext>({
+  return createMachine<OpenDocumentContext, OpenDocumentEvent, OpenDocumentTypeState>({
     id: 'open-document',
     initial: 'closed',
     states: {
@@ -93,6 +104,7 @@ export function makeOpenDocumentMachine(gateway: ClientDocumentsGateway) {
       },
 
       async openDocument(context, event) {
+        assertEventType<OpenEvent>(event, 'open');
         const id = event.payload;
 
         return await gateway.getDocument(id);
@@ -101,16 +113,30 @@ export function makeOpenDocumentMachine(gateway: ClientDocumentsGateway) {
 
     actions: {
       assignDocument: assign({
-        document: (ctx, event) => event.data,
+        document: (ctx, event) => {
+          assertEventType<DoneInvokeEvent<Document>>(event, 'done.invoke.openDocument');
+          return event.data;
+        },
       }),
 
       assignError: assign({
-        error: (ctx, event) => event.error
+        error: (ctx, event) => {
+          assertEventType<ErrorPlatformEvent>(event, 'error.platform');
+          return event.data;
+        },
       }),
 
       assignEdits: assign({
-        document: (ctx, event) => ({ ...ctx.document, ...event.payload })
+        document: (ctx, event) => {
+          assertEventType<EditEvent>(event, 'edit');
+          return { ...ctx.document, ...event.payload } as Document;
+        },
       })
     }
   })
+}
+
+function assertHasDocument(ctx: OpenDocumentContext) : asserts ctx is ({ document: Document, error?: Error }) {
+  if (!ctx.document)
+    throw new Error('document is undefined');
 }
