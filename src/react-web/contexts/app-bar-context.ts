@@ -1,23 +1,15 @@
 import React from 'react';
-import { useMeasure } from 'react-use';
 
 
 export type AppBarContextValue = {
-  primary: React.RefObject<HTMLDivElement>,
-  secondary: React.RefObject<HTMLDivElement>,
-  tertiary: React.RefObject<HTMLDivElement>,
+  ref: React.RefObject<HTMLDivElement>,
   measure: Pick<DOMRectReadOnly, 'x' | 'y' | 'top' | 'left' | 'right' | 'bottom' | 'height' | 'width'>
 }
 
 
 export const AppBarContext = React.createContext<AppBarContextValue>({
   // @ts-ignore
-  primary: React.createRef<HTMLDivElement>(),
-  // @ts-ignore
-  secondary: React.createRef<HTMLDivElement>(),
-  // @ts-ignore
-  tertiary: React.createRef<HTMLDivElement>(),
-
+  ref: React.createRef<HTMLDivElement>(),
   measure: {
     x: 0,
     y: 0,

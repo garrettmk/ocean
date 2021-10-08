@@ -3,7 +3,7 @@ import { Input, InputProps } from '@chakra-ui/input';
 import React from 'react';
 
 
-export type DocumentTitleInputProps = InputProps & {  };
+export type DocumentTitleInputProps = Omit<InputProps, 'value' | 'onChange'>;
 
 export function DocumentTitleInput(props: DocumentTitleInputProps) : JSX.Element {
   const editor = useDocumentEditor();

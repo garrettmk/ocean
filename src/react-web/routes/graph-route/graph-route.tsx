@@ -1,23 +1,15 @@
-import React from 'react';
 import { ID } from '@/domain';
+import {
+  FloatingDocumentEditor, FloatingDocumentList, FloatingWindow, FloatingWindowCloseButton, FloatingWindowHeader, FloatingWindowLayout, GraphEditorProvider,
+  GraphEditorToolbar, GraphSearchInput
+} from "@/react-web/components";
 import { GraphEditor } from "@/react-web/components/graph-editor";
 import { GraphRouteParams } from "@/react-web/config/routes";
-import { Grid } from "@chakra-ui/layout";
-import {
-  FloatingWindowLayout,
-  FloatingDocumentList,
-  FloatingDocumentEditor,
-  FloatingWindow,
-  FloatingWindowHeader,
-  FloatingWindowCloseButton,
-  GraphSearchInput,
-  GraphEditorProvider,
-  GraphEditorToolbar,
-} from "@/react-web/components";
 import { useAppBar, useGraphEditorMachine } from '@/react-web/hooks';
-import { ButtonGroup, Button } from '@chakra-ui/button';
 import { Avatar } from '@chakra-ui/avatar';
+import { Flex } from '@chakra-ui/layout';
 import { Portal } from '@chakra-ui/portal';
+import React from 'react';
 
 export function GraphRoute({
   params: { }
@@ -54,18 +46,14 @@ export function GraphRoute({
 
   return (
     <GraphEditorProvider state={state} send={send}>
-      <Portal containerRef={appBar.primary}>
-        <GraphSearchInput onFocus={openDocumentList} />
-      </Portal>
-
-      <Portal containerRef={appBar.secondary}>
-        <GraphEditorToolbar/>
-      </Portal>
-
-      <Portal containerRef={appBar.tertiary}>
-        <Avatar
-          onClick={openAside}
-        />
+      <Portal containerRef={appBar.ref}>
+        <Flex justifyContent='space-between'>
+          <GraphSearchInput
+            w='unset'
+            onFocus={openDocumentList}
+          />
+          <GraphEditorToolbar/>
+        </Flex>
       </Portal>
 
       <FloatingWindowLayout top={`${appBar.measure.bottom + 16}px`}>

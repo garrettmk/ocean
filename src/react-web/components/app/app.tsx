@@ -1,29 +1,27 @@
 import { DOCUMENT_ROUTE, GRAPH_ROUTE } from '@/react-web/config/routes';
 import { AppBarContextValue } from '@/react-web/contexts';
 import { DocumentRoute, GraphRoute } from '@/react-web/routes';
-import { useServices } from '@/react-web/services';
-import { Grid, GridItem } from '@chakra-ui/layout';
+import { Grid } from '@chakra-ui/layout';
 import React from 'react';
 import { useMeasure } from 'react-use';
 import { Route, Switch } from 'wouter';
-import { AppBarProvider } from '../app-bar-provider';
 import { AppBar } from '../app-bar';
+import { AppBarProvider } from '../app-bar-provider';
 
 
 export function App() {
-  const services = useServices();
-
-  const [appBarRef, measure] = useMeasure<HTMLDivElement>();
-  const primary = React.useRef<HTMLDivElement>(null);
-  const secondary = React.useRef<HTMLDivElement>(null);
-  const tertiary = React.useRef<HTMLDivElement>(null);
-
+  const appBarRef = React.useRef<HTMLDivElement>(null);
+  const [measureRef, measure] = useMeasure<HTMLDivElement>();
+  const combinedRef = React.useCallback((element: HTMLDivElement) => {
+    // @ts-ignore
+    appBarRef.current = element;
+    measureRef(element);
+  }, [appBarRef, measureRef]);
+  
   const appBarContextValue = React.useMemo<AppBarContextValue>(() => ({
-    primary,
-    secondary,
-    tertiary,
+    ref: appBarRef,
     measure
-  }), [primary, secondary, tertiary, measure]);
+  }), [measure]);
 
   return (
     <Grid
@@ -35,11 +33,7 @@ export function App() {
       bg='gray.400'
       position='relative'
     >
-      <AppBar 
-        ref={appBarRef}
-        zIndex='2'
-        {...{ primary, secondary, tertiary } }
-      />
+      <AppBar ref={combinedRef} zIndex='2'/>
 
       <AppBarProvider value={appBarContextValue}>
         <Switch>
