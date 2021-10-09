@@ -1,6 +1,7 @@
-import { DocumentGraph, DocumentGraphQuery, DocumentLink, ID } from "@/domain";
+import { Document, DocumentGraph, DocumentGraphQuery, DocumentLink, ID } from "@/domain";
 import { createMachine, assign, DoneInvokeEvent, ErrorPlatformEvent } from "xstate";
 import { ClientDocumentsGateway } from "../interfaces";
+import { assertEventType } from "../utils";
 
 
 
@@ -28,7 +29,7 @@ export type GraphEditorTypeState =
     }
   }
   | {
-    value: 'linkingDocuments' | 'unlinkingDocuments',
+    value: 'linkingDocuments' | 'unlinkingDocuments' | 'importingUrl',
     context: {
       graph: DocumentGraph,
       error?: Error,
@@ -72,6 +73,7 @@ export type LinkDocumentsEvent = { type: 'linkDocuments' };
 export type UnlinkDocumentsEvent = { type: 'unlinkDocuments' };
 export type DeleteDocumentEvent = { type: 'deleteDocument' };
 export type SelectDocumentEvent = { type: 'selectDocument', payload: ID };
+export type ImportUrlEvent = { type: 'importUrl', payload: string };
 export type CancelEvent = { type: 'cancel' };
 
 export type GraphEditorEvent = 
@@ -80,6 +82,7 @@ export type GraphEditorEvent =
   | UnlinkDocumentsEvent
   | DeleteDocumentEvent
   | SelectDocumentEvent
+  | ImportUrlEvent
   | CancelEvent;
 
 export type DocumentGraphMachine = ReturnType<typeof makeGraphEditorMachine>;
@@ -106,9 +109,11 @@ export function makeGraphEditorMachine(gateway: ClientDocumentsGateway) {
 
       ready: {
         on: {
+          selectDocument: { actions: ['assignSelectDocument'] },
           loadGraph: { target: 'loading' },
           linkDocuments: { target: 'linkingDocuments' },
           unlinkDocuments: { target: 'unlinkingDocuments' },
+          importUrl: { target: 'importingUrl' },
         }
       },
 
@@ -160,6 +165,19 @@ export function makeGraphEditorMachine(gateway: ClientDocumentsGateway) {
             }
           }
         }
+      },
+
+      importingUrl: {
+        initial: 'importing',
+        states: {
+          importing: {
+            invoke: {
+              src: 'importUrl',
+              onDone: { target: '#graph-editor.ready', actions: ['assignAddDocument'] },
+              onError: { target: '#graph-editor.ready', actions: ['assignError'] },
+            }
+          }
+        }
       }
     }
   }, {
@@ -183,7 +201,14 @@ export function makeGraphEditorMachine(gateway: ClientDocumentsGateway) {
         const [from, to] = selectedDocuments;
         
         return await gateway.unlinkDocuments(from ,to);
-      }
+      },
+
+      async importUrl(context, event) {
+        assertEventType<ImportUrlEvent>(event, 'importUrl');
+        const url = event.payload;
+
+        return await gateway.importDocumentFromUrl(url);
+      },
     },
 
 
@@ -194,6 +219,10 @@ export function makeGraphEditorMachine(gateway: ClientDocumentsGateway) {
 
       assignError: assign({
         error: (context, event) => (event as ErrorPlatformEvent).data
+      }),
+
+      assignSelectDocument: assign({
+        selectedDocuments: (context, event) => [(event as SelectDocumentEvent).payload],
       }),
 
       assignFromDocument: assign({
@@ -224,6 +253,18 @@ export function makeGraphEditorMachine(gateway: ClientDocumentsGateway) {
       assignClearSelection: assign({
         selectedDocuments: (context, event) => []
       }),
+
+      assignNewDocument: assign({
+        graph: (context, event) => {
+          assertEventType<DoneInvokeEvent<Document>>(event, 'done.invoke.importUrl');
+          const { content, ...header } = event.data;
+
+          return {
+            documents: [...context.graph!.documents, header],
+            links: context.graph!.links
+          };
+        },
+      })
     }
   });
 }
