@@ -44,6 +44,12 @@ export function GraphRoute({
     }
   }, [isDocumentListOpen, isAsideOpen, Boolean(editorDocumentId)]);
 
+  React.useEffect(() => {
+    const { selectedDocuments } = state.context;
+    if (state.matches('ready') && selectedDocuments.length === 1)
+      setEditorDocumentId(selectedDocuments[0]);
+  }, [state]);
+
   return (
     <GraphEditorProvider state={state} send={send}>
       <Portal containerRef={appBar.ref}>
@@ -61,7 +67,7 @@ export function GraphRoute({
           gridColumn={floatingWindowColumns.list}
           isOpen={isDocumentListOpen}
           onClose={closeDocumentList}
-          onSelect={({ id }) => openDocumentEditor(id)}
+          onSelect={({ id }) => send({ type: 'selectDocument', payload: id })}
         />
 
         <FloatingDocumentEditor
