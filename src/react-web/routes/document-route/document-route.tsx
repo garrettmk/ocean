@@ -6,11 +6,11 @@ import { createGraphRoute, DocumentRouteParams } from "@/react-web/config/routes
 import { useAppBar, useDocumentEditorMachine } from "@/react-web/hooks";
 import { Button, ButtonGroup, IconButton } from '@chakra-ui/button';
 import { ArrowBackIcon } from '@chakra-ui/icons';
-import { Box, Container, Divider, Flex, Grid, GridItem } from "@chakra-ui/layout";
+import { Box, Flex } from "@chakra-ui/layout";
 import { Portal } from "@chakra-ui/react";
 import React from 'react';
 import { Link as RouteLink } from 'wouter';
-
+import { DocumentEditorToolbar } from "@/react-web/components/document-editor-toolbar";
 
 export function DocumentRoute({
   params,
@@ -37,17 +37,12 @@ export function DocumentRoute({
 
           <DocumentTitleInput size='lg'/>
         
-          <Flex justifyContent='flex-end' position='relative' flex='0 0 auto' ml='10rem'>
-            <ButtonGroup size='sm' color='gray.500' isAttached display='block'>
-              <DocumentContentTypeSelect/>
-              <Button onClick={save} fontSize='xs'>
-                SAVE
-              </Button>
-            </ButtonGroup>
+          <Flex justifyContent='flex-end' position='relative' flex='0 0 auto' ml='2rem'>
+            <DocumentEditorToolbar/>
             <Box
               position='absolute'
               top='100%'
-              right='4'
+              right='0'
               ref={contentEditorToolbarRef} bg='white'
             />
           </Flex>
