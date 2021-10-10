@@ -13,11 +13,13 @@ export type OpenEvent = { type: 'open', payload: ID };
 export type ImportEvent = { type: 'import', payload: string };
 export type EditEvent = { type: 'edit', payload: UpdateDocumentInput };
 export type SaveEvent = { type: 'save' };
+export type DeleteEvent = { type: 'delete' };
 export type DocumentEditorEvent = 
   | OpenEvent
   | ImportEvent
   | EditEvent
-  | SaveEvent;
+  | SaveEvent
+  | DeleteEvent;
 
 
 export type DocumentEditorTypeState =
@@ -69,7 +71,8 @@ export function makeDocumentEditorMachine(gateway: ClientDocumentsGateway) {
         on: {
           open: { target: 'opening' },
           import: { target: 'importing' },
-          edit: { target: 'edited', actions: ['assignEdits'] }
+          edit: { target: 'edited', actions: ['assignEdits'] },
+          delete: { target: 'deleting', },
         }
       },
 
@@ -79,6 +82,7 @@ export function makeDocumentEditorMachine(gateway: ClientDocumentsGateway) {
           save: { target: 'saving' },
           open: { target: 'opening' },
           import: { target: 'importing' },
+          delete: { target: 'deleting' }
         }
       },
 
@@ -86,6 +90,14 @@ export function makeDocumentEditorMachine(gateway: ClientDocumentsGateway) {
         invoke: {
           src: 'saveDocument',
           onDone: { target: 'open', actions: ['assignDocument'] },
+          onError: { target: 'edited', actions: ['assignError'] }
+        }
+      },
+
+      deleting: {
+        invoke: {
+          src: 'deleteDocument',
+          onDone: { target: 'closed', actions: ['assignDeleteDocument'] },
           onError: { target: 'edited', actions: ['assignError'] }
         }
       }
@@ -109,6 +121,12 @@ export function makeDocumentEditorMachine(gateway: ClientDocumentsGateway) {
 
         return await gateway.getDocument(id);
       },
+
+      async deleteDocument(context, event) {
+        const id = context.document!.id;
+
+        return await gateway.deleteDocument(id);
+      }
     },
 
     actions: {
@@ -131,7 +149,12 @@ export function makeDocumentEditorMachine(gateway: ClientDocumentsGateway) {
           assertEventType<EditEvent>(event, 'edit');
           return { ...ctx.document, ...event.payload } as Document;
         },
-      })
+      }),
+
+      assignDeleteDocument: assign({
+        document: (ctx, event) => undefined,
+        error: (ctx, event) => undefined
+      }),
     }
   })
 }
