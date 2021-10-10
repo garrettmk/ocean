@@ -60,7 +60,6 @@ export function DocumentContentTypeSelect(props: DocumentContentTypeSelectProps)
         as={Button}
         rightIcon={<ChevronDownIcon/>} 
         disabled={!document?.contentType}
-        size='sm'
         fontSize='xs'
         color='gray.500'
       >

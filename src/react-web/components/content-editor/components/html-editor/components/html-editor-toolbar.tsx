@@ -1,9 +1,9 @@
 import React from 'react';
-import { FlexProps, Flex, ButtonGroup, IconButton } from '@chakra-ui/react';
+import { FlexProps, Flex, ButtonGroup, IconButton, Icon } from '@chakra-ui/react';
 import { useHTMLEditor } from './html-editor-context';
-import { GrSelect, GrEdit } from 'react-icons/gr';
 import { CgListTree } from 'react-icons/cg';
 import { TiDeleteOutline } from 'react-icons/ti';
+import { MdEdit } from 'react-icons/md';
 
 
 export function HTMLEditorToolbar(props: FlexProps) {
@@ -12,28 +12,22 @@ export function HTMLEditorToolbar(props: FlexProps) {
 
   return (
     <Flex {...props}>
-      <ButtonGroup isAttached>
-        <IconButton
-          aria-label='Select Element'
-          icon={<GrSelect />}
-          onClick={() => selection.isActive ? selection.stop() : selection.start()}
-          isActive={selection.isActive}
-        />
+      <ButtonGroup color='gray.500' isAttached>
         <IconButton
           aria-label='Set as root'
-          icon={<CgListTree />}
+          icon={<Icon as={CgListTree}/>}
           onClick={() => replaceRoot.isActive ? replaceRoot.stop() : replaceRoot.start()}
           isActive={replaceRoot.isActive}
         />
         <IconButton
           aria-label='Edit'
-          icon={<GrEdit/>}
+          icon={<Icon as={MdEdit}/>}
           onClick={() => contentEditable.isActive ? contentEditable.stop() : contentEditable.start() }
           isActive={contentEditable.isActive}
         />
         <IconButton
           aria-label='Delete Element'
-          icon={<TiDeleteOutline/>}
+          icon={<Icon as={TiDeleteOutline}/>}
           onClick={() => deleteElement.isActive ? deleteElement.stop() : deleteElement.start() }
           isActive={deleteElement.isActive}
         />

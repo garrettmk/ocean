@@ -6,6 +6,7 @@ import React from 'react';
 import { DocumentContentTypeSelect } from '../document-content-type-select';
 import { FiTrash } from 'react-icons/fi';
 import { FaRegClone, FaRegSave, FaRegChartBar } from 'react-icons/fa';
+import { Tooltip } from '@chakra-ui/react';
 
 
 export type DocumentEditorToolbarProps = FlexProps;
@@ -32,10 +33,13 @@ export function DocumentEditorToolbar(props: DocumentEditorToolbarProps) : JSX.E
           icon={<Icon as={FaRegClone}/>}
         />
 
-        <IconButton
-          aria-label='Save Document'
-          icon={<Icon as={FaRegSave}/>}
-        />
+        <Tooltip label='Save'>
+          <IconButton
+            aria-label='Save Document'
+            icon={<Icon as={FaRegSave}/>}
+            onClick={editor.save}
+          />
+        </Tooltip>
 
         <IconButton
           aria-label='Analysis'

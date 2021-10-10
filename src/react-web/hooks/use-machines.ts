@@ -1,4 +1,4 @@
-import { makeGraphEditorMachine, makeOpenDocumentMachine } from '@/client/viewmodels';
+import { makeGraphEditorMachine, makeDocumentEditorMachine } from '@/client/viewmodels';
 import { ID } from '@/domain';
 import { useMachine } from '@xstate/react';
 import React from 'react';
@@ -16,7 +16,7 @@ export type DocumentEditor = ReturnType<typeof useDocumentEditorMachine>;
 
 export function useDocumentEditorMachine() {
   const services = useServices();
-  const machine = React.useMemo(() => makeOpenDocumentMachine(services.documents), []);
+  const machine = React.useMemo(() => makeDocumentEditorMachine(services.documents), []);
   const [state, send] = useMachine(machine);
   const document = state.context.document;
 

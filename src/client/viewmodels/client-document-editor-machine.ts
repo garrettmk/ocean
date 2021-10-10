@@ -4,7 +4,7 @@ import { createMachine, assign, DoneEvent, ErrorPlatformEvent, DoneInvokeEvent }
 import { assertEventType } from '../utils';
 
 
-export type OpenDocumentContext = {
+export type DocumentEditorMachineContext = {
   document?: Document,
   error?: Error
 }
@@ -13,14 +13,14 @@ export type OpenEvent = { type: 'open', payload: ID };
 export type ImportEvent = { type: 'import', payload: string };
 export type EditEvent = { type: 'edit', payload: UpdateDocumentInput };
 export type SaveEvent = { type: 'save' };
-export type OpenDocumentEvent = 
+export type DocumentEditorEvent = 
   | OpenEvent
   | ImportEvent
   | EditEvent
   | SaveEvent;
 
 
-export type OpenDocumentTypeState =
+export type DocumentEditorTypeState =
   | {
     value: 'closed' | 'opening' | 'importing',
     context: {
@@ -37,9 +37,9 @@ export type OpenDocumentTypeState =
   };
   
 
-export function makeOpenDocumentMachine(gateway: ClientDocumentsGateway) {
-  return createMachine<OpenDocumentContext, OpenDocumentEvent, OpenDocumentTypeState>({
-    id: 'open-document',
+export function makeDocumentEditorMachine(gateway: ClientDocumentsGateway) {
+  return createMachine<DocumentEditorMachineContext, DocumentEditorEvent, DocumentEditorTypeState>({
+    id: 'document-editor',
     initial: 'closed',
     states: {
       closed: {
@@ -136,7 +136,7 @@ export function makeOpenDocumentMachine(gateway: ClientDocumentsGateway) {
   })
 }
 
-function assertHasDocument(ctx: OpenDocumentContext) : asserts ctx is ({ document: Document, error?: Error }) {
+function assertHasDocument(ctx: DocumentEditorMachineContext) : asserts ctx is ({ document: Document, error?: Error }) {
   if (!ctx.document)
     throw new Error('document is undefined');
 }
