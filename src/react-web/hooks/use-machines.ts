@@ -1,4 +1,5 @@
-import { makeGraphEditorMachine, makeDocumentEditorMachine } from '@/client/viewmodels';
+import { makeGraphEditorMachine} from '@/client/viewmodels';
+import { makeDocumentEditorMachine } from '../machines';
 import { ID } from '@/domain';
 import { useMachine } from '@xstate/react';
 import React from 'react';
@@ -22,13 +23,13 @@ export function useDocumentEditorMachine() {
 
   // Load the document when the component mounts
   const open = React.useCallback((id: ID) => {
-    send({ type: 'open', payload: id });
+    send({ type: 'openDocument', payload: id });
   }, []);
 
 
   // Change the title
   const setTitle = React.useCallback((title: string) => {
-    send({ type: 'edit', payload: {
+    send({ type: 'editDocument', payload: {
       title
     }});
   }, [send]);
@@ -41,7 +42,7 @@ export function useDocumentEditorMachine() {
     // }
 
     send({
-      type: 'edit', payload: {
+      type: 'editDocument', payload: {
         contentType: document!.contentType,
         content: newContent
       }
@@ -51,7 +52,7 @@ export function useDocumentEditorMachine() {
 
   // Save the document
   const save = React.useCallback(() => {
-    send({ type: 'save' });
+    send({ type: 'saveDocument' });
   }, [send]);
 
 

@@ -47,7 +47,7 @@ export function DocumentContentTypeSelect(props: DocumentContentTypeSelectProps)
 
       const newContent = await services.migrations.migrate(document?.content, migration);
 
-      editor.send({ type: 'edit', payload: {
+      editor.send({ type: 'editDocument', payload: {
         contentType: to.value,
         content: newContent
       }});
