@@ -1,34 +1,27 @@
+import { Document, DocumentHeader } from '@/domain';
+import { FloatingWindowCloseButton } from '@/react-web/components/floating-window-close-button';
+import { FloatingWindowHeader } from '@/react-web/components/floating-window-header';
 import { useGraphEditor } from '@/react-web/hooks';
+import { Box, Heading, Link, StackDivider, Text, VStack } from '@chakra-ui/layout';
+import { Skeleton } from '@chakra-ui/skeleton';
 import React from 'react';
 import { FloatingWindow, FloatingWindowProps } from '../floating-window';
-import { Flex, VStack, StackDivider } from '@chakra-ui/layout';
-import { Skeleton } from '@chakra-ui/skeleton';
-import { Link as RouterLink } from 'wouter';
-import { Box } from '@chakra-ui/layout';
-import { Heading } from '@chakra-ui/layout';
-import { IconButton } from '@chakra-ui/button';
-import { CloseIcon } from '@chakra-ui/icons';
-import { Link, Text } from '@chakra-ui/layout';
-import { FloatingWindowHeader } from '@/react-web/components/floating-window-header';
-import { DocumentHeader } from '@/domain';
-import { FloatingWindowCloseButton } from '@/react-web/components/floating-window-close-button';
 
 
 export type FloatingDocumentListProps = Omit<FloatingWindowProps, 'onSelect'> & {
   isOpen: boolean,
   onClose?: () => void,
-  onSelect?: (document: DocumentHeader) => void
 };
 
 
 export function FloatingDocumentList({
   isOpen,
   onClose,
-  onSelect,
   ...windowProps
 }: FloatingDocumentListProps): JSX.Element {
   const { state, send } = useGraphEditor();
   const docs = state.context.graph?.documents ?? [];
+  const isSelected = (doc: DocumentHeader) => state.context.selectedDocuments.includes(doc.id);
 
   return (
     <FloatingWindow maxW='100%' display={isOpen ? undefined : 'none'} {...windowProps}>
@@ -50,18 +43,18 @@ export function FloatingDocumentList({
         </VStack>
       ) : (
         <VStack
-          divider={<StackDivider borderColor="gray.300"/>}
+          divider={<StackDivider borderColor="gray.300" m='0px !important'/>}
           align='stretch'
-          spacing='4'
         >
           {docs.map(doc => (
             <Box 
               key={doc.id}
               px='4'
-              py='2'
+              py='6'
               cursor='pointer'
+              bg={isSelected(doc) ? 'blue.100' : undefined}
             >
-              <Link onClick={() => onSelect?.(doc)}>
+              <Link onClick={() => send({ type: 'selectDocument', payload: doc.id })}>
                 <Heading 
                   fontSize='md'
                   whiteSpace='nowrap'

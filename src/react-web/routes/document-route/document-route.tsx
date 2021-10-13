@@ -20,11 +20,11 @@ export function DocumentRoute({
   const appBar = useAppBar();
   const contentEditorToolbarRef = React.useRef<HTMLDivElement>(null);
   const editor = useDocumentEditorMachine();
-  const { save, open } = editor;
-
+  
+  
   // Load the document when the component mounts
   React.useEffect(() => {
-    open(params.id);
+    editor.openDocument(params.id);
   }, [params.id]);
 
   return (

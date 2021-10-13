@@ -1,7 +1,7 @@
 import { ID } from '@/domain';
 import { FloatingWindowCloseButton } from '@/react-web/components/floating-window-close-button';
 import { createDocumentRoute } from '@/react-web/config/routes';
-import { useDocumentEditorMachine } from '@/react-web/hooks';
+import { useDocumentEditorMachine, useGraphEditor } from '@/react-web/hooks';
 import { ButtonGroup, IconButton } from '@chakra-ui/button';
 import { ExternalLinkIcon } from '@chakra-ui/icons';
 import React from 'react';
@@ -13,29 +13,29 @@ import { DocumentEditorProvider } from '../document-editor-provider';
 
 
 export type FloatingDocumentEditorProps = FloatingWindowProps & {
-  documentId?: ID,
   isOpen?: boolean,
   onClose?: () => void,
 };
 
 
 export function FloatingDocumentEditor({
-  documentId,
   isOpen,
   onClose,
   ...windowProps
 }: FloatingDocumentEditorProps) : JSX.Element {
+  const { state, send } = useGraphEditor();
   const editor = useDocumentEditorMachine();
+  const documentId = state.context.selectedDocuments[0];
   
   // Navigate to the document route when the button is clicked
   const [_, setLocation] = useLocation();
-  const handleViewAsPage = () => setLocation(createDocumentRoute(documentId!));
+  const handleViewAsPage = () => documentId ? setLocation(createDocumentRoute(documentId)) : null;
 
   // Load the document when the component mounts
   React.useEffect(() => {
     if (documentId)
-      editor.open(documentId);
-  }, [documentId, editor.open]);
+      editor.openDocument(documentId);
+  }, [documentId, editor.openDocument]);
 
   return (
     <DocumentEditorProvider editor={editor}>

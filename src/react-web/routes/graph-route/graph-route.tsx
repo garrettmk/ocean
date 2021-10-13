@@ -23,9 +23,9 @@ export function GraphRoute({
   const openDocumentList = () => setIsDocumentListOpen(true);
   const closeDocumentList = () => setIsDocumentListOpen(false);
 
-  const [editorDocumentId, setEditorDocumentId] = React.useState<ID | undefined>(undefined);
-  const openDocumentEditor = (id: ID) => setEditorDocumentId(id);
-  const closeDocumentEditor = () => setEditorDocumentId(undefined);
+  const [isEditorOpen, setIsEditorOpen] = React.useState(false);
+  const openDocumentEditor = () => setIsEditorOpen(true);
+  const closeDocumentEditor = () => setIsEditorOpen(false);
 
   const [isAsideOpen, setIsAsideOpen] = React.useState(false);
   const openAside = () => setIsAsideOpen(true);
@@ -34,20 +34,19 @@ export function GraphRoute({
   const floatingWindowColumns = React.useMemo(() => {
     const list = isDocumentListOpen ? 3 : 0;
     const aside = isAsideOpen ? 3 : 0;
-    const editor = Boolean(editorDocumentId) ?
-      12 - list - aside : 0;
+    const editor = isEditorOpen ? 12 - list - aside : 0;
 
     return {
       list: `span ${list}`,
       editor: `span ${editor}`,
       aside: `10 / span ${aside}`
     }
-  }, [isDocumentListOpen, isAsideOpen, Boolean(editorDocumentId)]);
+  }, [isDocumentListOpen, isAsideOpen, isEditorOpen]);
 
   React.useEffect(() => {
     const { selectedDocuments } = state.context;
     if (state.matches('ready') && selectedDocuments.length === 1)
-      setEditorDocumentId(selectedDocuments[0]);
+      openDocumentEditor();
   }, [state]);
 
   return (
@@ -67,14 +66,12 @@ export function GraphRoute({
           gridColumn={floatingWindowColumns.list}
           isOpen={isDocumentListOpen}
           onClose={closeDocumentList}
-          onSelect={({ id }) => send({ type: 'selectDocument', payload: id })}
         />
 
         <FloatingDocumentEditor
           gridColumn={floatingWindowColumns.editor}
-          isOpen={!!editorDocumentId}
+          isOpen={isEditorOpen}
           onClose={closeDocumentEditor}
-          documentId={editorDocumentId}
         />
 
         <FloatingWindow
