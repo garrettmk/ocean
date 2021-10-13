@@ -76,6 +76,9 @@ export class ServerDocumentInteractor {
 
     await this.documents.delete(document.id);
 
+    const links = await this.links.listLinks(document.id)
+    await Promise.all(links.map(link => this.links.unlink(link.from, link.to)));
+
     return document;
   }
 
