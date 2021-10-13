@@ -1,11 +1,12 @@
 import { ClientDocumentsGateway } from "@/client/interfaces";
 import { assertEventType } from "@/client/utils";
-import { Document, ID, UpdateDocumentInput } from "@/domain";
-import { assign, createMachine, DoneInvokeEvent, ErrorPlatformEvent, Event, Interpreter, State, StateMachine } from 'xstate';
-
+import { parseContentType } from "@/content/utils";
+import { ContentMigrationManager, ContentMigrationPath, Document, ID, UpdateDocumentInput } from "@/domain";
+import { assign, createMachine, DoneInvokeEvent, ErrorPlatformEvent, Interpreter, State, StateMachine } from 'xstate';
 
 export type DocumentEditorMachineContext = {
   document?: Document,
+  migrationPaths?: any,
   error?: Error
 };
 
@@ -80,16 +81,28 @@ export type DocumentEditorTypeState =
   }
   | {
     value:
+      | 'ready'
       | { ready: 'pristine' }
       | { ready: 'edited' }
+      | 'savingDocument'
       | { savingDocument: 'saving' }
+      | 'convertingDocument'
       | { convertingDocument: 'fetchingMigrationPaths' }
-      | { convertingDocument: 'confirming' }
-      | { convertingDocument: 'converting' }
+      | 'deletingDocument'
       | { deletingDocument: 'confirming' }
       | { deletingDocument: 'deleting' }
     context: {
       document: Document,
+      error?: Error
+    }
+  }
+  | {
+    value:
+      | { convertingDocument: 'confirming' }
+      | { convertingDocument: 'converting' },
+    context: {
+      document: Document,
+      migrationPaths: ContentMigrationPath[],
       error?: Error
     }
   };
@@ -99,7 +112,7 @@ export type DocumentEditorMachineState = State<DocumentEditorMachineContext, Doc
 export type DocumentEditorMachineDispatch = Interpreter<DocumentEditorMachineContext, DocumentEditorStateSchema, DocumentEditorEvent, DocumentEditorTypeState>['send'];
 
 
-export function makeDocumentEditorMachine(gateway: ClientDocumentsGateway) : DocumentEditorMachine {
+export function makeDocumentEditorMachine(gateway: ClientDocumentsGateway, migrations: ContentMigrationManager) : DocumentEditorMachine {
   return createMachine<DocumentEditorMachineContext, DocumentEditorEvent, DocumentEditorTypeState>({
     id: 'document-editor',
     initial: 'closed',
@@ -160,7 +173,7 @@ export function makeDocumentEditorMachine(gateway: ClientDocumentsGateway) : Doc
           fetchingMigrationPaths: {
             invoke: {
               src: 'getMigrationPaths',
-              onDone: { target: 'confirming', actions: ['assignGetMigrationPathResult'] },
+              onDone: { target: 'confirming', actions: ['assignGetMigrationPathsResult'] },
               onError: { target: '#document-editor.ready.hist', actions: ['assignError'] },
             }
           },
@@ -221,9 +234,27 @@ export function makeDocumentEditorMachine(gateway: ClientDocumentsGateway) : Doc
         });
       },
 
-      async getMigrationPaths(context, event) {},
+      async getMigrationPaths(context, event) {
+        const document = context.document!;
+        const contentType = parseContentType(document.contentType);
+        const migrationPaths = await migrations.getMigrationPaths(contentType);
 
-      async convertDocument(context, event) {},
+        return migrationPaths;
+      },
+
+      async convertDocument(context, event) {
+        const document = context.document!;
+        const targetContentType = (event as ConfirmConvertDocumentEvent).payload;
+        const fromType = parseContentType(document.contentType);
+        const toType = parseContentType(targetContentType);
+
+        const availableMigrations = await migrations.getMigrationPaths(fromType, toType);
+        const migration = availableMigrations[0];
+
+        const newContent = await migrations.migrate(document.content, migration);
+
+        return { contentType: targetContentType, content: newContent };
+      },
 
       async deleteDocument(context, event) {
         const id = context.document!.id;
@@ -255,13 +286,23 @@ export function makeDocumentEditorMachine(gateway: ClientDocumentsGateway) : Doc
       }),
 
       assignConvertDocumentResult: assign<DocumentEditorMachineContext, DocumentEditorEvent>({
+        document: (context, event) => ({
+          ...context.document!,
+          ...(event as DoneInvokeEvent<UpdateDocumentInput>).data
+        }),
 
+        migrationPaths: undefined,
+        error: undefined,
       }),
 
       assignDeleteDocumentResult: assign<DocumentEditorMachineContext, DocumentEditorEvent>({
         document: undefined,
         error: undefined,
       }),
+
+      assignGetMigrationPathsResult: assign<DocumentEditorMachineContext, DocumentEditorEvent>({
+        migrationPaths: (context: DocumentEditorMachineContext, event: DoneInvokeEvent<ContentMigrationPath[]>) => event.data
+      })
     }
   });
 }
