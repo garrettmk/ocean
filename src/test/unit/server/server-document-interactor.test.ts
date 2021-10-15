@@ -1,5 +1,5 @@
-import { ContentAnalysisManager, NotImplementedError } from "@/domain";
-import { DefaultAnalysisManager, defaultAnalyzers } from "@/content";
+import { ContentAnalysisManager, ContentMigrationManager, NotImplementedError } from "@/domain";
+import { DefaultAnalysisManager, defaultAnalyzers, DefaultMigrationManager, defaultMigrations } from "@/content";
 import { AuthorRepository, Document, DocumentLinkRepository, DocumentRepository, NotFoundError, UpdateDocumentInput, validateDocument, ValidationError } from "@/domain";
 import { MemoryAuthorRepository, MemoryDocumentLinkRepository, MemoryDocumentRepository, MemoryUserRepository } from "../../../server/interfaces";
 import { CreateDocumentInput, ServerDocumentInteractor, User, UserRepository } from "../../../server/usecases";
@@ -14,6 +14,7 @@ describe('Testing ServerDocumentInteractor', () => {
   let authors: AuthorRepository;
   let analysis: ContentAnalysisManager;
   let links: DocumentLinkRepository;
+  let migrations: ContentMigrationManager;
 
   beforeEach(() => {
     authors = new MemoryAuthorRepository();
@@ -21,7 +22,8 @@ describe('Testing ServerDocumentInteractor', () => {
     documents = new MemoryDocumentRepository(authors);
     analysis = new DefaultAnalysisManager(defaultAnalyzers);
     links = new MemoryDocumentLinkRepository();
-    interactor = new ServerDocumentInteractor(documents, users, analysis, links);
+    migrations = new DefaultMigrationManager(defaultMigrations);
+    interactor = new ServerDocumentInteractor(documents, users, analysis, links, migrations);
   });
 
 

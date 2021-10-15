@@ -101,6 +101,7 @@ export class ServerDocumentsApi {
           linkDocuments(fromId: ID!, toId: ID!, meta: JSON): DocumentLink!
           unlinkDocuments(fromId: ID!, toId: ID!): DocumentLink!
           importDocumentFromUrl(url: String!): Document!
+          convertContent(content: JSON!, from: String!, to: String!): JSON!
         }
 
         type Query {
@@ -109,6 +110,7 @@ export class ServerDocumentsApi {
           getRecommendedLinks(id: ID!) : DocumentGraph!
           getDocumentGraph(id: ID!, depth: Int): DocumentGraph!
           graphByQuery(query: DocumentGraphQuery): DocumentGraph!
+          listContentConversions(from: String!): [String!]!
         }
       `,
 
@@ -149,6 +151,12 @@ export class ServerDocumentsApi {
             const { query } = args;
 
             return this.interactor.graphByQuery(userId, query);
+          },
+
+          listContentConversions: (root, args, context, info) => {
+            const { from } = args;
+
+            return this.interactor.listContentConversions(from);
           }
         },
 
@@ -193,6 +201,12 @@ export class ServerDocumentsApi {
             const { url } = args;
 
             return this.interactor.importDocumentFromUrl(userId, url);
+          },
+
+          convertContent: (root, args, context, info) => {
+            const { content, from, to } = args;
+
+            return this.interactor.convertContent(content, from, to);
           }
         }
       }

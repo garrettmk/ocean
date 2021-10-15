@@ -1,5 +1,5 @@
 import { AuthorizationError, ClientDocumentsGateway } from "@/client/interfaces";
-import { CreateDocumentInput, DocumentGraphQuery, DocumentLinkMeta, DocumentQuery, ID, NotFoundError, NotImplementedError, UpdateDocumentInput, validateCreateDocumentInput, validateUpdateDocumentInput, ValidationError } from "@/domain";
+import { CreateDocumentInput, DocumentGraphQuery, DocumentLinkMeta, DocumentQuery, ID, JSONSerializable, NotFoundError, NotImplementedError, UpdateDocumentInput, validateCreateDocumentInput, validateUpdateDocumentInput, ValidationError } from "@/domain";
 import { DocumentNode, GraphQLError } from "graphql";
 import gql from "graphql-tag";
 
@@ -309,6 +309,36 @@ export class DocumentsGraphQLClient implements ClientDocumentsGateway {
       throw fromCombinedError(result.error);
 
     return result.data!.graphByQuery;
+  }
+
+
+  async listContentConversions(from: string) {
+    const query = gql`
+      query($from: String!) {
+        listContentConversions(from: $from)
+      }
+    `;
+
+    const result = await this.client.query(query, { from });
+    if (result.error)
+      throw fromCombinedError(result.error);
+
+    return result.data!.listContentConversions;
+  }
+
+
+  async convertContent(content: JSONSerializable, from: string, to: string) {
+    const query = gql`
+      mutation($content: JSON!, $from: String!, $to: String!) {
+        convertContent(content: $content, from: $from, to: $to)
+      }
+    `;
+
+    const result = await this.client.mutation(query, { content, from, to });
+    if (result.error)
+      throw fromCombinedError(result.error);
+
+    return result.data!.convertContent;
   }
 }
 

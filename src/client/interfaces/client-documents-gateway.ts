@@ -1,4 +1,16 @@
-import { Document, DocumentHeader, CreateDocumentInput, UpdateDocumentInput, ID, DocumentLink, DocumentLinkMeta, DocumentGraph, DocumentQuery, DocumentGraphQuery } from '@/domain';
+import {
+  Document,
+  DocumentHeader,
+  CreateDocumentInput,
+  UpdateDocumentInput,
+  ID,
+  DocumentLink,
+  DocumentLinkMeta,
+  DocumentGraph,
+  DocumentQuery,
+  DocumentGraphQuery,
+  JSONSerializable
+} from '@/domain';
 
 
 export interface ClientDocumentsGateway {
@@ -13,4 +25,6 @@ export interface ClientDocumentsGateway {
   importDocumentFromUrl(url: string) : Promise<Document>,
   getDocumentGraph(id: ID, depth?: number) : Promise<DocumentGraph>,
   graphByQuery(query: DocumentGraphQuery) : Promise<DocumentGraph>,
+  listContentConversions(from: string) : Promise<string[]>,
+  convertContent(content: JSONSerializable, from: string, to: string) : Promise<JSONSerializable>
 }

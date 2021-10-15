@@ -1,4 +1,5 @@
-import { ContentAnalysisManager, Document, DocumentGraph, DocumentGraphQuery, DocumentHeader, DocumentLink, DocumentLinkRepository, DocumentQuery, DocumentRepository, ID, JSONSerializable } from "@/domain";
+import { parseContentType } from "@/content/utils";
+import { ContentAnalysisManager, ContentMigrationManager, ContentMigrationPath, Document, DocumentGraph, DocumentGraphQuery, DocumentHeader, DocumentLink, DocumentLinkRepository, DocumentQuery, DocumentRepository, ID, JSONSerializable, NotFoundError, validateContentType } from "@/domain";
 import { WebContentImporter } from "../interfaces/web-content-importer";
 import { AuthorizationError } from "./server-errors";
 import { UserRepository } from './server-user-models';
@@ -10,14 +11,16 @@ export class ServerDocumentInteractor {
   private analysis: ContentAnalysisManager;
   private links: DocumentLinkRepository;
   private importer: WebContentImporter;
+  private migrations: ContentMigrationManager;
 
 
-  constructor(documents: DocumentRepository, users: UserRepository, analysis: ContentAnalysisManager, links: DocumentLinkRepository) {
+  constructor(documents: DocumentRepository, users: UserRepository, analysis: ContentAnalysisManager, links: DocumentLinkRepository, migrations: ContentMigrationManager) {
     this.documents = documents;
     this.users = users;
     this.analysis = analysis; 
     this.links = links;
     this.importer = new WebContentImporter();
+    this.migrations = migrations;
   }
 
 
@@ -217,6 +220,29 @@ export class ServerDocumentInteractor {
       documents: [...documents, ...additionalDocuments],
       links: links
     };
+  }
+
+
+  async listContentConversions(contentType: string) : Promise<string[]> {
+    validateContentType(contentType);
+    const parsedContentType = parseContentType(contentType);
+    const migrationPaths = await this.migrations.getMigrationPaths(parsedContentType);
+
+    return migrationPaths.map(path => path.to.value);
+  }
+
+
+  async convertContent(content: any, from: string, to: string) {
+    const fromType = parseContentType(from);
+    const toType = parseContentType(to);
+
+    const migration = (await this.migrations.getMigrationPaths(fromType, toType))[0];
+    if (!migration)
+      throw new NotFoundError(`Migration from ${from} to ${to}`);
+
+    const newContent = await this.migrations.migrate(content, migration);
+
+    return newContent;
   }
 }
 

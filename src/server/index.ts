@@ -1,4 +1,4 @@
-import { DefaultAnalysisManager, defaultAnalyzers } from '@/content';
+import { DefaultAnalysisManager, DefaultMigrationManager, defaultAnalyzers, defaultMigrations } from '@/content';
 import { AlreadyExistsError } from '@/domain';
 import { Database } from 'arangojs';
 import { ArangoAuthorRepository, ArangoDocumentLinkRepository, ArangoDocumentRepository, ArangoUserRepository } from './interfaces';
@@ -37,11 +37,10 @@ await documents.initialize();
 const links = new ArangoDocumentLinkRepository(documents, config);
 await links.initialize();
 
-
-// Create analysis tools
 const analysis = new DefaultAnalysisManager(defaultAnalyzers);
+const migrations = new DefaultMigrationManager(defaultMigrations);
 
 
 // Create and start the server
-const app = new OceanServer(users, authors, documents, 'secret', analysis, links);
+const app = new OceanServer(users, authors, documents, 'secret', analysis, links, migrations);
 app.listen(3000);//

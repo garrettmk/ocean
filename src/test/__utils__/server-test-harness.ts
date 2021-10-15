@@ -1,11 +1,11 @@
 import { DocumentsGraphQLClient, GraphQLClient, UrqlGraphQLClient } from "@/client/interfaces";
-import { AuthorRepository, DocumentRepository, Document, DocumentHeader, DocumentLinkRepository, ContentAnalysisManager } from "@/domain";
+import { AuthorRepository, DocumentRepository, Document, DocumentHeader, DocumentLinkRepository, ContentAnalysisManager, ContentMigrationManager } from "@/domain";
 import { MemoryAuthorRepository, MemoryDocumentLinkRepository, MemoryDocumentRepository, MemoryUserRepository } from "@/server/interfaces";
 import { OceanServer } from "@/server/ocean-server";
 import { User, UserRepository } from "@/server/usecases";
 import { TestAuthenticator } from "./test-authenticator";
 import fetch from "node-fetch";
-import { DefaultAnalysisManager, defaultAnalyzers } from "@/content";
+import { DefaultAnalysisManager, defaultAnalyzers, DefaultMigrationManager, defaultMigrations } from "@/content";
 
 
 export class ServerTestHarness {
@@ -14,6 +14,7 @@ export class ServerTestHarness {
   public documentRepo: DocumentRepository;
   public linkRepo: DocumentLinkRepository;
   public analysis: ContentAnalysisManager;
+  public migrations: ContentMigrationManager;
   public server: OceanServer;
 
   public authenticator: TestAuthenticator;
@@ -33,8 +34,18 @@ export class ServerTestHarness {
     this.documentRepo = new MemoryDocumentRepository(this.authorRepo);
     this.linkRepo = new MemoryDocumentLinkRepository();
     this.analysis = new DefaultAnalysisManager(defaultAnalyzers);
+    this.migrations = new DefaultMigrationManager(defaultMigrations);
+    
 
-    this.server = new OceanServer(this.userRepo, this.authorRepo, this.documentRepo, 'secret', this.analysis, this.linkRepo);
+    this.server = new OceanServer(
+      this.userRepo, 
+      this.authorRepo, 
+      this.documentRepo, 
+      'secret', 
+      this.analysis, 
+      this.linkRepo,
+      this.migrations,
+    );
 
     this.authenticator = new TestAuthenticator(undefined, 'secret');
     this.graphql = new UrqlGraphQLClient('http://127.0.0.1:3000/graphql', this.authenticator, fetch as any);

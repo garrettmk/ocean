@@ -1,5 +1,4 @@
-import { DocumentEditorContext } from '@/react-web/contexts';
-import { DocumentEditor } from '@/react-web/hooks';
+import { DocumentEditorContext, DocumentEditorContextValue } from '@/react-web/contexts';
 import React from 'react';
 
 
@@ -7,7 +6,7 @@ export function DocumentEditorProvider({
   editor,
   children
 }: React.PropsWithChildren<{
-  editor: DocumentEditor
+  editor: DocumentEditorContextValue
 }>) {
 
   return (
