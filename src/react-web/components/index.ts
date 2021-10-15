@@ -1,7 +1,6 @@
 export * from './app';
 export * from './app-bar';
 export * from './app-bar-provider';
-export * from './ChooseDocumentModal';
 export * from './content-editor';
 export * from './graph-editor-provider';
 export * from './document-list';
