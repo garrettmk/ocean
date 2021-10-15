@@ -1,12 +1,11 @@
 import { ClientDocumentsGateway } from "@/client/interfaces";
 import { assertEventType } from "@/client/utils";
-import { parseContentType } from "@/content/utils";
-import { ContentMigrationManager, ContentMigrationPath, Document, ID, UpdateDocumentInput } from "@/domain";
+import { ContentMigrationManager, Document, ID, UpdateDocumentInput } from "@/domain";
 import { assign, createMachine, DoneInvokeEvent, ErrorPlatformEvent, Interpreter, State, StateMachine } from 'xstate';
 
 export type DocumentEditorMachineContext = {
   document?: Document,
-  migrationPaths?: any,
+  conversions?: string[],
   error?: Error
 };
 
@@ -29,7 +28,8 @@ export type DocumentEditorEvent =
   | DeleteDocumentEvent
   | ConfirmDeleteDocumentEvent
   | CloneDocumentEvent
-  | CancelEvent;
+  | CancelEvent
+  | DoneInvokeEvent<string[]>
 
 
 export type DocumentEditorStateSchema = {
@@ -102,7 +102,7 @@ export type DocumentEditorTypeState =
       | { convertingDocument: 'converting' },
     context: {
       document: Document,
-      migrationPaths: ContentMigrationPath[],
+      conversions: string[],
       error?: Error
     }
   };
@@ -172,8 +172,8 @@ export function makeDocumentEditorMachine(gateway: ClientDocumentsGateway, migra
         states: {
           fetchingMigrationPaths: {
             invoke: {
-              src: 'getMigrationPaths',
-              onDone: { target: 'confirming', actions: ['assignGetMigrationPathsResult'] },
+              src: 'listContentConversions',
+              onDone: { target: 'confirming', actions: ['assignListContentConversionsResult'] },
               onError: { target: '#document-editor.ready.hist', actions: ['assignError'] },
             }
           },
@@ -234,26 +234,22 @@ export function makeDocumentEditorMachine(gateway: ClientDocumentsGateway, migra
         });
       },
 
-      async getMigrationPaths(context, event) {
+      async listContentConversions(context, event) {
         const document = context.document!;
-        const contentType = parseContentType(document.contentType);
-        const migrationPaths = await migrations.getMigrationPaths(contentType);
+        const contentTypes = await gateway.listContentConversions(document.contentType);
 
-        return migrationPaths;
+        return contentTypes;
       },
 
       async convertDocument(context, event) {
         const document = context.document!;
-        const targetContentType = (event as ConfirmConvertDocumentEvent).payload;
-        const fromType = parseContentType(document.contentType);
-        const toType = parseContentType(targetContentType);
-
-        const availableMigrations = await migrations.getMigrationPaths(fromType, toType);
-        const migration = availableMigrations[0];
-
-        const newContent = await migrations.migrate(document.content, migration);
-
-        return { contentType: targetContentType, content: newContent };
+        const to = (event as ConfirmConvertDocumentEvent).payload;
+        
+        const newContent = await gateway.convertContent(document.content, document.contentType, to);
+        return {
+          contentType: to,
+          content: newContent
+        };
       },
 
       async deleteDocument(context, event) {
@@ -291,7 +287,7 @@ export function makeDocumentEditorMachine(gateway: ClientDocumentsGateway, migra
           ...(event as DoneInvokeEvent<UpdateDocumentInput>).data
         }),
 
-        migrationPaths: undefined,
+        conversions: undefined,
         error: undefined,
       }),
 
@@ -300,8 +296,8 @@ export function makeDocumentEditorMachine(gateway: ClientDocumentsGateway, migra
         error: undefined,
       }),
 
-      assignGetMigrationPathsResult: assign<DocumentEditorMachineContext, DocumentEditorEvent>({
-        migrationPaths: (context: DocumentEditorMachineContext, event: DoneInvokeEvent<ContentMigrationPath[]>) => event.data
+      assignListContentConversionsResult: assign<DocumentEditorMachineContext, DocumentEditorEvent>({
+        conversions: (context, event) => (event as DoneInvokeEvent<string[]>).data
       })
     }
   });

@@ -22,12 +22,12 @@ import React from 'react';
 export function DocumentConvertModal() {
   const editor = useDocumentEditor();
   const isOpen = editor.state.matches('convertingDocument');
-  const paths: ContentMigrationPath[] = editor.state.context.migrationPaths ?? [];
+  const paths: string[] = editor.state.context.conversions ?? [];
 
-  const [selectValue, setSelectValue] = React.useState(paths[0]?.to.value);
+  const [selectValue, setSelectValue] = React.useState(paths[0]);
 
   React.useEffect(() => {
-    setSelectValue(paths[0]?.to.value)
+    setSelectValue(paths[0])
   }, [paths]);
 
   const handleSelectChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
@@ -53,8 +53,8 @@ export function DocumentConvertModal() {
             <FormLabel>To type:</FormLabel>
             <Select value={selectValue} onChange={handleSelectChange}>
               {paths.map(path => (
-                <option key={path.to.value} value={path.to.value}>
-                  {getButtonLabel(path.to.value)}
+                <option key={path} value={path}>
+                  {getButtonLabel(path)}
                 </option>
               ))}
             </Select>
