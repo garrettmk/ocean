@@ -1,11 +1,10 @@
-import type { ClientDocumentsGateway } from "@/client/interfaces";
+import type { ClientAuthenticator, ClientDocumentsGateway } from "@/client/interfaces";
 import { ContentAnalysisManager, ContentMigrationManager } from "@/domain";
-import { TestAuthenticator } from "@/test/__utils__/test-authenticator";
 import React from "react";
 
 
 export type Services = {
-  auth: TestAuthenticator,
+  auth: ClientAuthenticator,
   documents: ClientDocumentsGateway,
   migrations: ContentMigrationManager,
   analysis: ContentAnalysisManager,

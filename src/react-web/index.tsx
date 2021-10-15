@@ -1,6 +1,5 @@
 import { DocumentsGraphQLClient, UrqlGraphQLClient } from '@/client/interfaces';
 import { DefaultAnalysisManager, defaultAnalyzers, DefaultMigrationManager, defaultMigrations } from '@/content';
-import { TestAuthenticator } from '@/test/__utils__/test-authenticator';
 import { ChakraProvider } from '@chakra-ui/provider';
 import { extendTheme } from '@chakra-ui/react';
 import React from 'react';
@@ -8,9 +7,10 @@ import ReactDOM from 'react-dom';
 import { App } from './components/app';
 // import { apiConfig } from './config';
 import { ServicesProvider } from './services';
+import { DummyAuthenticator } from './utils';
 
 
-const auth = new TestAuthenticator('lukeskywalker');
+const auth = new DummyAuthenticator('lukeskywalker');
 const client = new UrqlGraphQLClient('http://localhost:3000/graphql', auth);
 const documents = new DocumentsGraphQLClient(client);
 const migrations = new DefaultMigrationManager(defaultMigrations);
