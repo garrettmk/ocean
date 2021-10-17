@@ -8,7 +8,8 @@ import {
   validateCreateDocumentInput,
   validateUpdateDocumentInput,
   validateDocumentLink,
-  validateDocumentLinkMeta
+  validateDocumentLinkMeta,
+  NotImplementedError
 } from '@/domain';
 
 
@@ -189,4 +190,25 @@ describe('Testing validateDocumentLinkMeta', () => {
     expect.assertions(1);
     expect(() => validateDocumentLinkMeta(meta)).toThrow(ValidationError.name);
   });
-})
+});
+
+
+describe('Testing validateDocumentQuery()', () => {
+  it('should have written tests', () => {
+    expect(() => { throw new NotImplementedError() }).not.toThrow();
+  });
+});
+
+
+describe('Testing validateDocumentGaph()', () => {
+  it('should have written tests', () => {
+    expect(() => { throw new NotImplementedError() }).not.toThrow();
+  });
+});
+
+
+describe('Testing validateDocumentGraphQuery()', () => {
+  it('should have written tests', () => {
+    expect(() => { throw new NotImplementedError() }).not.toThrow();
+  });
+});

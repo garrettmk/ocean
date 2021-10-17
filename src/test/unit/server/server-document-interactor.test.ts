@@ -49,7 +49,7 @@ describe('Testing ServerDocumentInteractor', () => {
     return docs;
   }
 
-  describe('Testing create()', () => {
+  describe('Testing createDocument()', () => {
     let user: User;
     let input: CreateDocumentInput;
 
@@ -243,6 +243,13 @@ describe('Testing ServerDocumentInteractor', () => {
 
       await expect(interactor.deleteDocument('leia', document.id)).rejects.toBeInstanceOf(AuthorizationError);
     })
+  });
+
+
+  describe('Testing getDocumentGraph()', () => {
+    it('should have written tests', () => {
+      throw new NotImplementedError();
+    });
   });
 
 

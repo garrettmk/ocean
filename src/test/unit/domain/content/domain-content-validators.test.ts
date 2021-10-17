@@ -132,4 +132,4 @@ describe('Testing validateContentAnalyzer()', () => {
     expect.assertions(1);
     expect(() => validateContentAnalyzer({ ...VALID.CONTENT_ANALYZERS[0], analyze })).toThrow(ValidationError.name);
   });
-})
+});

@@ -1,4 +1,4 @@
-import { AuthorRepository, ID, NotFoundError, ValidationError } from '@/domain';
+import { AuthorRepository, ID, NotFoundError, NotImplementedError, ValidationError } from '@/domain';
 import { CreateUserInput, UserRepository, validateUser } from '../../../server/usecases';
 
 const INVALID_IDS = [null, undefined, 0, '', 123, {}, []];
@@ -121,9 +121,9 @@ export function testUserRepository({
   
   
     describe('Testing delete()', () => {
-  
+      it('should have written tests', () => {
+        throw new NotImplementedError();
+      })
     });
-  
-
-  })
+  });
 }

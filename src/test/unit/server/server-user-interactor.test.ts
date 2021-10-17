@@ -15,17 +15,19 @@ describe('Testing ServerUserInteractor', () => {
   });
 
 
-  it('should return a User', async () => {
-    expect.assertions(2);
-    const userId = 'a user key';
-    const userName = 'Chewie';
-
-    const received = await interactor.loginUser(userId, userName);
-
-    expect(() => validateUser(received)).not.toThrow();
-    expect(users.getById(userId)).resolves.toMatchObject({
-      id: userId,
-      name: userName
+  describe('Testing loginUser()', () => {
+    it('should return a User', async () => {
+      expect.assertions(2);
+      const userId = 'a user key';
+      const userName = 'Chewie';
+  
+      const received = await interactor.loginUser(userId, userName);
+  
+      expect(() => validateUser(received)).not.toThrow();
+      expect(users.getById(userId)).resolves.toMatchObject({
+        id: userId,
+        name: userName
+      });
     });
   });
 })

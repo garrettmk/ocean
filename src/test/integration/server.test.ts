@@ -17,8 +17,10 @@ describe('Testing OceanServer', () => {
 
   afterEach(async () => {
     return new Promise<void>((resolve, reject) => {
-      harness.server.close();
-      setTimeout(() => resolve(), 50);
+      setTimeout(() => {
+        harness.server.close();
+        resolve();
+      }, 50);
     });
   });
 
@@ -209,6 +211,62 @@ describe('Testing OceanServer', () => {
 
       expect(document.author.id).not.toEqual(user.id);
       await expect(harness.documentsApi.deleteDocument(document.id)).rejects.toBeInstanceOf(AuthorizationError);
+    });
+  });
+
+
+  describe('testing getDocumentGraph()', () => {
+    it('should have written tests', () => {
+      throw new NotImplementedError();
+    });
+  });
+
+
+  describe('testing getRecommendedLinks()', () => {
+    it('should have written tests', () => {
+      throw new NotImplementedError();
+    });
+  });
+
+
+  describe('testing linkDocuments()', () => {
+    it('should have written tests', () => {
+      throw new NotImplementedError();
+    });
+  });
+
+
+  describe('testing unlinkDocuments()', () => {
+    it('should have written tests', () => {
+      throw new NotImplementedError();
+    });
+  });
+
+
+  describe('testing importDocumentFromUrl()', () => {
+    it('should have written tests', () => {
+      throw new NotImplementedError();
+    });
+  });
+
+
+  describe('testing graphByQuery()', () => {
+    it('should have written tests', () => {
+      throw new NotImplementedError();
+    });
+  });
+
+
+  describe('testing listContentConversions()', () => {
+    it('should have written tests', () => {
+      throw new NotImplementedError();
+    });
+  });
+
+  
+  describe('testing convertContent()', () => {
+    it('should have written tests', () => {
+      throw new NotImplementedError();
     });
   });
 })
