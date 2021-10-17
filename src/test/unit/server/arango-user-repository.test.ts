@@ -1,5 +1,5 @@
 import { ArangoUserRepository, MemoryAuthorRepository } from "@/server/interfaces";
-import { TestArangoDb } from "@/test/__utils__/TestArangoDb";
+import { TestArangoDb } from "@/test/__utils__/test-arango-db";
 import { Database } from "arangojs";
 import { testUserRepository } from "./server-user-repository-tests";
 
@@ -31,5 +31,6 @@ testUserRepository({
 
   afterEach: async () => {
     await db.drop();
+    await db.close();
   }
 });

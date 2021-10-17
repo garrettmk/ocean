@@ -64,14 +64,14 @@ describe('Testing ServerDocumentInteractor', () => {
       const doc = await interactor.createDocument(user.id, input);
   
       expect(() => validateDocument(doc)).not.toThrow();
-      expect(documents.getById(doc.id)).resolves.toMatchObject(doc);
+      await expect(documents.getById(doc.id)).resolves.toMatchObject(doc);
       expect(doc.author.id).toBe(user.author.id);
     });
   
   
     it('should throw NotFoundError given an invalid userId', async () => {
       expect.assertions(1);
-      expect(interactor.createDocument('vader', input)).rejects.toBeInstanceOf(NotFoundError);
+      await expect(interactor.createDocument('vader', input)).rejects.toBeInstanceOf(NotFoundError);
     });
   
   
@@ -79,7 +79,7 @@ describe('Testing ServerDocumentInteractor', () => {
       expect.assertions(1);
       const input = { title: 123 } as unknown as CreateDocumentInput;
   
-      expect(interactor.createDocument(user.id, input)).rejects.toBeInstanceOf(ValidationError);
+      await expect(interactor.createDocument(user.id, input)).rejects.toBeInstanceOf(ValidationError);
     });
   });
 
@@ -89,8 +89,9 @@ describe('Testing ServerDocumentInteractor', () => {
       expect.assertions(1);
       const docs = await populate();
       const publicDocs = docs.filter(doc => doc.isPublic);
+      const expected = publicDocs.map(({ content, ...header }) => header);
   
-      expect(interactor.listDocuments()).resolves.toMatchObject(publicDocs);
+      await expect(interactor.listDocuments()).resolves.toMatchObject(expected);
     });
   
   
@@ -98,8 +99,9 @@ describe('Testing ServerDocumentInteractor', () => {
       expect.assertions(1);
       const docs = await populate();
       const authorDocs = docs.filter(doc => doc.author.name === 'Luke');
+      const expected = authorDocs.map(({ content, ...header }) => header);
   
-      expect(interactor.listDocuments('luke')).resolves.toMatchObject(authorDocs);
+      await expect(interactor.listDocuments('luke')).resolves.toMatchObject(expected);
     });
   
   
@@ -107,7 +109,7 @@ describe('Testing ServerDocumentInteractor', () => {
       expect.assertions(1);
       const docs = await populate();
   
-      expect(interactor.listDocuments('vader')).rejects.toBeInstanceOf(NotFoundError);
+      await expect(interactor.listDocuments('vader')).rejects.toBeInstanceOf(NotFoundError);
     });
   });
 
@@ -128,7 +130,7 @@ describe('Testing ServerDocumentInteractor', () => {
 
     it('should return the updated document', async () => {
       expect.assertions(1);
-      expect(interactor.updateDocument('luke', document.id, input )).resolves.toMatchObject(expected);
+      await expect(interactor.updateDocument('luke', document.id, input )).resolves.toMatchObject(expected);
     });
 
 
@@ -137,32 +139,32 @@ describe('Testing ServerDocumentInteractor', () => {
 
       await interactor.updateDocument('luke', document.id, input);
       
-      expect(documents.getById(document.id)).resolves.toMatchObject(expected);
+      await expect(documents.getById(document.id)).resolves.toMatchObject(expected);
     });
 
 
     it('should throw NotFoundError if given a non-existent Author id', async () => {
       expect.assertions(1);
-      expect(interactor.updateDocument('vader', document.id, input)).rejects.toBeInstanceOf(NotFoundError);
+      await expect(interactor.updateDocument('vader', document.id, input)).rejects.toBeInstanceOf(NotFoundError);
     });
 
 
     it('should throw NotFoundError if given a non-existent document id', async () => {
       expect.assertions(1);
-      expect(interactor.updateDocument('luke', 'rawr', input)).rejects.toBeInstanceOf(NotFoundError);
+      await expect(interactor.updateDocument('luke', 'rawr', input)).rejects.toBeInstanceOf(NotFoundError);
     });
 
 
     it('should throw AuthorizationError if the user is not the document author', async () => {
       expect.assertions(1);
-      expect(interactor.updateDocument('leia', document.id, input)).rejects.toBeInstanceOf(AuthorizationError);
+      await expect(interactor.updateDocument('leia', document.id, input)).rejects.toBeInstanceOf(AuthorizationError);
     });
 
 
     it('should throw ValidationError if the input is invalid', async () => {
       expect.assertions(1);
       const invalidInput = { title: 123 } as unknown as UpdateDocumentInput;
-      expect(interactor.updateDocument('luke', document.id, invalidInput)).rejects.toBeInstanceOf(ValidationError);
+      await expect(interactor.updateDocument('luke', document.id, invalidInput)).rejects.toBeInstanceOf(ValidationError);
     });
   });
 
@@ -178,27 +180,27 @@ describe('Testing ServerDocumentInteractor', () => {
     it('should return a valid document', async () => {
       expect.assertions(1);
       const document = docs[0];
-      expect(interactor.getDocument('luke', document.id)).resolves.toMatchObject(document);
+      await expect(interactor.getDocument('luke', document.id)).resolves.toMatchObject(document);
     });
 
     
     it('should return a public document even if no user id is given', async () => {
       expect.assertions(1);
       const document = docs.find(doc => doc.isPublic) as Document;
-      expect(interactor.getDocument(undefined, document.id)).resolves.toMatchObject(document);
+      await expect(interactor.getDocument(undefined, document.id)).resolves.toMatchObject(document);
     });
 
 
     it('should throw NotFoundError if given a nonexistent user id', async () => {
       expect.assertions(1);
-      expect(interactor.getDocument('vader', docs[0].id)).rejects.toBeInstanceOf(NotFoundError);
+      await expect(interactor.getDocument('vader', docs[0].id)).rejects.toBeInstanceOf(NotFoundError);
     });
 
 
     it('should throw AuthorizationError if the document is not public and the user is not the author', async () => {
       expect.assertions(1);
       const document = docs.find(doc => doc.isPublic === false) as Document;
-      expect(interactor.getDocument('leia', document.id)).rejects.toBeInstanceOf(AuthorizationError);
+      await expect(interactor.getDocument('leia', document.id)).rejects.toBeInstanceOf(AuthorizationError);
     });
   });
 
@@ -262,5 +264,33 @@ describe('Testing ServerDocumentInteractor', () => {
     it('should have written tests', () => {
       throw new NotImplementedError();
     })
-  })
+  });
+
+
+  describe('Testing importDocumentFromUrl()', () => {
+    it('should have written tests', () => {
+      throw new NotImplementedError();
+    });
+  });
+
+
+  describe('Testing graphByQuery()', () => {
+    it('should have written tests', () => {
+      throw new NotImplementedError();
+    });
+  });
+
+
+  describe('Testing listContentConversions()', () => {
+    it('should have written tests', () => {
+      throw new NotImplementedError();
+    });
+  });
+
+
+  describe('Testing convertContent()', () => {
+    it('should have written tests', () => {
+      throw new NotImplementedError();
+    });
+  });
 });

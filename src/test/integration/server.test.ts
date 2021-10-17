@@ -15,8 +15,11 @@ describe('Testing OceanServer', () => {
   });
 
 
-  afterEach(() => {
-    harness.server.close();
+  afterEach(async () => {
+    return new Promise<void>((resolve, reject) => {
+      harness.server.close();
+      setTimeout(() => resolve(), 50);
+    });
   });
 
 

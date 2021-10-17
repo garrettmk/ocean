@@ -19,6 +19,18 @@ export class TestArangoDb {
   }
 
   async drop() {
-    return this.sys.dropDatabase(this.dbName);
+    return new Promise<void>(resolve => { 
+      this.sys.dropDatabase(this.dbName);
+      setTimeout(() => resolve(), 50);
+    });
+  }
+
+  async close() {
+    return new Promise<void>(resolve => { 
+      this.sys.close();
+      this.db?.close();
+      
+      setTimeout(() => resolve(), 50);
+    });
   }
 }

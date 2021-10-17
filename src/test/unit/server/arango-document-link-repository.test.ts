@@ -1,5 +1,5 @@
 import { ArangoDocumentLinkRepository, ArangoDocumentRepository, MemoryAuthorRepository } from "@/server/interfaces";
-import { TestArangoDb } from '../../__utils__/TestArangoDb';
+import { TestArangoDb } from '../../__utils__/test-arango-db';
 import { testDocumentLinkRepository } from "../domain/documents/domain-document-link-repository-tests";
 
 let db: TestArangoDb;
@@ -37,5 +37,6 @@ testDocumentLinkRepository({
 
   afterEach: async () => {
     await db.drop();
+    await db.close();
   }
 });

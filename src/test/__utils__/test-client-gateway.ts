@@ -1,6 +1,6 @@
 import { Document, DocumentGraph, DocumentHeader, DocumentLink, JSONSerializable } from '@/domain';
 import { ClientDocumentsGateway } from "@/client/interfaces";
-import { TestPromise } from "./TestPromise";
+import { TestPromise } from "./test-promise";
 
 type Mock = ReturnType<typeof jest.fn>;
 interface MockClientDocumentsGateway extends Record<keyof ClientDocumentsGateway, Mock> {}

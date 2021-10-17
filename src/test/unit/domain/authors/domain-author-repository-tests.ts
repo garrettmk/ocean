@@ -28,7 +28,7 @@ export function testAuthorRepository({
     });
 
     afterEach(async () => {
-      return _afterEach();
+      return await _afterEach();
     });
 
     
