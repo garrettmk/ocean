@@ -1,14 +1,12 @@
 import { useGraphEditor } from '@/react-web/hooks';
-import { Button, ButtonGroup, IconButton } from '@chakra-ui/button';
+import { ButtonGroup, IconButton } from '@chakra-ui/button';
 import Icon from '@chakra-ui/icon';
-import { Box, Divider, Flex, FlexProps, Text } from '@chakra-ui/layout';
-import { Menu, MenuButton, MenuList, MenuItem } from '@chakra-ui/menu';
+import { Box, Flex, FlexProps } from '@chakra-ui/layout';
+import { Menu, MenuButton, MenuItem, MenuList } from '@chakra-ui/menu';
 import React from 'react';
-import { IoLink, IoUnlink } from 'react-icons/io5';
-import { VscNewFile } from 'react-icons/vsc';
 import { HiOutlineDocumentAdd } from 'react-icons/hi';
+import { IoLink, IoUnlink } from 'react-icons/io5';
 import { ImportUrlModal } from '../import-url-modal';
-import { TiDeleteOutline } from 'react-icons/ti';
 
 
 
@@ -62,7 +60,7 @@ export function GraphEditorToolbar(props: GraphEditorToolbarProps) : JSX.Element
       send({ type: 'selectDocument', payload: state.event.data.id });
     }
   }, [state]);
-
+  
   return (
     <>
       <ImportUrlModal 

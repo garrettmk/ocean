@@ -7,7 +7,7 @@ import { GraphEditor } from "@/react-web/components/graph-editor";
 import { GraphRouteParams } from "@/react-web/config/routes";
 import { useAppBar, useGraphEditorMachine } from '@/react-web/hooks';
 import { Avatar } from '@chakra-ui/avatar';
-import { Flex } from '@chakra-ui/layout';
+import { Flex, Grid } from '@chakra-ui/layout';
 import { Portal } from '@chakra-ui/portal';
 import React from 'react';
 
@@ -61,31 +61,34 @@ export function GraphRoute({
         </Flex>
       </Portal>
 
-      <FloatingWindowLayout top={`${appBar.measure.bottom + 16}px`}>
-        <FloatingDocumentList
-          gridColumn={floatingWindowColumns.list}
-          isOpen={isDocumentListOpen}
-          onClose={closeDocumentList}
-        />
+      <Grid templateRows='1fr' templateColumns='1fr'>
+        <GraphEditor/>
+        <FloatingWindowLayout top={`${appBar.measure.bottom + 16}px`}>
+          <FloatingDocumentList
+            gridColumn={floatingWindowColumns.list}
+            isOpen={isDocumentListOpen}
+            onClose={closeDocumentList}
+          />
 
-        <FloatingDocumentEditor
-          gridColumn={floatingWindowColumns.editor}
-          isOpen={isEditorOpen}
-          onClose={closeDocumentEditor}
-        />
+          <FloatingDocumentEditor
+            gridColumn={floatingWindowColumns.editor}
+            isOpen={isEditorOpen}
+            onClose={closeDocumentEditor}
+          />
 
-        <FloatingWindow
-          gridColumn={floatingWindowColumns.aside}
-          display={isAsideOpen ? undefined : 'none'}
-        >
-          <FloatingWindowHeader title='Aside'>
-            <FloatingWindowCloseButton onClick={closeAside} />
-          </FloatingWindowHeader>
-          Right side
-        </FloatingWindow>
-      </FloatingWindowLayout>
+          <FloatingWindow
+            gridColumn={floatingWindowColumns.aside}
+            display={isAsideOpen ? undefined : 'none'}
+          >
+            <FloatingWindowHeader title='Aside'>
+              <FloatingWindowCloseButton onClick={closeAside} />
+            </FloatingWindowHeader>
+            Right side
+          </FloatingWindow>
+        </FloatingWindowLayout>
+      </Grid>
 
-      <GraphEditor/>
+
     </GraphEditorProvider>
   );
 }

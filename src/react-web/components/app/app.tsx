@@ -33,7 +33,7 @@ export function App() {
       bg='gray.400'
       position='relative'
     >
-      <AppBar ref={combinedRef} zIndex='2'/>
+      <AppBar ref={combinedRef}/>
 
       <AppBarProvider value={appBarContextValue}>
         <Switch>

@@ -10,7 +10,6 @@ export function FloatingWindowLayout({
   ...gridProps
 }: FloatingWindowLayoutProps) : JSX.Element {
   return (
-    <Portal>
       <Grid
         position='absolute'
         top="0px"
@@ -26,6 +25,5 @@ export function FloatingWindowLayout({
       >
         {children}
       </Grid>
-    </Portal>
   );
 }

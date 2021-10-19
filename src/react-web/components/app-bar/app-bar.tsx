@@ -14,6 +14,7 @@ export const AppBar = React.forwardRef<HTMLDivElement, AppBarProps>((props, ref)
       boxSizing='border-box'
       position='sticky'
       top='0px'
+      zIndex='10000'
       {...props}
     />
   );

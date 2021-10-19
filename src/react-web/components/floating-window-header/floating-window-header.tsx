@@ -18,7 +18,7 @@ export function FloatingWindowHeader({
       alignItems='baseline'
       position='sticky'
       top='0px'
-      zIndex='10'
+      zIndex='1000'
       bg='white'
       {...flexProps}
     >
