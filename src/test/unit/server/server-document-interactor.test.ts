@@ -246,23 +246,88 @@ describe('Testing ServerDocumentInteractor', () => {
   });
 
   describe('Testing getRecommendedLinks', () => {
-    it('should have written tests', () => {
+
+    it('should return a valid DocumentGraph', () => {
+      throw new NotImplementedError();
+    });
+
+    it('should return a graph where every link is either to or from the requested document', async () => {
+      throw new NotImplementedError();
+    });
+
+    it('should throw AuthorizationError if the user is not authorized to view the document', () => {
+      throw new NotImplementedError();
+    });
+
+    it('should only return links to documents the user can read', () => {
+      throw new NotImplementedError();
+    });
+
+    it('should throw NotFoundError if the document does not exist', () => {
+      throw new NotImplementedError();
+    });
+
+    it('should throw NotFoundError if the user does not exist', () => {
       throw new NotImplementedError();
     });
   });
 
 
   describe('Testing linkDocuments()', () => {
-    it('should have written tests', () => {
+    it('should return a link matching the given parameters', () => {
+      throw new NotImplementedError();
+    });
+
+    it('should throw NotFoundError if the user does not exist', () => {
+      throw new NotImplementedError();
+    });
+
+    it('should throw NotFoundError if the from document does not exist', () => {
+      throw new NotImplementedError();
+    });
+
+    it('should throw AuthorizationError if the user does not have access to the from document', () => {
+      throw new NotImplementedError();
+    });
+
+    it('should throw NotFoundError if the "to" document does not existent', () => {
+      throw new NotImplementedError();
+    });
+
+    it('should throw AuthorizationError if the user does not have access to the "to" documents', () => {
+      throw new NotImplementedError();
+    });
+
+    it('should throw ValidationError if "meta" is invalid', () => {
       throw new NotImplementedError();
     });
   });
 
   
   describe('Testing unlinkDocuments()', () => {
-    it('should have written tests', () => {
+    it('should delete and return the link matching the given parameters', () => {
       throw new NotImplementedError();
-    })
+    });
+
+    it('should throw NotFoundError if the user does not exist', () => {
+      throw new NotImplementedError();
+    });
+
+    it('should throw NotFoundError if the matching link cannot be found', () => {
+      throw new NotImplementedError();
+    });
+
+    it('should throw AuthorizationError if the user does not have access to the from document', () => {
+      throw new NotImplementedError();
+    });
+
+    it('should throw NotFoundError if the "to" document does not existent', () => {
+      throw new NotImplementedError();
+    });
+
+    it('should throw AuthorizationError if the user does not have access to the "to" documents', () => {
+      throw new NotImplementedError();
+    });
   });
 
 
