@@ -151,6 +151,7 @@ export function makeDocumentEditorMachine(gateway: ClientDocumentsGateway, migra
           editDocument: { target: '#document-editor.ready.edited', actions: ['assignEditEvent'] },
           convertDocument: { target: '#document-editor.convertingDocument' },
           deleteDocument: { target: '#document-editor.deletingDocument' },
+          openDocument: { target: '#document-editor.openingDocument' },
         }
       },
 

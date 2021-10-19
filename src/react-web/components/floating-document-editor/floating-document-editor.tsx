@@ -35,7 +35,7 @@ export function FloatingDocumentEditor({
   React.useEffect(() => {
     if (documentId)
       editor.openDocument(documentId);
-  }, [documentId, editor.openDocument]);
+  }, [documentId]);
 
   return (
     <DocumentEditorProvider editor={editor}>
