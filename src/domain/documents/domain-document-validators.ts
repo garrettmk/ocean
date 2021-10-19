@@ -1,5 +1,5 @@
-import { array, assign, boolean, object, optional, record, string, type, union, unknown } from 'superstruct';
-import { DocumentQuery } from '.';
+import { array, assign, boolean, integer, min, number, object, optional, record, string, type, union, unknown } from 'superstruct';
+import { DocumentQuery, DocumentGraphQuery } from '.';
 import { AuthorSchema } from '../authors';
 import { ContentTypeSchema, ID, IDSchema, JSONSerializableSchema, NonEmptyStringSchema, validate } from "../common";
 import { CreateDocumentInput, Document, DocumentGraph, DocumentHeader, DocumentLink, DocumentLinkMeta, UpdateDocumentInput } from './domain-document-models';
@@ -114,4 +114,14 @@ const DocumentGraphSchema = type({
 
 export function validateDocumentGraph(value: any) : asserts value is DocumentGraph {
   validate(value, DocumentGraphSchema);
+}
+
+
+
+const DocumentGraphQuerySchema = assign(DocumentQuerySchema, type({
+  radius: optional(min(integer(), 0))
+}));
+
+export function validateDocumentGraphQuery(value: any) : asserts value is DocumentGraphQuery {
+  validate(value, DocumentGraphQuerySchema);
 }

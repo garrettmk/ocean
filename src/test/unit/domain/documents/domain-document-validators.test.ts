@@ -11,7 +11,8 @@ import {
   validateDocumentLinkMeta,
   NotImplementedError,
   validateDocumentQuery,
-  validateDocumentGraph
+  validateDocumentGraph,
+  validateDocumentGraphQuery
 } from '@/domain';
 
 
@@ -221,7 +222,13 @@ describe('Testing validateDocumentGaph()', () => {
 
 
 describe('Testing validateDocumentGraphQuery()', () => {
-  it('should have written tests', () => {
-    expect(() => { throw new NotImplementedError() }).not.toThrow();
+  it.each(VALID.DOCUMENT_GRAPH_QUERIES)('should not throw an error if given a valid input %p', query => {
+    expect.assertions(1);
+    expect(() => validateDocumentGraphQuery(query)).not.toThrow();
+  });
+
+  it.each(INVALID.DOCUMENT_GRAPH_QUERIES)('should throw ValidationError when given invalid input %p', query => {
+    expect.assertions(1);
+    expect(() => validateDocumentGraphQuery(query)).toThrow(ValidationError.name);
   });
 });

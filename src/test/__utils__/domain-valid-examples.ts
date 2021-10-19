@@ -10,6 +10,7 @@ import {
   UpdateDocumentInput,
   DocumentQuery,
   DocumentGraph,
+  DocumentGraphQuery,
 } from "@/domain";
 
 
@@ -175,4 +176,11 @@ export const DOCUMENT_GRAPHS: DocumentGraph[] = [
     documents: DOCUMENT_HEADERS,
     links: DOCUMENT_LINKS
   }
+];
+
+
+export const DOCUMENT_GRAPH_QUERIES: DocumentGraphQuery[] = [
+  ...DOCUMENT_QUERIES,
+  ...DOCUMENT_QUERIES.map(query => ({ ...query, radius: 0 })),
+  ...DOCUMENT_QUERIES.map(query => ({ ...query, radius: 10 }))
 ];

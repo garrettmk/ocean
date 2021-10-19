@@ -3,7 +3,9 @@ import * as VALID from './domain-valid-examples';
 
 
 export const NONEMPTY_STRINGS: any[] = [undefined, null, NaN, 0, 123, '', {}, [], () => null];
-export const OPTIONAL_NONEMPTY_STRINGS: any[] = NONEMPTY_STRINGS.filter(v => v === undefined);
+export const OPTIONAL_NONEMPTY_STRINGS: any[] = NONEMPTY_STRINGS.filter(v => v !== undefined);
+export const POSITIVE_INTEGERS: any[] = [undefined, null, NaN, -1, 2.4, '', 'one', '1', {}, [], () => null];
+export const OPTIONAL_POSITIVE_INTEGERS: any[] = POSITIVE_INTEGERS.filter(v => v !== undefined);
 export const OBJECTS: any[] = [undefined, null, NaN, 0, 123, '', 'a string', () => null];
 export const FUNCS: any[] = [undefined, null, NaN, 0, 123, '', 'a string', {}, []];
 export const CONTENT_TYPES: any[] = [
@@ -64,3 +66,8 @@ export const DOCUMENT_GRAPHS: any[] = [
   ...VALID.DOCUMENT_GRAPHS.flatMap(graph => DOCUMENT_LINKS.map(link => ({ ...graph, links: [link] }))),
 ];
 
+export const DOCUMENT_GRAPH_QUERIES: any[] = [
+  ...OBJECTS,
+  ...DOCUMENT_QUERIES,
+  ...VALID.DOCUMENT_GRAPH_QUERIES.flatMap(query => OPTIONAL_POSITIVE_INTEGERS.map(radius => ({ ...query, radius })))
+];
