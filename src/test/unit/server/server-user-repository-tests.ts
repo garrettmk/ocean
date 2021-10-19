@@ -121,9 +121,22 @@ export function testUserRepository({
   
   
     describe('Testing delete()', () => {
-      it('should have written tests', () => {
-        throw new NotImplementedError();
-      })
+      it('should throw NotFoundError if given an non-existent user ID', async () => {
+        expect.assertions(1);
+  
+        await expect(repository.delete('nonexistent')).rejects.toBeInstanceOf(NotFoundError);
+      });
+
+      it('should delete and return the user for the given ID', async () => {
+        expect.assertions(2);
+        const author = await authorRepository.create({ name: 'Steve' });
+        const user = await repository.create('userId', { name: 'username', author });
+
+        const received = await repository.delete('userId');
+
+        expect(received).toMatchObject(user);
+        await expect(repository.getById('userId')).rejects.toBeInstanceOf(NotFoundError);
+      });
     });
   });
 }

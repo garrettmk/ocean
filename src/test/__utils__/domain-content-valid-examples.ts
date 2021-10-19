@@ -1,5 +1,5 @@
 import { parseContentType } from "@/content/utils";
-import { ContentType, ContentMigration, ContentMigrationPath, ContentAnalyzer } from "@/domain";
+import { ContentAnalyzer, ContentMigration, ContentMigrationPath, ContentType } from "@/domain";
 import * as VALID from './domain-valid-examples';
 
 

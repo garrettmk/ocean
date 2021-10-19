@@ -1,4 +1,16 @@
-import { Author, CreateAuthorInput, CreateDocumentInput, Document, DocumentHeader, DocumentLink, DocumentLinkMeta, ID, UpdateDocumentInput } from "@/domain";
+import {
+  Author,
+  CreateAuthorInput,
+  CreateDocumentInput,
+  Document,
+  DocumentHeader,
+  DocumentLink, 
+  DocumentLinkMeta,
+  ID,
+  UpdateDocumentInput,
+  DocumentQuery,
+  DocumentGraph,
+} from "@/domain";
 
 
 export const IDS: ID[] = [
@@ -125,4 +137,42 @@ export const DOCUMENT_LINK_METAS: DocumentLinkMeta[] = [
   { foo: [true, false] },
   { foo: { bar: 'baz' } },
   { foo: { bar: ['baz'] } }
+];
+
+
+export const DOCUMENT_QUERIES: DocumentQuery[] = [
+  {
+    id: IDS,
+  },
+  {
+    authorId: IDS,
+  },
+  {
+    isPublic: true
+  },
+  {
+    title: TITLES,
+  },
+  {
+    contentType: CONTENT_TYPES
+  },
+  {
+    id: IDS,
+    authorId: IDS,
+    isPublic: true,
+    title: TITLES,
+    contentType: CONTENT_TYPES
+  }
+];
+
+
+export const DOCUMENT_GRAPHS: DocumentGraph[] = [
+  {
+    documents: [],
+    links: []
+  },
+  {
+    documents: DOCUMENT_HEADERS,
+    links: DOCUMENT_LINKS
+  }
 ];

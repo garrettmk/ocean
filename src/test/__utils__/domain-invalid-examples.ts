@@ -1,3 +1,4 @@
+import { query } from 'express';
 import * as VALID from './domain-valid-examples';
 
 
@@ -34,3 +35,32 @@ export const DOCUMENT_LINK_METAS: any[] = [
   ...OBJECTS,
   { method: () => null }
 ];
+
+export const DOCUMENT_LINKS: any[] = [
+  ...OBJECTS,
+  ...VALID.DOCUMENT_LINKS.flatMap(link => IDS.map(from => ({ ...link, from }))),
+  ...VALID.DOCUMENT_LINKS.flatMap(link => IDS.map(to => ({ ...link, to }))),
+  ...VALID.DOCUMENT_LINKS.flatMap(link => DOCUMENT_LINK_METAS.map(meta => ({ ...link, meta})))
+];
+
+export const DOCUMENT_QUERIES: any[] = [
+  ...OBJECTS,
+  ...IDS.flatMap(id => VALID.DOCUMENT_QUERIES.map(query => ({ ...query, id: [id] }))),
+  ...IDS.flatMap(id => VALID.DOCUMENT_QUERIES.map(query => ({ ...query, authorId: [id] }))),
+  ...TITLES.flatMap(title => VALID.DOCUMENT_QUERIES.map(query => ({ ...query, title: [title] }))),
+  ...CONTENT_TYPES.flatMap(contentType => VALID.DOCUMENT_QUERIES.map(query => ({ ...query, contentType: [contentType] }))),
+];
+
+export const DOCUMENT_HEADERS: any[] = [
+  ...VALID.DOCUMENT_HEADERS.flatMap(header => IDS.map(id => ({ ...header, id }))),
+  ...VALID.DOCUMENT_HEADERS.flatMap(header => AUTHORS.map(author => ({ ...header, author }))),
+  ...VALID.DOCUMENT_HEADERS.flatMap(header => TITLES.map(title => ({ ...header, title }))),
+  ...VALID.DOCUMENT_HEADERS.flatMap(header => CONTENT_TYPES.map(contentType => ({ ...header, contentType }))),
+];
+
+export const DOCUMENT_GRAPHS: any[] = [
+  ...OBJECTS,
+  ...VALID.DOCUMENT_GRAPHS.flatMap(graph => DOCUMENT_HEADERS.map(header => ({ ...graph, documents: [header] }))),
+  ...VALID.DOCUMENT_GRAPHS.flatMap(graph => DOCUMENT_LINKS.map(link => ({ ...graph, links: [link] }))),
+];
+
