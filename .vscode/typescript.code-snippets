@@ -42,5 +42,36 @@
 			"\t$3",
 			"}"
 		]
+	},
+
+	"Create describe() block": {
+		"scope": "typescript,javascript",
+		"prefix": "desc",
+		"body": [
+			"describe('$1', () => {",
+			"$0",
+			"});"
+		]
+	},
+
+	"Create a test": {
+		"scope": "typescript,javascript",
+		"prefix": "it",
+		"body": [
+			"it('$1', () => {",
+			"$0",
+			"});"
+		],
+	},
+
+	"Create an async test": {
+		"scope": "typescript,javascript",
+		"prefix": "ita",
+		"body": [
+			"it('$1', async () => {",
+			"expect.assertions(1);",
+			"$0",
+			"})"
+		]
 	}
 }
