@@ -108,7 +108,6 @@ export class ServerDocumentsApi {
           listDocuments(query: DocumentQuery): [DocumentHeader!]!
           getDocument(id: ID!): Document!
           getRecommendedLinks(id: ID!) : DocumentGraph!
-          getDocumentGraph(id: ID!, depth: Int): DocumentGraph!
           graphByQuery(query: DocumentGraphQuery): DocumentGraph!
           listContentConversions(from: String!): [String!]!
         }
@@ -137,13 +136,6 @@ export class ServerDocumentsApi {
             const { id: documentId } = args;
 
             return this.interactor.getRecommendedLinks(userId!, documentId);
-          },
-
-          getDocumentGraph: (root, args, context, info) => {
-            const userId = getAuthenticatedUserId(context);
-            const { id, depth } = args;
-
-            return this.interactor.getDocumentGraph(userId, id, depth)
           },
 
           graphByQuery: (root, args, context, info) => {

@@ -245,14 +245,6 @@ describe('Testing ServerDocumentInteractor', () => {
     })
   });
 
-
-  describe('Testing getDocumentGraph()', () => {
-    it('should have written tests', () => {
-      throw new NotImplementedError();
-    });
-  });
-
-
   describe('Testing getRecommendedLinks', () => {
     it('should have written tests', () => {
       throw new NotImplementedError();

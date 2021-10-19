@@ -86,35 +86,35 @@ export class ServerDocumentInteractor {
   }
 
 
-  async getDocumentGraph(userId: ID, documentId: ID, depth: number = 1) : Promise<DocumentGraph> {
-    const user = await this.users.getById(userId);
-    const document = await this.documents.getById(documentId);
-    const isGetGraphPermitted = 
-      document.author.id === user.author.id ||
-      document.isPublic;
+  // async getDocumentGraph(userId: ID, documentId: ID, depth: number = 1) : Promise<DocumentGraph> {
+  //   const user = await this.users.getById(userId);
+  //   const document = await this.documents.getById(documentId);
+  //   const isGetGraphPermitted = 
+  //     document.author.id === user.author.id ||
+  //     document.isPublic;
 
-    if (!isGetGraphPermitted)
-      throw new AuthorizationError('You don\'t have permission to view this graph');
+  //   if (!isGetGraphPermitted)
+  //     throw new AuthorizationError('You don\'t have permission to view this graph');
 
-    const recursivelyGetLinks: (id: ID, alreadyVisited?: DocumentLink[], currentDepth?: number) => Promise<DocumentLink[]> = 
-      async (id: ID, alreadyVisited: DocumentLink[] = [], currentDepth: number = 1) => {
-        const links = await this.links.listLinks(id);
-        const linksToVisit = links.filter(link => !alreadyVisited.find(l2 => l2.from === link.from && l2.to === link.to));
-        const nextAlreadyVisited = [...alreadyVisited, ...linksToVisit];
-        const linkedIds = linksToVisit.flatMap(link => [link.from, link.to]).filter(id2 => id2 !== id);
-        const linksFromLinkedIds = currentDepth < depth 
-          ? (await Promise.all(linkedIds.map(linkedId => recursivelyGetLinks(linkedId, nextAlreadyVisited, currentDepth + 1)))).flat()
-          : [];
+  //   const recursivelyGetLinks: (id: ID, alreadyVisited?: DocumentLink[], currentDepth?: number) => Promise<DocumentLink[]> = 
+  //     async (id: ID, alreadyVisited: DocumentLink[] = [], currentDepth: number = 1) => {
+  //       const links = await this.links.listLinks(id);
+  //       const linksToVisit = links.filter(link => !alreadyVisited.find(l2 => l2.from === link.from && l2.to === link.to));
+  //       const nextAlreadyVisited = [...alreadyVisited, ...linksToVisit];
+  //       const linkedIds = linksToVisit.flatMap(link => [link.from, link.to]).filter(id2 => id2 !== id);
+  //       const linksFromLinkedIds = currentDepth < depth 
+  //         ? (await Promise.all(linkedIds.map(linkedId => recursivelyGetLinks(linkedId, nextAlreadyVisited, currentDepth + 1)))).flat()
+  //         : [];
 
-        return [...linksToVisit, ...linksFromLinkedIds];
-      };
+  //       return [...linksToVisit, ...linksFromLinkedIds];
+  //     };
 
-    const links = await recursivelyGetLinks(documentId);
-    const documentIds = [documentId, ...links.map(link => link.from), ...links.map(link => link.to)];
-    const documents = await this.documents.query({ id: documentIds });
+  //   const links = await recursivelyGetLinks(documentId);
+  //   const documentIds = [documentId, ...links.map(link => link.from), ...links.map(link => link.to)];
+  //   const documents = await this.documents.query({ id: documentIds });
     
-    return { documents, links };
-  }
+  //   return { documents, links };
+  // }
   
 
   async getRecommendedLinks(userId: ID, documentId: ID) : Promise<DocumentGraph> {
