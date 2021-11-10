@@ -1,7 +1,21 @@
-import { DocumentHeader, NotFoundError, NotImplementedError, validateDocument, ValidationError, CreateDocumentInput } from "@/domain";
+import {
+  NotFoundError,
+  NotImplementedError,
+  validateDocument,
+  ValidationError,
+  CreateDocumentInput,
+  validateDocumentGraph,
+  Document,
+  DocumentLink,
+  ID,
+  AlreadyExistsError,
+  validateContentType,
+} from "@/domain";
 import { AuthorizationError } from "@/client/interfaces";
-import { UpdateDocumentInput } from "@/server/usecases";
+import { UpdateDocumentInput, User } from "@/server/usecases";
 import { ServerTestHarness } from "../__utils__/server-test-harness";
+import * as VALID from "../__utils__/domain-valid-examples";
+import * as INVALID from '..//__utils__/domain-invalid-examples';
 
 
 describe('Testing OceanServer', () => {
@@ -214,31 +228,163 @@ describe('Testing OceanServer', () => {
     });
   });
 
-
-  describe('testing getDocumentGraph()', () => {
-    it('should have written tests', () => {
-      throw new NotImplementedError();
-    });
-  });
-
-
   describe('testing getRecommendedLinks()', () => {
-    it('should have written tests', () => {
-      throw new NotImplementedError();
+    let document: Document;
+    let user: User;
+
+    beforeEach(async () => {
+      document = harness.docs[0];
+      user = await harness.userRepo.getByAuthorId(document.author.id);
+      harness.authenticator.useUserId(user.id);
+    })
+    
+    it('should return a valid DocumentGraph', async () => {
+      expect.assertions(1);
+      
+      const result = await harness.documentsApi.getRecommendedLinks(document.id);
+      expect(() => validateDocumentGraph(result)).not.toThrow();
+    });
+
+    it('should return a graph where every link is either to or from the given document', async () => {
+      const graph = await harness.documentsApi.getRecommendedLinks(document.id);
+      expect.assertions(graph.links.length);
+
+      graph.links.forEach(link => {
+        expect(link.from === document.id || link.to === document.id).toBeTruthy();
+      });
+    });
+
+    it('should throw AuthorizationError if the user is not authorized to view the document', async () => {
+      expect.assertions(2);
+      const user = harness.users[1];
+      harness.authenticator.useUserId(user.id);
+
+      expect(user.author.id).not.toEqual(document.author.id);
+      await expect(harness.documentsApi.getRecommendedLinks(document.id)).rejects.toBeInstanceOf(AuthorizationError);
+    });
+
+    it('should only return links to documents the user can read', async () => {
+      const graph = await harness.documentsApi.getRecommendedLinks(document.id);
+      expect.assertions(graph.documents.length);
+
+      await Promise.all(graph.documents.map(async document => {
+        return await expect(harness.documentRepo.getById(document.id)).resolves.toBeTruthy();
+      }));
+    });
+
+    it('should throw NotFoundError if the document does not exist', async () => {
+      expect.assertions(1);
+      
+      await expect(harness.documentsApi.getRecommendedLinks(harness.invalidDocumentId)).rejects.toBeInstanceOf(NotFoundError);
+    });
+
+    it('should throw NotFoundError if the user does not exist', async () => {
+      expect.assertions(1);
+      harness.authenticator.useUserId(harness.invalidUserId);
+
+      await expect(harness.documentsApi.getRecommendedLinks(document.id)).rejects.toBeInstanceOf(NotFoundError);
     });
   });
 
 
   describe('testing linkDocuments()', () => {
-    it('should have written tests', () => {
-      throw new NotImplementedError();
+    let from: ID;
+    let to: ID;
+    const meta = VALID.DOCUMENT_LINK_METAS[0];
+
+    beforeEach(async () => {
+      from = harness.docs[0].id;
+      to = harness.docs[1].id;
+      harness.authenticator.useUserId(harness.users[0].id);
+    });
+
+    it('should return a link matching the given inputs', async () => {
+      expect.assertions(1);
+      const expected: DocumentLink = { from, to, meta }
+
+      await expect(harness.documentsApi.linkDocuments(from, to, meta)).resolves.toMatchObject(expected);
+    });
+
+    it('should throw NotFoundError if the user does not exist', async () => {
+      expect.assertions(1);
+      harness.authenticator.useUserId(harness.invalidUserId);
+
+      await expect(harness.documentsApi.linkDocuments(from, to, meta)).rejects.toBeInstanceOf(NotFoundError);
+    });
+
+    it('should throw NotFoundError if the from document does not exist', async () => {
+      expect.assertions(1);
+      await expect(harness.documentsApi.linkDocuments(harness.invalidDocumentId, to, meta)).rejects.toBeInstanceOf(NotFoundError);
+    });
+
+    it('should throw NotFoundError if the to document does not exist', async () => {
+      expect.assertions(1);
+      await expect(harness.documentsApi.linkDocuments(from, harness.invalidDocumentId, meta)).rejects.toBeInstanceOf(NotFoundError);
+    });
+
+    it('should throw ValidationError if meta is invalid', async () => {
+      expect.assertions(1);
+      await expect(harness.documentsApi.linkDocuments(from, to, INVALID.OPTIONAL_DOCUMENT_LINK_METAS[0])).rejects.toBeInstanceOf(ValidationError);
+    });
+
+    it('should throw AuthorizationError if the user does not have access to the from document', async () => {
+      expect.assertions(1);
+      await expect(harness.documentsApi.linkDocuments(harness.docs[3].id, to, meta)).rejects.toBeInstanceOf(AuthorizationError);    
+    });
+
+    it('should throw AuthorizationError if the user does not have access to the to document', async () => {
+      expect.assertions(1);
+      await expect(harness.documentsApi.linkDocuments(from, harness.docs[3].id, meta)).rejects.toBeInstanceOf(AuthorizationError);
+    });
+
+    it('should throw AlreadyExistsError if a link already exists between the two documents', async () => {
+      expect.assertions(1);
+      await harness.documentsApi.linkDocuments(from, to, meta);
+
+      await expect(harness.documentsApi.linkDocuments(from, to, meta)).rejects.toBeInstanceOf(AlreadyExistsError);
     });
   });
 
 
   describe('testing unlinkDocuments()', () => {
-    it('should have written tests', () => {
-      throw new NotImplementedError();
+    let user: User;
+    let from: ID;
+    let to: ID;
+    const meta = VALID.DOCUMENT_LINK_METAS[0];
+    let link: DocumentLink;
+
+    beforeEach(async () => {
+      user = await harness.userRepo.getByAuthorId(harness.docs[0].author.id);
+      harness.authenticator.useUserId(user.id);
+
+      from = harness.docs[0].id;
+      to = harness.docs[1].id;
+      link = await harness.linkRepo.link(from, to, meta);
+    });
+
+    it('should delete and return the link matching the inputs', async () => {
+      expect.assertions(1);
+      await expect(harness.documentsApi.unlinkDocuments(from ,to)).resolves.toMatchObject(link);    
+    });
+
+    it('should throw NotFoundError if the user does not exist', async () => {
+      expect.assertions(1);
+      harness.authenticator.useUserId(harness.invalidUserId);
+      await expect(harness.documentsApi.unlinkDocuments(from, to)).rejects.toBeInstanceOf(NotFoundError);    
+    });
+
+    it('should throw NotFoundError if the matching link cannot be found', async () => {
+      expect.assertions(1);
+      from = harness.docs[2].id;
+      
+      await expect(harness.documentsApi.unlinkDocuments(from , to)).rejects.toBeInstanceOf(NotFoundError);
+    });
+
+    it('should throw AuthorizationError if the user does not have acces to the documents', async () => {
+      expect.assertions(1);
+      harness.authenticator.useUserId(harness.users[1].id);
+
+      await expect(harness.documentsApi.unlinkDocuments(from , to)).rejects.toBeInstanceOf(AuthorizationError);
     });
   });
 
@@ -251,15 +397,37 @@ describe('Testing OceanServer', () => {
 
 
   describe('testing graphByQuery()', () => {
-    it('should have written tests', () => {
-      throw new NotImplementedError();
+    beforeEach(async () => {
+      const user = harness.users[0];
+      harness.authenticator.useUserId(user.id);
+    });
+
+    it.each(VALID.DOCUMENT_GRAPH_QUERIES)('should return a a valid DocumentGraph for %p', async query => {
+      expect.assertions(1);
+
+      const result = await harness.documentsApi.graphByQuery(query);
+
+      expect(() => validateDocumentGraph(result)).not.toThrow();
+    });
+
+    it.each(INVALID.OPTIONAL_DOCUMENT_GRAPH_QUERIES)('should throw ValidationError if given for %p', async query => {
+      expect.assertions(1);
+
+      await expect(harness.documentsApi.graphByQuery(query)).rejects.toBeInstanceOf(ValidationError);
+      // harness.documentsApi.graphByQuery(query);
     });
   });
 
 
   describe('testing listContentConversions()', () => {
-    it('should have written tests', () => {
-      throw new NotImplementedError();
+    it.each(VALID.CONTENT_TYPES)('should return a list of contentType strings when given %p', async contentType => {
+      const result = await harness.documentsApi.listContentConversions(contentType);
+      result.forEach(el => expect(() => validateContentType(el)).not.toThrow());
+    });
+
+    it.each(INVALID.CONTENT_TYPES)('should throw ValidationError if given %p', async value => {
+      expect.assertions(1);
+      await expect(harness.documentsApi.listContentConversions(value)).rejects.toBeInstanceOf(ValidationError);
     });
   });
 

@@ -1,25 +1,53 @@
-import { parseContentType } from "@/content/utils";
-import { ContentAnalysisManager, ContentMigrationManager, ContentMigrationPath, Document, DocumentGraph, DocumentGraphQuery, DocumentHeader, DocumentLink, DocumentLinkRepository, DocumentQuery, DocumentRepository, ID, JSONSerializable, NotFoundError, validateContentType } from "@/domain";
-import { WebContentImporter } from "../interfaces/web-content-importer";
+import axios from 'axios';
+import { isSameSubType, parseContentType } from "@/content";
+import { ContentImporter } from "../interfaces";
 import { AuthorizationError } from "./server-errors";
 import { UserRepository } from './server-user-models';
+import {
+  ContentAnalysisManager,
+  ContentMigrationManager,
+  ContentMigrationPath,
+  Document,
+  DocumentGraph,
+  DocumentGraphQuery,
+  DocumentHeader,
+  DocumentLink,
+  DocumentLinkRepository,
+  DocumentQuery,
+  DocumentRepository,
+  ID,
+  JSONSerializable,
+  NotFoundError,
+  validateContentType,
+  validateDocumentGraphQuery,
+} from "@/domain";
+import { htmlContentType, unknownContentType } from '@/content/content-types';
+import { HtmlContentLoader, UnknownContentLoader } from '../content';
+import { NotImplementedError } from '@/domain';
 
+
+export type ServerDocumentInteractorDependencies = {
+  documents: DocumentRepository,
+  users: UserRepository,
+  analysis: ContentAnalysisManager,
+  links: DocumentLinkRepository,
+  migrations: ContentMigrationManager,
+  importer: ContentImporter
+};
 
 export class ServerDocumentInteractor {
   private documents: DocumentRepository;
   private users: UserRepository;
   private analysis: ContentAnalysisManager;
   private links: DocumentLinkRepository;
-  private importer: WebContentImporter;
   private migrations: ContentMigrationManager;
 
 
-  constructor(documents: DocumentRepository, users: UserRepository, analysis: ContentAnalysisManager, links: DocumentLinkRepository, migrations: ContentMigrationManager) {
+  constructor({ documents, users, analysis, links, migrations, importer }: ServerDocumentInteractorDependencies) {
     this.documents = documents;
     this.users = users;
     this.analysis = analysis; 
     this.links = links;
-    this.importer = new WebContentImporter();
     this.migrations = migrations;
   }
 
@@ -183,18 +211,42 @@ export class ServerDocumentInteractor {
 
   async importDocumentFromUrl(userId: ID, url: string) : Promise<Document> {
     const user = await this.users.getById(userId);
-    const imported = await this.importer.importContent(url);
-    const document = await this.documents.create(user.author.id, {
-      title: imported.title ?? url,
-      contentType: 'text/html',
-      content: imported.content
-    });
+    const response = await axios.get(url);
 
-    return document;
+    const contentType = response.headers['content-type'] ?? unknownContentType.value;
+    const content = response.data;
+
+    if (HtmlContentLoader.supportsContentType(contentType)) {
+      const loader = new HtmlContentLoader(content, url);
+
+      const document = await this.documents.create(user.author.id, {
+        title: await loader.getTitle(),
+        contentType: 'text/html',
+        content: await loader.toContent(),
+      });
+
+      return document;
+    }
+
+    if (UnknownContentLoader.supportsContentType(contentType)) {
+      const loader = new UnknownContentLoader(response.data);
+
+      const document = await this.documents.create(user.author.id, {
+        title: url,
+        contentType: contentType,
+        content: loader.toContent(),
+      });
+
+      return document;
+    }
+
+    throw new NotImplementedError(`No loader for content type ${contentType}`);
   }
 
 
   async graphByQuery(userId: ID, query: DocumentGraphQuery) : Promise<DocumentGraph> {
+    validateDocumentGraphQuery(query);
+
     const { radius, ...documentQuery } = query;
     const user = await this.users.getById(userId);
 

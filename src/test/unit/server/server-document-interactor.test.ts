@@ -1,13 +1,17 @@
-import { ContentAnalysisManager, ContentMigrationManager, NotImplementedError } from "@/domain";
 import { DefaultAnalysisManager, defaultAnalyzers, DefaultMigrationManager, defaultMigrations } from "@/content";
-import { AuthorRepository, Document, DocumentLinkRepository, DocumentRepository, NotFoundError, UpdateDocumentInput, validateDocument, ValidationError } from "@/domain";
+import { AlreadyExistsError, AuthorRepository, ContentAnalysisManager, ContentMigrationManager, Document, DocumentLink, DocumentLinkRepository, DocumentRepository, NotFoundError, NotImplementedError, UpdateDocumentInput, validateContentType, validateDocument, validateDocumentGraph, ValidationError } from "@/domain";
+import { ImportedWebContent } from "@/server/interfaces/web-content-importer";
+import { TestWebContentImporter } from "@/test/__utils__/test-web-content-importer";
 import { MemoryAuthorRepository, MemoryDocumentLinkRepository, MemoryDocumentRepository, MemoryUserRepository } from "../../../server/interfaces";
 import { CreateDocumentInput, ServerDocumentInteractor, User, UserRepository } from "../../../server/usecases";
 import { AuthorizationError } from "../../../server/usecases/server-errors";
+import * as INVALID from '../../__utils__/domain-invalid-examples';
+import * as VALID from '../../__utils__/domain-valid-examples';
+import { TestPromise } from '../../__utils__/test-promise';
 
 
 
-describe('Testing ServerDocumentInteractor', () => {
+describe.skip('Testing ServerDocumentInteractor', () => {
   let interactor: ServerDocumentInteractor;
   let documents: DocumentRepository;
   let users: UserRepository;
@@ -15,6 +19,7 @@ describe('Testing ServerDocumentInteractor', () => {
   let analysis: ContentAnalysisManager;
   let links: DocumentLinkRepository;
   let migrations: ContentMigrationManager;
+  let importer: TestWebContentImporter;
 
   beforeEach(() => {
     authors = new MemoryAuthorRepository();
@@ -23,7 +28,8 @@ describe('Testing ServerDocumentInteractor', () => {
     analysis = new DefaultAnalysisManager(defaultAnalyzers);
     links = new MemoryDocumentLinkRepository();
     migrations = new DefaultMigrationManager(defaultMigrations);
-    interactor = new ServerDocumentInteractor(documents, users, analysis, links, migrations);
+    importer = new TestWebContentImporter();
+    interactor = new ServerDocumentInteractor({ documents, users, analysis, links, migrations, importer });
   });
 
 
@@ -246,92 +252,156 @@ describe('Testing ServerDocumentInteractor', () => {
   });
 
   describe('Testing getRecommendedLinks', () => {
+    let docs: Document[];
 
-    it('should return a valid DocumentGraph', () => {
-      throw new NotImplementedError();
+    beforeEach(async () => {
+      docs = await populate();
+    });
+
+    it('should return a valid DocumentGraph', async () => {
+      expect.assertions(1);
+
+      const result = await interactor.getRecommendedLinks('luke', docs[0].id)
+      expect(() => validateDocumentGraph(result)).not.toThrow();
     });
 
     it('should return a graph where every link is either to or from the requested document', async () => {
-      throw new NotImplementedError();
+      const documentId = docs[0].id;
+      const graph = await interactor.getRecommendedLinks('luke', documentId);
+      expect.assertions(graph.links.length);
+
+      graph.links.forEach(link => {
+        expect(link.from === documentId || link.to === documentId).toBeTruthy();
+      });
     });
 
-    it('should throw AuthorizationError if the user is not authorized to view the document', () => {
-      throw new NotImplementedError();
+    it('should throw AuthorizationError if the user is not authorized to view the document', async () => {
+      expect.assertions(1);
+      const unauthorizedUser = 'leia';
+
+      await expect(() => interactor.getRecommendedLinks(unauthorizedUser, docs[0].id)).rejects.toBeInstanceOf(AuthorizationError);
     });
 
-    it('should only return links to documents the user can read', () => {
-      throw new NotImplementedError();
+    it('should only return links to documents the user can read', async () => {
+      const graph = await interactor.getRecommendedLinks('luke', docs[0].id);
+      expect.assertions(graph.documents.length);
+
+      graph.documents.forEach(doc => {
+        expect(() => interactor.getDocument('luke', doc.id)).not.toThrow();
+      });
     });
 
-    it('should throw NotFoundError if the document does not exist', () => {
-      throw new NotImplementedError();
+    it('should throw NotFoundError if the document does not exist', async () => {
+      expect.assertions(1);
+
+      await expect(() => interactor.getRecommendedLinks('luke', 'nonexistent')).rejects.toBeInstanceOf(NotFoundError);
     });
 
-    it('should throw NotFoundError if the user does not exist', () => {
-      throw new NotImplementedError();
+    it('should throw NotFoundError if the user does not exist', async () => {
+      expect.assertions(1);
+
+      await expect(() => interactor.getRecommendedLinks('vader', docs[0].id)).rejects.toBeInstanceOf(NotFoundError);
     });
   });
 
 
   describe('Testing linkDocuments()', () => {
-    it('should return a link matching the given parameters', () => {
-      throw new NotImplementedError();
+    let docs: Document[];
+
+    beforeEach(async () => {
+      docs = await populate();
     });
 
-    it('should throw NotFoundError if the user does not exist', () => {
-      throw new NotImplementedError();
+    it('should return a link matching the given parameters', async () => {
+      expect.assertions(1);
+      const fromId = docs[0].id;
+      const toId = docs[1].id;
+      const meta = VALID.DOCUMENT_LINK_METAS[0];
+      const expected: DocumentLink = { from: fromId, to: toId, meta };
+
+      await expect(interactor.linkDocuments('luke', fromId, toId, meta)).resolves.toMatchObject(expected);
     });
 
-    it('should throw NotFoundError if the from document does not exist', () => {
-      throw new NotImplementedError();
+    it('should throw NotFoundError if the user does not exist', async () => {
+      expect.assertions(1);
+
+      await expect(interactor.linkDocuments('vader', docs[0].id, docs[1].id)).rejects.toBeInstanceOf(NotFoundError);
     });
 
-    it('should throw AuthorizationError if the user does not have access to the from document', () => {
-      throw new NotImplementedError();
+    it('should throw NotFoundError if the from document does not exist', async () => {
+      expect.assertions(1);
+      await expect(interactor.linkDocuments('luke', 'nonexistent', docs[0].id)).rejects.toBeInstanceOf(NotFoundError);
     });
 
-    it('should throw NotFoundError if the "to" document does not existent', () => {
-      throw new NotImplementedError();
+    it('should throw NotFoundError if the to document does not exist', async () => {
+      expect.assertions(1);
+      await expect(interactor.linkDocuments('luke', docs[0].id, 'nonexistent')).rejects.toBeInstanceOf(NotFoundError);
     });
 
-    it('should throw AuthorizationError if the user does not have access to the "to" documents', () => {
-      throw new NotImplementedError();
+    it('should throw AuthorizationError if the user does not have access to the from document', async () => {
+      expect.assertions(1);
+      await expect(interactor.linkDocuments('luke', docs[4].id, docs[0].id)).rejects.toBeInstanceOf(AuthorizationError);
     });
 
-    it('should throw ValidationError if "meta" is invalid', () => {
-      throw new NotImplementedError();
+    it('should throw AuthorizationError if the user does not have access to the to document', async () => {
+      expect.assertions(1);
+      await expect(interactor.linkDocuments('luke', docs[0].id, docs[5].id)).rejects.toBeInstanceOf(AuthorizationError);
     });
+
+    it('should throw ValidationError if "meta" is invalid', async () => {
+      expect.assertions(1);
+      await expect(interactor.linkDocuments('luke', docs[0].id, docs[1].id, INVALID.OPTIONAL_DOCUMENT_LINK_METAS[0])).rejects.toBeInstanceOf(ValidationError);
+    });
+
+    it('should throw AlreadyExistsError if a link already exists between the two documents', async () => {
+      expect.assertions(1);
+      const fromId = docs[0].id;
+      const toId = docs[1].id;
+
+      await interactor.linkDocuments('luke', fromId, toId);
+      await expect(interactor.linkDocuments('luke', fromId, toId)).rejects.toBeInstanceOf(AlreadyExistsError);
+    });
+
   });
 
   
   describe('Testing unlinkDocuments()', () => {
-    it('should delete and return the link matching the given parameters', () => {
-      throw new NotImplementedError();
+    let docs: Document[];
+    let link: DocumentLink;
+
+    beforeEach(async () => {
+      docs = await populate();
+      link = await interactor.linkDocuments('luke', docs[0].id, docs[1].id);
     });
 
-    it('should throw NotFoundError if the user does not exist', () => {
-      throw new NotImplementedError();
+    it('should delete and return the link matching the given parameters', async () => {
+      expect.assertions(1);
+      
+      await expect(interactor.unlinkDocuments('luke', link.from, link.to)).resolves.toMatchObject(link);
     });
 
-    it('should throw NotFoundError if the matching link cannot be found', () => {
-      throw new NotImplementedError();
+    it('should throw NotFoundError if the user does not exist', async () => {
+      expect.assertions(1);
+
+      await expect(interactor.unlinkDocuments('vader', link.from, link.to)).rejects.toBeInstanceOf(NotFoundError);
     });
 
-    it('should throw AuthorizationError if the user does not have access to the from document', () => {
-      throw new NotImplementedError();
+    it('should throw NotFoundError if the matching link cannot be found', async () => {
+      expect.assertions(1);
+
+      await expect(interactor.unlinkDocuments('luke', docs[1].id, docs[2].id)).rejects.toBeInstanceOf(NotFoundError);
     });
 
-    it('should throw NotFoundError if the "to" document does not existent', () => {
-      throw new NotImplementedError();
-    });
+    it('should throw AuthorizationError if the user does not have access to the documents', async () => {
+      expect.assertions(1);
 
-    it('should throw AuthorizationError if the user does not have access to the "to" documents', () => {
-      throw new NotImplementedError();
+      await expect(interactor.unlinkDocuments('leia', link.from, link.to)).rejects.toBeInstanceOf(AuthorizationError);
     });
   });
 
 
   describe('Testing importDocumentFromUrl()', () => {
+
     it('should have written tests', () => {
       throw new NotImplementedError();
     });
@@ -339,15 +409,44 @@ describe('Testing ServerDocumentInteractor', () => {
 
 
   describe('Testing graphByQuery()', () => {
-    it('should have written tests', () => {
-      throw new NotImplementedError();
+    let docs: Document[];
+
+    beforeEach(async () => {
+      docs = await populate();
+    });
+
+    it.each(VALID.DOCUMENT_GRAPH_QUERIES)('should return a valid DocumentGraph', async query => {
+      expect.assertions(1);
+
+      const result = await interactor.graphByQuery('luke', query);
+
+      expect(() => validateDocumentGraph(result)).not.toThrow();
+    });
+
+    it.each(INVALID.DOCUMENT_GRAPH_QUERIES)('should throw ValidationError if given an invalid query', async (query) => {
+      expect.assertions(1);
+
+      await expect(interactor.graphByQuery('luke', query)).rejects.toBeInstanceOf(ValidationError);
+    });
+
+    it('should throw NotFoundError if the user does not exist', async () => {
+      expect.assertions(1);
+
+      await expect(interactor.graphByQuery('vader', {})).rejects.toBeInstanceOf(NotFoundError);
     });
   });
 
 
   describe('Testing listContentConversions()', () => {
-    it('should have written tests', () => {
-      throw new NotImplementedError();
+    it.each(VALID.CONTENT_TYPES)('should return a list of contentType strings when given %p', async (contentType) => {
+      const result = await interactor.listContentConversions(contentType);
+      result.forEach(element => expect(() => validateContentType(element)).not.toThrow());
+    });
+
+    it.each(INVALID.CONTENT_TYPES)('should throw ValidationError if given %p', async (value) => {
+      expect.assertions(1);
+      
+      await expect(interactor.listContentConversions(value)).rejects.toBeInstanceOf(ValidationError);
     });
   });
 

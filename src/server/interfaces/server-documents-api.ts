@@ -58,6 +58,7 @@ export class ServerDocumentsApi {
 
         input DocumentQuery {
           id: [ID!],
+          authorId: [ID!]
           isPublic: Boolean,
           title: [String!],
           contentType: [String!]
@@ -88,6 +89,7 @@ export class ServerDocumentsApi {
 
         input DocumentGraphQuery {
           id: [ID!]
+          authorId: [ID!]
           isPublic: Boolean
           title: [String!],
           contentType: [String!]

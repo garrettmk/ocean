@@ -4,7 +4,7 @@ import Icon from '@chakra-ui/icon';
 import { Box, Flex, FlexProps } from '@chakra-ui/layout';
 import { Menu, MenuButton, MenuItem, MenuList } from '@chakra-ui/menu';
 import React from 'react';
-import { HiOutlineDocumentAdd } from 'react-icons/hi';
+import { AiOutlineSisternode, AiOutlineSubnode } from 'react-icons/ai';
 import { IoLink, IoUnlink } from 'react-icons/io5';
 import { ImportUrlModal } from '../import-url-modal';
 
@@ -74,7 +74,25 @@ export function GraphEditorToolbar(props: GraphEditorToolbarProps) : JSX.Element
             <MenuButton
               as={IconButton}
               aria-label='New Document'
-              icon={<Icon as={HiOutlineDocumentAdd}/>}
+              icon={<Icon as={AiOutlineSisternode}/>}
+            />
+            <MenuList
+              shadow='2xl'
+              borderWidth='thin'
+              borderColor='gray.300'
+              color='black'
+            >
+              <MenuItem onClick={openImportUrlModal}>Import from URL...</MenuItem>
+              <MenuItem>Plain Text</MenuItem>
+              <MenuItem>Slate</MenuItem>
+            </MenuList>
+          </Menu>
+
+          <Menu>
+            <MenuButton
+              as={IconButton}
+              aria-label='New Document'
+              icon={<Icon as={AiOutlineSubnode}/>}
             />
             <MenuList
               shadow='2xl'

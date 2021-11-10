@@ -1,7 +1,28 @@
 import { AuthorizationError, ClientDocumentsGateway } from "@/client/interfaces";
-import { CreateDocumentInput, DocumentGraphQuery, DocumentLinkMeta, DocumentQuery, ID, JSONSerializable, NotFoundError, NotImplementedError, UpdateDocumentInput, validateCreateDocumentInput, validateUpdateDocumentInput, ValidationError } from "@/domain";
 import { DocumentNode, GraphQLError } from "graphql";
 import gql from "graphql-tag";
+import {
+  CreateDocumentInput,
+  DocumentGraph,
+  DocumentGraphQuery,
+  DocumentLinkMeta,
+  DocumentQuery,
+  ID,
+  JSONSerializable,
+  NotFoundError,
+  NotImplementedError,
+  UpdateDocumentInput,
+  validateCreateDocumentInput,
+  validateUpdateDocumentInput,
+  ValidationError,
+  DocumentHeader,
+  Document,
+  DocumentLink,
+  validateDocumentLinkMeta,
+  AlreadyExistsError,
+  validateDocumentGraphQuery,
+  validateContentType,
+} from "@/domain";
 
 
 export interface GraphQLClient {
@@ -30,7 +51,7 @@ export class DocumentsGraphQLClient implements ClientDocumentsGateway {
   }
 
   
-  async listDocuments(query: Omit<DocumentQuery, 'authorId'> = {}) {
+  async listDocuments(query: Omit<DocumentQuery, 'authorId'> = {}) : Promise<DocumentHeader[]> {
     const _query = gql`
       query($query: DocumentQuery) {
         listDocuments(query: $query) {
@@ -53,7 +74,8 @@ export class DocumentsGraphQLClient implements ClientDocumentsGateway {
     return result.data?.listDocuments ?? [];
   }
 
-  async getDocument(id: ID) {
+
+  async getDocument(id: ID) : Promise<Document> {
     const query = gql`
       query($id: ID!) {
         getDocument(id: $id) {
@@ -78,7 +100,7 @@ export class DocumentsGraphQLClient implements ClientDocumentsGateway {
   }
 
 
-  async createDocument(input: CreateDocumentInput) {
+  async createDocument(input: CreateDocumentInput) : Promise<Document>{
     validateCreateDocumentInput(input);
 
     const query = gql`
@@ -105,7 +127,7 @@ export class DocumentsGraphQLClient implements ClientDocumentsGateway {
   }
 
 
-  async updateDocument(id: ID, input: UpdateDocumentInput) {
+  async updateDocument(id: ID, input: UpdateDocumentInput) : Promise<Document>{
     validateUpdateDocumentInput(input);
 
     const query = gql`
@@ -132,7 +154,7 @@ export class DocumentsGraphQLClient implements ClientDocumentsGateway {
   }
 
 
-  async deleteDocument(id: ID) {
+  async deleteDocument(id: ID) : Promise<Document>{
     const query = gql`
       mutation($id: ID!) {
         deleteDocument(id: $id) {
@@ -157,7 +179,7 @@ export class DocumentsGraphQLClient implements ClientDocumentsGateway {
   }
 
 
-  async getRecommendedLinks(id: ID) {
+  async getRecommendedLinks(id: ID) : Promise<DocumentGraph> {
     const query = gql`
       query($id: ID!) {
         getRecommendedLinks(id: $id) {
@@ -188,7 +210,9 @@ export class DocumentsGraphQLClient implements ClientDocumentsGateway {
   }
 
 
-  async linkDocuments(fromId: ID, toId: ID, meta: DocumentLinkMeta = {}) {
+  async linkDocuments(fromId: ID, toId: ID, meta: DocumentLinkMeta = {}) : Promise<DocumentLink> {
+    validateDocumentLinkMeta(meta);
+
     const query = gql`
       mutation($fromId: ID!, $toId: ID!, $meta: JSON) {
         linkDocuments(fromId: $fromId, toId: $toId, meta: $meta) {
@@ -207,7 +231,7 @@ export class DocumentsGraphQLClient implements ClientDocumentsGateway {
   }
 
 
-  async unlinkDocuments(fromId: ID, toId: ID) {
+  async unlinkDocuments(fromId: ID, toId: ID) : Promise<DocumentLink> {
     const query = gql`
       mutation($fromId: ID!, $toId: ID!) {
         unlinkDocuments(fromId: $fromId, toId: $toId) {
@@ -226,7 +250,7 @@ export class DocumentsGraphQLClient implements ClientDocumentsGateway {
   }
   
 
-  async importDocumentFromUrl(url: string) {
+  async importDocumentFromUrl(url: string) : Promise<Document> {
     const query = gql`
       mutation($url: String!) {
         importDocumentFromUrl(url: $url) {
@@ -251,7 +275,9 @@ export class DocumentsGraphQLClient implements ClientDocumentsGateway {
   }
 
 
-  async graphByQuery(query: DocumentGraphQuery = {}) {
+  async graphByQuery(query: DocumentGraphQuery = {}) : Promise<DocumentGraph> {
+    validateDocumentGraphQuery(query);
+
     const _query = gql`
       query($query: DocumentGraphQuery) {
         graphByQuery(query: $query) {
@@ -282,7 +308,9 @@ export class DocumentsGraphQLClient implements ClientDocumentsGateway {
   }
 
 
-  async listContentConversions(from: string) {
+  async listContentConversions(from: string) : Promise<string[]> {
+    validateContentType(from);
+    
     const query = gql`
       query($from: String!) {
         listContentConversions(from: $from)
@@ -321,22 +349,26 @@ function fromCombinedError(error: GraphQLCombinedError) : Error {
   // @ts-ignore
   const { name, ...extensions } = originalError?.extensions ?? {};
 
-  if (name === NotImplementedError.name)
-    return new NotImplementedError(originalError.message);
-  else if (name === NotFoundError.name)
-    return new NotFoundError(originalError.message);
-  else if (name === ValidationError.name)
-    return new ValidationError(
-      originalError.message,
-      // @ts-ignore
-      extensions.path,
-      // @ts-ignore 
-      extensions.expected,
-      // @ts-ignore 
-      extensions.received
-    );
-  else if (name === AuthorizationError.name)
-    return new AuthorizationError(originalError.message);
-
-  return error;
+  switch (name) {
+    case NotImplementedError.name:
+      return new NotImplementedError(originalError.message);
+    case NotFoundError.name:
+      return new NotFoundError(originalError.message);
+    case ValidationError.name:
+      return new ValidationError(
+        originalError.message,
+        // @ts-ignore
+        extensions.path,
+        // @ts-ignore
+        extensions.expected,
+        // @ts-ignore
+        extensions.received
+      );
+    case AlreadyExistsError.name:
+      return new AlreadyExistsError(originalError.message);
+    case AuthorizationError.name:
+      return new AuthorizationError(originalError.message);
+    default:
+      return error;
+  };
 }

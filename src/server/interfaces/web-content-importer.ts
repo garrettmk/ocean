@@ -11,8 +11,12 @@ export type ImportedWebContent = {
   content: string
 }
 
+export interface ContentImporter {
+  importContent(url: string) : Promise<ImportedWebContent>
+}
 
-export class WebContentImporter {
+
+export class WebContentImporter implements ContentImporter {
 
   constructor() {
 

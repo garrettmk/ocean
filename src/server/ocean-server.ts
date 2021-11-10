@@ -7,6 +7,7 @@ import { createServer, Server } from 'http';
 import morgan from 'morgan';
 import path from 'path';
 import { ServerApi } from "./interfaces";
+import { ContentImporter } from "./interfaces/web-content-importer";
 import { ServerApiContextMiddleware } from './middleware';
 import { ServerDocumentInteractor, ServerUserInteractor, UserRepository } from "./usecases";
 
@@ -22,10 +23,11 @@ export class OceanServer {
     secret: string, 
     analysis: ContentAnalysisManager, 
     links: DocumentLinkRepository,
-    migrations: ContentMigrationManager
+    migrations: ContentMigrationManager,
+    importer: ContentImporter
   ) {
     // Create the interactors
-    const documentInteractor = new ServerDocumentInteractor(documents, users, analysis, links, migrations);
+    const documentInteractor = new ServerDocumentInteractor({ documents, users, analysis, links, migrations, importer });
     const userInteractor = new ServerUserInteractor(users, authors);
 
     // Create the api

@@ -9,3 +9,4 @@ export * from './arango-author-repository';
 export * from './arango-user-repository';
 export * from './arango-document-repository';
 export * from './arango-document-link-repository';
+export * from './web-content-importer';

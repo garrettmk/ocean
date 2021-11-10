@@ -38,6 +38,8 @@ export const DOCUMENT_LINK_METAS: any[] = [
   { method: () => null }
 ];
 
+export const OPTIONAL_DOCUMENT_LINK_METAS: any[] = DOCUMENT_LINK_METAS.filter(v => v !== undefined);
+
 export const DOCUMENT_LINKS: any[] = [
   ...OBJECTS,
   ...VALID.DOCUMENT_LINKS.flatMap(link => IDS.map(from => ({ ...link, from }))),
@@ -71,3 +73,5 @@ export const DOCUMENT_GRAPH_QUERIES: any[] = [
   ...DOCUMENT_QUERIES,
   ...VALID.DOCUMENT_GRAPH_QUERIES.flatMap(query => OPTIONAL_POSITIVE_INTEGERS.map(radius => ({ ...query, radius })))
 ];
+
+export const OPTIONAL_DOCUMENT_GRAPH_QUERIES = DOCUMENT_GRAPH_QUERIES.filter(v => v !== undefined);

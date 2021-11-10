@@ -1,7 +1,7 @@
 import { DefaultAnalysisManager, DefaultMigrationManager, defaultAnalyzers, defaultMigrations } from '@/content';
 import { AlreadyExistsError } from '@/domain';
 import { Database } from 'arangojs';
-import { ArangoAuthorRepository, ArangoDocumentLinkRepository, ArangoDocumentRepository, ArangoUserRepository } from './interfaces';
+import { ArangoAuthorRepository, ArangoDocumentLinkRepository, ArangoDocumentRepository, ArangoUserRepository, WebContentImporter } from './interfaces';
 import { OceanServer } from './ocean-server';
 export { AuthorizationError } from './usecases';
 
@@ -39,8 +39,8 @@ await links.initialize();
 
 const analysis = new DefaultAnalysisManager(defaultAnalyzers);
 const migrations = new DefaultMigrationManager(defaultMigrations);
-
+const importer = new WebContentImporter();
 
 // Create and start the server
-const app = new OceanServer(users, authors, documents, 'secret', analysis, links, migrations);
+const app = new OceanServer(users, authors, documents, 'secret', analysis, links, migrations, importer);
 app.listen(3000);//

@@ -6,6 +6,7 @@ import { User, UserRepository } from "@/server/usecases";
 import { TestAuthenticator } from "./test-authenticator";
 import fetch from "node-fetch";
 import { DefaultAnalysisManager, defaultAnalyzers, DefaultMigrationManager, defaultMigrations } from "@/content";
+import { TestWebContentImporter } from "./test-web-content-importer";
 
 
 export class ServerTestHarness {
@@ -15,6 +16,7 @@ export class ServerTestHarness {
   public linkRepo: DocumentLinkRepository;
   public analysis: ContentAnalysisManager;
   public migrations: ContentMigrationManager;
+  public importer: TestWebContentImporter;
   public server: OceanServer;
 
   public authenticator: TestAuthenticator;
@@ -35,6 +37,7 @@ export class ServerTestHarness {
     this.linkRepo = new MemoryDocumentLinkRepository();
     this.analysis = new DefaultAnalysisManager(defaultAnalyzers);
     this.migrations = new DefaultMigrationManager(defaultMigrations);
+    this.importer = new TestWebContentImporter();
     
 
     this.server = new OceanServer(
@@ -45,6 +48,7 @@ export class ServerTestHarness {
       this.analysis, 
       this.linkRepo,
       this.migrations,
+      this.importer,
     );
 
     this.authenticator = new TestAuthenticator(undefined, 'secret');
