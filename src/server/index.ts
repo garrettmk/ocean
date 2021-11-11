@@ -5,7 +5,7 @@ import { ArangoAuthorRepository, ArangoDocumentLinkRepository, ArangoDocumentRep
 import { OceanServer } from './ocean-server';
 export { AuthorizationError } from './usecases';
 
-const db = new Database({ url: 'http://localhost:8529', databaseName: 'ocean' });
+const db = new Database({ url: 'http://172.17.0.3:8529', databaseName: 'ocean' });
 const config = {
   db,
   collectionNames: {
