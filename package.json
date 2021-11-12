@@ -5,8 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "jest",
-    "build:server": "webpack --config webpack.server-config.js --watch",
-    "build:react": "webpack --config webpack.react-config.js --watch",
+    "build:server": "webpack --config webpack.server-config.js",
+    "build:react": "webpack --config webpack.react-config.js",
     "serve:react": "webpack serve --config webpack.react-config.js",
     "serve:server": "node ./dist/server.bundle.js",
     "serve:arango": "docker run -e ARANGO_NO_AUTH=1 -p 8529:8529 -v $(pwd)/dist/data:/data arangodb/arangodb arangod --server.endpoint tcp://0.0.0.0:8529",
