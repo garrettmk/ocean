@@ -3,6 +3,7 @@ services:
   ocean-server:
     build: .
     command: /bin/sh -c "while sleep 1000; do :; done"
+    user: node
     ports:
       - "3000"
       - "3001"
