@@ -10,7 +10,7 @@ services:
       - arango
     environment:
       - "ARANGO_URL=http://arango:8529"
-      - "ARANGO_DATABASE=ocean"
+      - "ARANGO_DB=ocean"
     
   arango:
     image: arangodb/arangodb
