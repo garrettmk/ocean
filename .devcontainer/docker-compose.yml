@@ -2,6 +2,11 @@ version: '3'
 services:
   ocean-server:
     build: .
+    volumes:
+      - ..:/workspaces:cached
+    ports:
+      - "3000"
+      - "3001"
     depends_on:
       - arango
     
@@ -10,5 +15,5 @@ services:
     ports:
       - "8529"
     environment:
-      - ARANGO_NO_AUTH: 1
+      - "ARANGO_NO_AUTH=1"
     command: arangod --server.endpoint tcp://0.0.0.0:8529
