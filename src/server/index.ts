@@ -5,7 +5,14 @@ import { ArangoAuthorRepository, ArangoDocumentLinkRepository, ArangoDocumentRep
 import { OceanServer } from './ocean-server';
 export { AuthorizationError } from './usecases';
 
-const db = new Database({ url: 'http://arango:8529', databaseName: 'ocean' });
+let db = new Database({ url: 'http://arango:8529' });
+const databases = await db.listDatabases();
+if (databases.includes('ocean')) {
+  db = db.database('ocean');
+} else {
+  db = await db.createDatabase('ocean');
+};
+
 const config = {
   db,
   collectionNames: {
