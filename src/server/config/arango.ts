@@ -1,0 +1,29 @@
+import { assert, object, string, refine, optional } from 'superstruct';
+const nonempty = () => refine(string(), 'nonempty', value => !!value.length);
+
+
+export type ArangoConnectionConfig = {
+  url: string,
+  database: string,
+  username?: string,
+  password?: string,
+  token?: string
+};
+
+
+export const arangoConnectionConfig: ArangoConnectionConfig = {
+  url: process.env.ARANGO_URL!,
+  database: process.env.ARANGO_DB!,
+  username: process.env.ARANGO_USERNAME,
+  password: process.env.ARANGO_PASSWORD,
+  token: process.env.ARANGO_TOKEN,
+};
+
+
+assert(arangoConnectionConfig, object({
+  url: nonempty(),
+  database: nonempty(),
+  username: optional(string()),
+  password: optional(string()),
+  token: optional(string())
+}));

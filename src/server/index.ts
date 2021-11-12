@@ -3,15 +3,12 @@ import { AlreadyExistsError } from '@/domain';
 import { Database } from 'arangojs';
 import { ArangoAuthorRepository, ArangoDocumentLinkRepository, ArangoDocumentRepository, ArangoUserRepository, WebContentImporter } from './interfaces';
 import { OceanServer } from './ocean-server';
+import { makeArangoConnection } from './utils';
+import { arangoConnectionConfig } from './config';
 export { AuthorizationError } from './usecases';
 
-let db = new Database({ url: 'http://arango:8529' });
-const databases = await db.listDatabases();
-if (databases.includes('ocean')) {
-  db = db.database('ocean');
-} else {
-  db = await db.createDatabase('ocean');
-};
+
+const db = await makeArangoConnection(arangoConnectionConfig);
 
 const config = {
   db,
