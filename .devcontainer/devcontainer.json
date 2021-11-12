@@ -14,7 +14,7 @@
 	"dockerComposeFile": ["docker-compose.yml"],
 	"service": "ocean-server",
 	"shutdownAction": "stopCompose",
-	"workspaceFolder": "/workspace",
+	"workspaceFolder": "/workspaces/ocean",
 
 	// Set *default* container specific settings.json values on container create.
 	"settings": {},

@@ -3,8 +3,6 @@ services:
   ocean-server:
     build: .
     command: /bin/sh -c "while sleep 1000; do :; done"
-    volumes:
-      - ..:/workspace:cached
     ports:
       - "3000"
       - "3001"
