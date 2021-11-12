@@ -2,27 +2,26 @@
 // https://github.com/microsoft/vscode-dev-containers/tree/v0.205.2/containers/typescript-node
 {
 	"name": "Ocean",
-	// "build": {
-	// 	"dockerfile": "Dockerfile",
-	// 	// Update 'VARIANT' to pick a Node version: 16, 14, 12.
-	// 	// Append -bullseye or -buster to pin to an OS version.
-	// 	// Use -bullseye variants on local on arm64/Apple Silicon.
-	// 	"args": { 
-	// 		"VARIANT": "16-bullseye"
-	// 	}
-	// },
 	"dockerComposeFile": ["docker-compose.yml"],
 	"service": "ocean-server",
-	// "shutdownAction": "stopCompose",
 	"workspaceFolder": "/workspaces/ocean",
 
 	// Set *default* container specific settings.json values on container create.
 	"settings": {},
 
-
 	// Add the IDs of extensions you want installed when the container is created.
 	"extensions": [
-		"dbaeumer.vscode-eslint"
+		"dbaeumer.vscode-eslint",
+		"eamodio.gitlens",
+		"graphql.vscode-graphql",
+		"ecmel.vscode-html-css",
+		"kavod-io.vscode-jest-test-adapter",
+		"ms-vscode.test-adapter-converter",
+		"wallabyjs.quokka-vscode",
+		"emilylilylime.vscode-test-explorer-diagnostics",
+		"connorshea.vscode-test-explorer-status-bar",
+		"hbenl.vscode-test-explorer",
+		"christian-kohler.npm-intellisense",
 	],
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
