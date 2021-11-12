@@ -11,7 +11,6 @@ module.exports = {
   output: {
     path: path.resolve(__dirname, 'dist'),
     filename: path.join('public', 'react-web.bundle.js'),
-    publicPath: path.join(__dirname, 'dist', 'public'),
   },
 
   devtool: 'inline-source-map',
