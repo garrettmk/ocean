@@ -3,7 +3,7 @@ import { ValidationError } from "./domain-errors";
 
 
 // type/subtype;parameter=value
-export const mimeTypeRegex = /(^[a-zA-Z0-9_\-]+\/[a-zA-Z0-9_\-]+)(?:;([a-zA-Z0-9_\-]+=[a-zA-Z0-9_\-]+))?$/;
+export const mimeTypeRegex = /(^[a-zA-Z0-9_\-]+\/[a-zA-Z0-9_\-]+)(?:;\s*([a-zA-Z0-9_\-]+=[a-zA-Z0-9_\-]+))?$/;
 
 
 // Parses a MIME type
