@@ -1,8 +1,9 @@
-import { useDocumentEditor } from '@/react-web/hooks';
+import { useDocumentEditor, useStateTransition } from '@/react-web/hooks';
+import { DocumentEditorMachineState } from '@/react-web/machines';
 import { ButtonGroup, IconButton } from '@chakra-ui/button';
 import Icon from '@chakra-ui/icon';
 import { Flex, FlexProps } from '@chakra-ui/layout';
-import { Tooltip } from '@chakra-ui/react';
+import { Tooltip, useToast } from '@chakra-ui/react';
 import React from 'react';
 import { FaRegChartBar, FaRegClone, FaRegSave } from 'react-icons/fa';
 import { FiTrash } from 'react-icons/fi';
@@ -14,7 +15,39 @@ export type DocumentEditorToolbarProps = FlexProps;
 
 
 export function DocumentEditorToolbar(props: DocumentEditorToolbarProps) : JSX.Element {
+  const toast = useToast();
   const editor = useDocumentEditor();
+
+  const saveToastId = 'save-toast';
+  useStateTransition(editor.state, 'savingDocument', {
+    in: (current, prev) => {
+      if (!toast.isActive(saveToastId))
+        toast({
+          id: saveToastId,
+          title: 'Saving Document',
+          description: 'Sending data...',
+          status: 'info'
+        });
+    },
+
+    out: (current, prev) => {
+      if (current.context.error)
+        toast.update(saveToastId, {
+          title: 'Error saving document',
+          description: current.context.error + '',
+          status: 'error',
+          isClosable: true
+        });
+      else
+        toast.update(saveToastId, {
+          title: 'Document saved',
+          description: 'The documen was saved successfully.',
+          status: 'success',
+          duration: 5000,
+          isClosable: true
+        });
+    }
+  });
 
   return (
     <Flex {...props}>

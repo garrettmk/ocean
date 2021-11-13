@@ -1,7 +1,7 @@
 import { ClientDocumentsGateway } from "@/client/interfaces";
 import { assertEventType } from "@/client/utils";
 import { ContentMigrationManager, Document, ID, UpdateDocumentInput } from "@/domain";
-import { assign, createMachine, DoneInvokeEvent, ErrorPlatformEvent, Interpreter, State, StateMachine } from 'xstate';
+import { assign, createMachine, DoneInvokeEvent, ErrorPlatformEvent, EventObject, Interpreter, State, StateMachine } from 'xstate';
 
 export type DocumentEditorMachineContext = {
   document?: Document,
@@ -19,7 +19,7 @@ export type ConfirmDeleteDocumentEvent = { type: 'confirmDeleteDocument' };
 export type CloneDocumentEvent = { type: 'cloneDocument' };
 export type CancelEvent = { type: 'cancel' };
 
-export type DocumentEditorEvent = 
+export type _DocumentEditorEvent = 
   | OpenDocumentEvent
   | EditDocumentEvent
   | ConvertDocumentEvent
@@ -31,6 +31,10 @@ export type DocumentEditorEvent =
   | CancelEvent
   | DoneInvokeEvent<string[]>
 
+export interface DocumentEditorEvent extends EventObject {
+  type: _DocumentEditorEvent['type'],
+  payload?: any
+}
 
 export type DocumentEditorStateSchema = {
   states: {

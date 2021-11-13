@@ -30,6 +30,7 @@ export function useDocumentEditorMachine() {
     state,
     send,
     document: state.context.document,
+    error: state.context.error,
     ...uiEventCreators,
   };
 }
