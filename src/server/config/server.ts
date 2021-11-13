@@ -6,7 +6,7 @@ export type ServerConfig = {
 };
 
 export const serverConfig: ServerConfig = {
-  secret: process.env.SERVER_SECRET ?? 'top secret',
+  secret: process.env.SERVER_SECRET ?? 'secret',
   port: parseInt(process.env.SERVER_PORT ?? '3000')
 };
 
