@@ -208,14 +208,17 @@ export class ServerDocumentInteractor {
 
 
   async importDocumentFromUrl(userId: ID, url: string) : Promise<Document> {
-    const user = await this.users.getById(userId);
+    // Fetch the resource, read the content and contentType
     const response = await axios.get(url);
-
     const contentType = response.headers['content-type'] ?? unknownContentType.value;
     const content = response.data;
-
+    
+    // Is it HTML?
     if (HtmlContentLoader.supportsContentType(contentType)) {
+      const user = await this.users.getById(userId);
       const loader = new HtmlContentLoader(content, url);
+
+      await loader.resolveRelativeLinks(url);
 
       const document = await this.documents.create(user.author.id, {
         title: await loader.getTitle(),
@@ -226,7 +229,9 @@ export class ServerDocumentInteractor {
       return document;
     }
 
+    // Is it an unknown MIME type?
     if (UnknownContentLoader.supportsContentType(contentType)) {
+      const user = await this.users.getById(userId);
       const loader = new UnknownContentLoader(response.data);
 
       const document = await this.documents.create(user.author.id, {
@@ -238,6 +243,7 @@ export class ServerDocumentInteractor {
       return document;
     }
 
+    // Holy shit, it's not even UNKNOWN??
     throw new NotImplementedError(`No loader for content type ${contentType}`);
   }
 

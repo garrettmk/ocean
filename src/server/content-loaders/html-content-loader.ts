@@ -1,6 +1,7 @@
 import DOMPurify from 'dompurify';
 import { JSDOM } from 'jsdom';
 import { htmlContentType, isSameSubType } from '../../content';
+import Url from 'url-parse';
 
 
 export class HtmlContentLoader {  
@@ -39,6 +40,17 @@ export class HtmlContentLoader {
   public async getTitle() : Promise<string> {
     await this._loaded;
     return this.dom.window.document.title;
+  }
+
+  public async resolveRelativeLinks(url: string) {
+    await this._loaded;
+    const { host } = new Url(url);
+
+    ['href', 'src'].forEach(key => {
+      this.dom.window.document.querySelectorAll(`${key}`).forEach(node => {
+        node.setAttribute(key, new Url(node.getAttribute(key) ?? '', host).href);
+      });
+    })
   }
 
   private sanitize(content: string) : string {
