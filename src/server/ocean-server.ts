@@ -6,28 +6,41 @@ import { formatError as defaultFormatError, GraphQLError } from "graphql";
 import { createServer, Server } from 'http';
 import morgan from 'morgan';
 import path from 'path';
-import { ServerApi } from "./interfaces";
-import { ContentImporter } from "./interfaces/web-content-importer";
+import { ServerApi } from "./apis";
 import { ServerApiContextMiddleware } from './middleware';
 import { ServerDocumentInteractor, ServerUserInteractor, UserRepository } from "./usecases";
 
 
+export type OceanServerDependencies = {
+  users: UserRepository,
+  authors: AuthorRepository,
+  documents: DocumentRepository,
+  documentLinks: DocumentLinkRepository,
+  migrations: ContentMigrationManager,
+  analysis: ContentAnalysisManager,
+  secret: string,
+  port: number
+};
+
 export class OceanServer {
   private app: Express;
   private server?: Server;
+  private port: number;
 
-  constructor(
-    users: UserRepository, 
-    authors: AuthorRepository, 
-    documents: DocumentRepository, 
-    secret: string, 
-    analysis: ContentAnalysisManager, 
-    links: DocumentLinkRepository,
-    migrations: ContentMigrationManager,
-    importer: ContentImporter
-  ) {
+  constructor({
+    users, 
+    authors, 
+    documents, 
+    analysis, 
+    documentLinks: links,
+    migrations,
+    secret,
+    port
+  }: OceanServerDependencies) {
+    this.port = port;
+
     // Create the interactors
-    const documentInteractor = new ServerDocumentInteractor({ documents, users, analysis, links, migrations, importer });
+    const documentInteractor = new ServerDocumentInteractor({ documents, users, analysis, links, migrations });
     const userInteractor = new ServerUserInteractor(users, authors);
 
     // Create the api
@@ -61,7 +74,9 @@ export class OceanServer {
     });
   }
 
-  listen(port: number = 3000) {
+  listen(port: number = this.port) {
+    this.port = port;
+
     return new Promise<void>((resolve, reject) => {
       // Create the server explicitly, so we can close() it later
       this.server = createServer(this.app);

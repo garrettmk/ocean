@@ -1,6 +1,5 @@
 import axios from 'axios';
 import { isSameSubType, parseContentType } from "@/content";
-import { ContentImporter } from "../interfaces";
 import { AuthorizationError } from "./server-errors";
 import { UserRepository } from './server-user-models';
 import {
@@ -22,7 +21,7 @@ import {
   validateDocumentGraphQuery,
 } from "@/domain";
 import { htmlContentType, unknownContentType } from '@/content/content-types';
-import { HtmlContentLoader, UnknownContentLoader } from '../content';
+import { HtmlContentLoader, UnknownContentLoader } from '../content-loaders';
 import { NotImplementedError } from '@/domain';
 
 
@@ -32,7 +31,6 @@ export type ServerDocumentInteractorDependencies = {
   analysis: ContentAnalysisManager,
   links: DocumentLinkRepository,
   migrations: ContentMigrationManager,
-  importer: ContentImporter
 };
 
 export class ServerDocumentInteractor {
@@ -43,7 +41,7 @@ export class ServerDocumentInteractor {
   private migrations: ContentMigrationManager;
 
 
-  constructor({ documents, users, analysis, links, migrations, importer }: ServerDocumentInteractorDependencies) {
+  constructor({ documents, users, analysis, links, migrations }: ServerDocumentInteractorDependencies) {
     this.documents = documents;
     this.users = users;
     this.analysis = analysis; 

@@ -1,4 +1,4 @@
-import { HtmlContentLoader } from "@/server/content/html-content-loader";
+import { HtmlContentLoader } from "@/server/content-loaders/html-content-loader";
 
 describe('Testing HtmlContentLoader', () => {
 
