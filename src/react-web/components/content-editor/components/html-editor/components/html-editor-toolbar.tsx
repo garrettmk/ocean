@@ -8,7 +8,23 @@ import { MdEdit } from 'react-icons/md';
 
 export function HTMLEditorToolbar(props: FlexProps) {
   const editor = useHTMLEditor();
-  const { selection, replaceRoot, contentEditable, deleteElement } = editor;
+  const { embed, selection, replaceRoot, contentEditable, deleteElement } = editor;
+
+  // Don't follow links if we clicked on an element during an operation
+  React.useEffect(() => {
+    if (replaceRoot.isActive || deleteElement.isActive) {
+      const eventListener = (event: Event) => {
+        event.preventDefault();
+      }
+
+      embed.current?.shadowRoot?.addEventListener('click', eventListener);
+
+      return () => {
+        embed.current?.shadowRoot?.removeEventListener('click', eventListener);
+      };
+    }
+  }, [replaceRoot.isActive, deleteElement.isActive]);
+  
 
   return (
     <Flex {...props}>
