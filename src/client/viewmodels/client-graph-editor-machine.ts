@@ -1,5 +1,6 @@
 import { Document, DocumentGraph, DocumentGraphQuery, DocumentLink, ID } from "@/domain";
-import { createMachine, assign, DoneInvokeEvent, ErrorPlatformEvent } from "xstate";
+import { CreateDocumentInput } from "@/server/usecases";
+import { createMachine, assign, DoneInvokeEvent, ErrorPlatformEvent, State } from "xstate";
 import { ClientDocumentsGateway } from "../interfaces";
 import { assertEventType } from "../utils";
 
@@ -29,7 +30,7 @@ export type GraphEditorTypeState =
     }
   }
   | {
-    value: 'linkingDocuments' | 'unlinkingDocuments' | 'importingUrl',
+    value: 'linkingDocuments' | 'unlinkingDocuments' | 'importingUrl' | 'creatingDocument',
     context: {
       graph: DocumentGraph,
       error?: Error,
@@ -74,6 +75,7 @@ export type UnlinkDocumentsEvent = { type: 'unlinkDocuments' };
 export type DeleteDocumentEvent = { type: 'deleteDocument' };
 export type SelectDocumentEvent = { type: 'selectDocument', payload: ID };
 export type ImportUrlEvent = { type: 'importUrl', payload: string };
+export type CreateDocumentEvent = { type: 'createDocument', payload: CreateDocumentInput }
 export type CancelEvent = { type: 'cancel' };
 
 export type GraphEditorEvent = 
@@ -83,9 +85,11 @@ export type GraphEditorEvent =
   | DeleteDocumentEvent
   | SelectDocumentEvent
   | ImportUrlEvent
+  | CreateDocumentEvent
   | CancelEvent;
 
-export type DocumentGraphMachine = ReturnType<typeof makeGraphEditorMachine>;
+export type GraphEditorMachine = ReturnType<typeof makeGraphEditorMachine>;
+export type GraphEditorMachineState = State<GraphEditorContext, GraphEditorEvent, GraphEditorTypeState>;
 
 export function makeGraphEditorMachine(gateway: ClientDocumentsGateway) {
   return createMachine<GraphEditorContext, GraphEditorEvent, GraphEditorTypeState>({
@@ -114,6 +118,7 @@ export function makeGraphEditorMachine(gateway: ClientDocumentsGateway) {
           linkDocuments: { target: 'linkingDocuments' },
           unlinkDocuments: { target: 'unlinkingDocuments' },
           importUrl: { target: 'importingUrl' },
+          createDocument: { target: 'creatingDocument' }
         }
       },
 
@@ -173,12 +178,26 @@ export function makeGraphEditorMachine(gateway: ClientDocumentsGateway) {
           importing: {
             invoke: {
               src: 'importUrl',
-              onDone: { target: '#graph-editor.ready', actions: ['assignAddDocument'] },
+              onDone: { target: '#graph-editor.ready', actions: ['assignNewDocument'] },
               onError: { target: '#graph-editor.ready', actions: ['assignError'] },
             }
           }
         }
+      },
+
+      creatingDocument: {
+        initial: 'creating',
+        states: {
+          creating: {
+            invoke: {
+              src: 'createDocument',
+              onDone: { target: '#graph-editor.ready', actions: ['assignNewDocument'] },
+              onError: { target: '#graph-editor.ready', actions: ['assignError'] }
+            }
+          }
+        }
       }
+
     }
   }, {
     services: {
@@ -209,6 +228,13 @@ export function makeGraphEditorMachine(gateway: ClientDocumentsGateway) {
 
         return await gateway.importDocumentFromUrl(url);
       },
+
+      async createDocument(context, event) {
+        assertEventType<CreateDocumentEvent>(event, 'createDocument');
+        const input = event.payload;
+
+        return await gateway.createDocument(input);
+      }
     },
 
 
@@ -256,7 +282,9 @@ export function makeGraphEditorMachine(gateway: ClientDocumentsGateway) {
 
       assignNewDocument: assign({
         graph: (context, event) => {
-          assertEventType<DoneInvokeEvent<Document>>(event, 'done.invoke.importUrl');
+          // TODO: how to assert multiple event types
+          // assertEventType<DoneInvokeEvent<Document>>(event, 'done.invoke.importUrl');
+          // @ts-ignore
           const { content, ...header } = event.data;
 
           return {

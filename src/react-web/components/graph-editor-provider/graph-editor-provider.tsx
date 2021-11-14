@@ -1,4 +1,4 @@
-import { DocumentGraphMachine, GraphEditorContext, GraphEditorEvent, GraphEditorTypeState } from '@/client/viewmodels';
+import { GraphEditorMachine, GraphEditorContext, GraphEditorEvent, GraphEditorTypeState } from '@/client/viewmodels';
 import { DocumentGraphContext, GraphEditorContextValue } from '@/react-web/contexts';
 import { useMachine } from '@xstate/react';
 import React from 'react';
