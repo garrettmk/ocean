@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import { ServerApiContext } from "../interfaces";
+import { ServerApiContext } from "../apis";
 import jwt from 'jwt-simple';
 
 export class ServerApiContextMiddleware {
