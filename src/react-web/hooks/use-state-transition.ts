@@ -21,7 +21,6 @@ export function useStateTransition<
   const prevState = prevStateRef.current;
 
   React.useEffect(() => {
-    console.log('From:', prevState?.value, 'To: ', state?.value);
     if (state.matches(matches) && !prevState?.matches(matches))
       inFn?.(state, prevState);
     else if (!state.matches(matches) && prevState?.matches(matches))
