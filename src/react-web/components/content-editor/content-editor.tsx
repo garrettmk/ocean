@@ -22,7 +22,7 @@ export function ContentEditor(props: ContentEditorProps): JSX.Element {
   const ContentEditorComponent = React.useMemo(() => ({
     'text/plain': TextEditor,
     'application/json': JSONEditor,
-    'application/json;format=slate001': SlateEditor,
+    'application/json;format=slate': SlateEditor,
     'text/html': HTMLEditor,
   }[contentType] ?? JSONEditor), [contentType]);
 
