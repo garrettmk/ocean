@@ -1,4 +1,4 @@
-import { ContentImporter, ImportedWebContent } from "@/server/interfaces/web-content-importer";
+import { ContentImporter, ImportedWebContent } from "@/server/content-loaders/web-content-importer";
 import { TestPromise } from './test-promise';
 
 

@@ -1,4 +1,4 @@
-import { ArangoUserRepository, MemoryAuthorRepository } from "@/server/interfaces";
+import { ArangoUserRepository, MemoryAuthorRepository } from "@/server/repositories";
 import { TestArangoDb } from "@/test/__utils__/test-arango-db";
 import { Database } from "arangojs";
 import { testUserRepository } from "./server-user-repository-tests";

@@ -1,4 +1,4 @@
-import { MemoryDocumentLinkRepository } from "@/server/interfaces";
+import { MemoryDocumentLinkRepository } from "@/server/repositories";
 import { testDocumentLinkRepository } from "../domain/documents/domain-document-link-repository-tests";
 
 

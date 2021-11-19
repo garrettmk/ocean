@@ -1,4 +1,4 @@
-import { MemoryAuthorRepository, MemoryUserRepository } from '@/server/interfaces';
+import { MemoryAuthorRepository, MemoryUserRepository } from '@/server/repositories';
 import { testUserRepository } from './server-user-repository-tests';
 
 

@@ -1,4 +1,4 @@
-import { ArangoAuthorRepository } from "@/server/interfaces";
+import { ArangoAuthorRepository } from "@/server/repositories";
 import { TestArangoDb } from "@/test/__utils__/test-arango-db";
 import { testAuthorRepository } from "../domain/authors/domain-author-repository-tests";
 

@@ -1,5 +1,5 @@
-import { MemoryAuthorRepository, MemoryUserRepository } from "../../../server/interfaces";
-import { ServerUserInteractor, validateUser } from "../../../server/usecases";
+import { MemoryAuthorRepository, MemoryUserRepository } from "@/server/repositories";
+import { ServerUserInteractor, validateUser } from "@/server/usecases";
 
 
 describe('Testing ServerUserInteractor', () => {

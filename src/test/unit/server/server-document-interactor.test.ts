@@ -1,8 +1,8 @@
 import { DefaultAnalysisManager, defaultAnalyzers, DefaultMigrationManager, defaultMigrations } from "@/content";
 import { AlreadyExistsError, AuthorRepository, ContentAnalysisManager, ContentMigrationManager, Document, DocumentLink, DocumentLinkRepository, DocumentRepository, NotFoundError, NotImplementedError, UpdateDocumentInput, validateContentType, validateDocument, validateDocumentGraph, ValidationError } from "@/domain";
-import { ImportedWebContent } from "@/server/interfaces/web-content-importer";
+import { ImportedWebContent } from "@/server/content-loaders/web-content-importer";
 import { TestWebContentImporter } from "@/test/__utils__/test-web-content-importer";
-import { MemoryAuthorRepository, MemoryDocumentLinkRepository, MemoryDocumentRepository, MemoryUserRepository } from "../../../server/interfaces";
+import { MemoryAuthorRepository, MemoryDocumentLinkRepository, MemoryDocumentRepository, MemoryUserRepository } from "@/server/repositories";
 import { CreateDocumentInput, ServerDocumentInteractor, User, UserRepository } from "../../../server/usecases";
 import { AuthorizationError } from "../../../server/usecases/server-errors";
 import * as INVALID from '../../__utils__/domain-invalid-examples';
@@ -29,7 +29,7 @@ describe.skip('Testing ServerDocumentInteractor', () => {
     links = new MemoryDocumentLinkRepository();
     migrations = new DefaultMigrationManager(defaultMigrations);
     importer = new TestWebContentImporter();
-    interactor = new ServerDocumentInteractor({ documents, users, analysis, links, migrations, importer });
+    interactor = new ServerDocumentInteractor({ documents, users, analysis, links, migrations });
   });
 
 

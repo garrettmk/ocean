@@ -1,6 +1,6 @@
 import { DocumentsGraphQLClient, GraphQLClient, UrqlGraphQLClient } from "@/client/interfaces";
 import { AuthorRepository, DocumentRepository, Document, DocumentHeader, DocumentLinkRepository, ContentAnalysisManager, ContentMigrationManager } from "@/domain";
-import { MemoryAuthorRepository, MemoryDocumentLinkRepository, MemoryDocumentRepository, MemoryUserRepository } from "@/server/interfaces";
+import { MemoryAuthorRepository, MemoryDocumentLinkRepository, MemoryDocumentRepository, MemoryUserRepository } from "@/server/repositories";
 import { OceanServer } from "@/server/ocean-server";
 import { User, UserRepository } from "@/server/usecases";
 import { TestAuthenticator } from "./test-authenticator";
@@ -40,16 +40,16 @@ export class ServerTestHarness {
     this.importer = new TestWebContentImporter();
     
 
-    this.server = new OceanServer(
-      this.userRepo, 
-      this.authorRepo, 
-      this.documentRepo, 
-      'secret', 
-      this.analysis, 
-      this.linkRepo,
-      this.migrations,
-      this.importer,
-    );
+    this.server = new OceanServer({
+      users: this.userRepo, 
+      authors: this.authorRepo, 
+      documents: this.documentRepo, 
+      secret: 'secret', 
+      analysis: this.analysis, 
+      documentLinks: this.linkRepo,
+      migrations: this.migrations,
+      port: 3000
+    });
 
     this.authenticator = new TestAuthenticator(undefined, 'secret');
     this.graphql = new UrqlGraphQLClient('http://127.0.0.1:3000/graphql', this.authenticator, fetch as any);

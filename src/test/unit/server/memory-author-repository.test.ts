@@ -1,4 +1,4 @@
-import { MemoryAuthorRepository } from '@/server/interfaces';
+import { MemoryAuthorRepository } from '@/server/repositories';
 import { testAuthorRepository } from '../domain/authors/domain-author-repository-tests';
 
 testAuthorRepository({

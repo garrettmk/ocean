@@ -1,4 +1,4 @@
-import { ArangoDocumentLinkRepository, ArangoDocumentRepository, MemoryAuthorRepository } from "@/server/interfaces";
+import { ArangoDocumentLinkRepository, ArangoDocumentRepository, MemoryAuthorRepository } from "@/server/repositories";
 import { TestArangoDb } from '../../__utils__/test-arango-db';
 import { testDocumentLinkRepository } from "../domain/documents/domain-document-link-repository-tests";
 
