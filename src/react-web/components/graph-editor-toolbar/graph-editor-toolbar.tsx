@@ -122,7 +122,7 @@ export function GraphEditorToolbar(props: GraphEditorToolbarProps) : JSX.Element
               color='black'
             >
               <MenuItem onClick={openImportUrlModal}>Import from URL...</MenuItem>
-              <MenuItem value='text/html' onClick={handleCreateDocument}>Plain Text</MenuItem>
+              <MenuItem value='text/plain' onClick={handleCreateDocument}>Plain Text</MenuItem>
               <MenuItem value='application/json;format=slate' onClick={handleCreateDocument}>Slate</MenuItem>
             </MenuList>
           </Menu>
