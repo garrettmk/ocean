@@ -1,53 +1,23 @@
-import { useDocumentEditor, useStateTransition } from '@/react-web/hooks';
-import { DocumentEditorMachineState } from '@/react-web/machines';
+import { useCloneDocumentAction, useConvertDocumentAction, useDeleteDocumentAction, useSaveDocumentAction } from '@/react-web/document-editor';
 import { ButtonGroup, IconButton } from '@chakra-ui/button';
 import Icon from '@chakra-ui/icon';
 import { Flex, FlexProps } from '@chakra-ui/layout';
-import { Tooltip, useToast } from '@chakra-ui/react';
+import { Tooltip } from '@chakra-ui/react';
 import React from 'react';
 import { FaRegChartBar, FaRegClone, FaRegSave } from 'react-icons/fa';
 import { FiTrash } from 'react-icons/fi';
 import { IoMdSwap } from 'react-icons/io';
 import { DocumentConvertModal } from '../document-convert-modal';
 import { DocumentDeleteModal } from '../document-delete-modal';
-
 export type DocumentEditorToolbarProps = FlexProps;
 
 
+
 export function DocumentEditorToolbar(props: DocumentEditorToolbarProps) : JSX.Element {
-  const toast = useToast();
-  const editor = useDocumentEditor();
-
-  const saveToastId = 'save-toast';
-  useStateTransition(editor.state, 'savingDocument', {
-    in: (current, prev) => {
-      if (!toast.isActive(saveToastId))
-        toast({
-          id: saveToastId,
-          title: 'Saving Document',
-          description: 'Sending data...',
-          status: 'info'
-        });
-    },
-
-    out: (current, prev) => {
-      if (current.context.error)
-        toast.update(saveToastId, {
-          title: 'Error saving document',
-          description: current.context.error + '',
-          status: 'error',
-          isClosable: true
-        });
-      else
-        toast.update(saveToastId, {
-          title: 'Document saved',
-          description: 'The documen was saved successfully.',
-          status: 'success',
-          duration: 5000,
-          isClosable: true
-        });
-    }
-  });
+  const [canSaveDocument, saveDocument] = useSaveDocumentAction();
+  const [canDeleteDocument, deleteDocument] = useDeleteDocumentAction();
+  const [canCloneDocument, cloneDocument] = useCloneDocumentAction();
+  const [canConvert, convertDocument] = useConvertDocumentAction();
 
   return (
     <Flex {...props}>
@@ -60,8 +30,8 @@ export function DocumentEditorToolbar(props: DocumentEditorToolbarProps) : JSX.E
           <IconButton
             aria-label='Convert'
             icon={<Icon as={IoMdSwap}/>}
-            onClick={editor.convertDocument}
-            disabled={!editor.state.nextEvents.includes('convertDocument')}
+            onClick={convertDocument}
+            disabled={!canConvert}
           />
         </Tooltip>
 
@@ -70,8 +40,8 @@ export function DocumentEditorToolbar(props: DocumentEditorToolbarProps) : JSX.E
           <IconButton
             aria-label='Delete Document'
             icon={<Icon as={FiTrash}/>}
-            onClick={editor.deleteDocument}
-            disabled={!editor.state.nextEvents.includes('deleteDocument')}
+            onClick={deleteDocument}
+            disabled={!canDeleteDocument}
           />
         </Tooltip>
 
@@ -79,8 +49,8 @@ export function DocumentEditorToolbar(props: DocumentEditorToolbarProps) : JSX.E
           <IconButton
             aria-label='Clone Document'
             icon={<Icon as={FaRegClone}/>}
-            onClick={editor.cloneDocument}
-            disabled={!editor.state.nextEvents.includes('cloneDocument')}
+            onClick={cloneDocument}
+            disabled={!canCloneDocument}
           />
         </Tooltip>
 
@@ -88,8 +58,8 @@ export function DocumentEditorToolbar(props: DocumentEditorToolbarProps) : JSX.E
           <IconButton
             aria-label='Save Document'
             icon={<Icon as={FaRegSave}/>}
-            onClick={editor.saveDocument}
-            disabled={!editor.state.nextEvents.includes('saveDocument')}
+            onClick={saveDocument}
+            disabled={!canSaveDocument}
           />
         </Tooltip>
 

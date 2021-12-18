@@ -50,7 +50,10 @@ export function FloatingDocumentEditor({
             <FloatingWindowCloseButton onClick={onClose}/>
           </ButtonGroup>
         </FloatingWindowHeader>
-        <ContentEditor readonly/>
+        <ContentEditor
+          readonly
+          height='calc(100% - 4rem)'
+        />
       </FloatingWindow>
     </DocumentEditorProvider>
   );

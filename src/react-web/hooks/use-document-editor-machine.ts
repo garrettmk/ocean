@@ -1,9 +1,9 @@
 import { ID, UpdateDocumentInput } from "@/domain";
 import { useMachine } from "@xstate/react";
 import React from "react";
-import { DocumentEditorEvent, makeDocumentEditorMachine } from "../machines";
-import { useServices } from "../services";
-import { bindEventCreators } from "../utils";
+import { DocumentEditorEvent, makeDocumentEditorMachine } from "@/react-web/document-editor";
+import { useServices } from "@/react-web/services";
+import { bindEventCreators } from "@/react-web/utils";
 
 
 export function useDocumentEditorMachine() {
