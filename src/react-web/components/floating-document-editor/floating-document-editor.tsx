@@ -39,7 +39,11 @@ export function FloatingDocumentEditor({
 
   return (
     <DocumentEditorProvider editor={editor}>
-      <FloatingWindow display={isOpen ? undefined : 'none'} {...windowProps}>
+      <FloatingWindow
+        display={isOpen ? undefined : 'none'} 
+        bg='gray.300'
+        {...windowProps}
+      >
         <FloatingWindowHeader title={editor.document?.title ?? ''}>
           <ButtonGroup size='sm'>
             <IconButton 
@@ -51,7 +55,6 @@ export function FloatingDocumentEditor({
           </ButtonGroup>
         </FloatingWindowHeader>
         <ContentEditor
-          readonly
           height='calc(100% - 4rem)'
         />
       </FloatingWindow>
