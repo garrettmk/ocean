@@ -4,6 +4,8 @@ import { Box, Grid, GridProps } from '@chakra-ui/layout';
 import React from 'react';
 import { ForceGraph2D } from 'react-force-graph';
 import { useMeasure } from 'react-use';
+import ReactFlow, { Background, BackgroundVariant } from 'react-flow-renderer';
+import { DocumentNode, Edge } from './components';
 
 
 export type GraphEditorProps = GridProps & {};
@@ -21,11 +23,21 @@ export function GraphEditor(props: GraphEditorProps) {
     }});
   }, []);
 
-  // Put the data in the format required by ForceGraph2D
-  const graphData = React.useMemo(() => ({
-    nodes: graph?.documents ?? [],
-    links: graph?.links ?? []
-  }), [graph]);
+  // Create nodes and edges in the format required by react-flow
+  const graphElements = React.useMemo(() => [
+    ...(graph?.documents ?? []).map((doc, idx) => ({
+      id: doc.id,
+      type: 'document',
+      data: doc,
+      position: { x: idx * 10, y: 25 }
+    })),
+
+    ...(graph?.links ?? []).map((link, idx) => ({
+      id: `${link.from}:${link.to}`,
+      source: link.from,
+      target: link.to
+    }))
+  ], [graph]);
 
   // Respond to node clicks
   const handleNodeClick = React.useCallback((node: any, event: MouseEvent) => {
@@ -41,22 +53,19 @@ export function GraphEditor(props: GraphEditorProps) {
 
   return (    
     <Grid templateRows="1fr" templateColumns="1fr" {...props}>
-      <Box ref={ref} overflow='hidden'>
-        <ForceGraph2D
-          graphData={graphData}
-          nodeId='id'
-          linkSource='from'
-          linkTarget='to'
-          width={width}
-          height={height}
-          nodeLabel='title'
-          backgroundColor='#CBD5E0'
-          nodeColor={nodeColor}
-          linkColor={() => 'black'}
-          linkDirectionalParticles={1}
-          onNodeClick={handleNodeClick}
-        />
-      </Box>  
+      <ReactFlow
+        elements={graphElements}
+        nodeTypes={{ 
+          default: DocumentNode,
+          document: DocumentNode,
+        }}
+        edgeTypes={{
+          default: Edge
+        }}
+        connectionLineStyle={{ stroke: 'black' }}
+      >
+
+      </ReactFlow>
     </Grid>
   );
 }
