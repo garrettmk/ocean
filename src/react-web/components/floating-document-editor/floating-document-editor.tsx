@@ -13,19 +13,19 @@ import { DocumentEditorProvider } from '../document-editor-provider';
 
 
 export type FloatingDocumentEditorProps = FloatingWindowProps & {
+  documentId?: ID,
   isOpen?: boolean,
   onClose?: () => void,
 };
 
 
 export function FloatingDocumentEditor({
+  documentId,
   isOpen,
   onClose,
   ...windowProps
 }: FloatingDocumentEditorProps) : JSX.Element {
-  const { state, send } = useGraphEditor();
   const editor = useDocumentEditorMachine();
-  const documentId = state.context.selectedDocuments[0];
   
   // Navigate to the document route when the button is clicked
   const [_, setLocation] = useLocation();
