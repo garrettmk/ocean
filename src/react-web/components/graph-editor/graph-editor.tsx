@@ -1,3 +1,4 @@
+import type { DocumentHeader } from '@/domain';
 import { useGraphEditor } from '@/react-web/hooks';
 import { Box, Grid, GridProps } from '@chakra-ui/layout';
 import React from 'react';
@@ -26,13 +27,13 @@ export function GraphEditor(props: GraphEditorProps) {
     links: graph?.links ?? []
   }), [graph]);
 
-
+  // Respond to node clicks
   const handleNodeClick = React.useCallback((node: any, event: MouseEvent) => {
     const { id } = node;
     send({ type: 'selectDocument', payload: id });
-  }, []);
+  }, [send]);
 
-
+  // Selected nodes get a special color!
   const nodeColor = (node: any) => 
     node.id === selected.from ? '#9AE6B4' :
     node.id === selected.to ? '9AE6B4' :

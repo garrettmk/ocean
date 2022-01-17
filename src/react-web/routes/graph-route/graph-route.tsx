@@ -5,7 +5,7 @@ import {
 } from "@/react-web/components";
 import { GraphEditor } from "@/react-web/components/graph-editor";
 import { GraphRouteParams } from "@/react-web/config/routes";
-import { useAppBar, useGraphEditorMachine } from '@/react-web/hooks';
+import { useAppBar, useGraphEditorMachine, useUrlQueryParamArray, useUrlQueryParamBoolean, useBooleanSetters } from '@/react-web/hooks';
 import { Avatar } from '@chakra-ui/avatar';
 import { Flex, Grid } from '@chakra-ui/layout';
 import { Portal } from '@chakra-ui/portal';
@@ -16,21 +16,13 @@ export function GraphRoute({
 }: {
   params: GraphRouteParams
 }) {
-  const [state, send] = useGraphEditorMachine();
   const appBar = useAppBar();
+  const [selectedDocuments, setSelectedDocuments] = useUrlQueryParamArray('select');
+  const [isDocumentListOpen, openDocumentList, closeDocumentList] = useBooleanSetters(useUrlQueryParamBoolean('list', true));
+  const [isEditorOpen, openDocumentEditor, closeDocumentEditor] = useBooleanSetters(useUrlQueryParamBoolean('editor', !!selectedDocuments?.length));
+  const [isAsideOpen, openAside, closeAside] = useBooleanSetters(useUrlQueryParamBoolean('aside', false));
 
-  const [isDocumentListOpen, setIsDocumentListOpen] = React.useState(true);
-  const openDocumentList = () => setIsDocumentListOpen(true);
-  const closeDocumentList = () => setIsDocumentListOpen(false);
-
-  const [isEditorOpen, setIsEditorOpen] = React.useState(false);
-  const openDocumentEditor = () => setIsEditorOpen(true);
-  const closeDocumentEditor = () => setIsEditorOpen(false);
-
-  const [isAsideOpen, setIsAsideOpen] = React.useState(false);
-  const openAside = () => setIsAsideOpen(true);
-  const closeAside = () => setIsAsideOpen(false);
-
+  // Calculate the layout based on which tool windows are open
   const floatingWindowColumns = React.useMemo(() => {
     const list = isDocumentListOpen ? 3 : 0;
     const aside = isAsideOpen ? 3 : 0;
@@ -43,11 +35,18 @@ export function GraphRoute({
     }
   }, [isDocumentListOpen, isAsideOpen, isEditorOpen]);
 
+  // Create a graph editor machine, using the query params for initial state
+  const [state, send] = useGraphEditorMachine({ selectedDocuments });
+
+  // If we select a document while in the "ready" state, open the floating
+  // editor
   React.useEffect(() => {
-    const { selectedDocuments } = state.context;
-    if (state.matches('ready') && selectedDocuments.length === 1)
-      openDocumentEditor();
-  }, [state]);
+    if (state.matches('ready')) {
+      setSelectedDocuments(state.context.selectedDocuments);
+      if (state.context.selectedDocuments.length)
+        openDocumentEditor();
+    }
+  }, [state.context.selectedDocuments]);
 
   return (
     <GraphEditorProvider state={state} send={send}>
@@ -74,6 +73,7 @@ export function GraphRoute({
             gridColumn={floatingWindowColumns.editor}
             isOpen={isEditorOpen}
             onClose={closeDocumentEditor}
+            documentId={selectedDocuments[0] as ID}
           />
 
           <FloatingWindow
