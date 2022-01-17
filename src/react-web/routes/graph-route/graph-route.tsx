@@ -38,8 +38,8 @@ export function GraphRoute({
   // Create a graph editor machine, using the query params for initial state
   const [state, send] = useGraphEditorMachine({ selectedDocuments });
 
-  // If we select a document while in the "ready" state, open the floating
-  // editor
+  // If we're in the "ready" state, keep the selection in sync with the URL params
+  // If we have at least one document selected, open the editor
   React.useEffect(() => {
     if (state.matches('ready')) {
       setSelectedDocuments(state.context.selectedDocuments);
@@ -87,8 +87,6 @@ export function GraphRoute({
           </FloatingWindow>
         </FloatingWindowLayout>
       </Grid>
-
-
     </GraphEditorProvider>
   );
 }

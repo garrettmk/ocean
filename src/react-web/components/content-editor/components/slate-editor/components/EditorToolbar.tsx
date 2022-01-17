@@ -1,12 +1,19 @@
-import { Flex, ButtonGroup, IconButton, IconButtonProps, Spacer, Divider } from "@chakra-ui/react";
+import { Flex, FlexProps, ButtonGroup, ButtonGroupProps, IconButton, IconButtonProps, Spacer, Divider } from "@chakra-ui/react";
 import { BsTypeBold, BsTypeItalic, BsTypeUnderline, BsTypeStrikethrough, BsLink} from 'react-icons/bs';
 import { useSlate } from 'slate-react';
 
 
-export function EditorToolbar() : JSX.Element {
+export type EditorToolbarProps = FlexProps & Pick<ButtonGroupProps, 'size'>;
+
+export function EditorToolbar(props: EditorToolbarProps) : JSX.Element {
+  const { size, ...flexProps } = props ?? {};
+
   return (
-    <Flex>
-      <ButtonGroup isAttached>
+    <Flex {...flexProps}>
+      <ButtonGroup
+        size={size}
+        isAttached
+      >
         <FormatButton format={'bold'} aria-label='Bold' icon={<BsTypeBold/>}/>
         <FormatButton format={'italic'} aria-label='Italic' icon={<BsTypeItalic/>}/>
         <FormatButton format={'underline'} aria-label='Underline' icon={<BsTypeUnderline/>}/>

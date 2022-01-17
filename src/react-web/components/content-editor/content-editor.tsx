@@ -1,5 +1,6 @@
 import { useDocumentEditor } from '@/react-web/hooks';
 import { BoxProps } from '@chakra-ui/layout';
+import { ButtonGroupProps } from '@chakra-ui/react';
 import React from 'react';
 import {
   TextEditor,
@@ -11,7 +12,8 @@ import {
 
 export type ContentEditorProps = BoxProps & {
   toolbarRef?: React.RefObject<HTMLDivElement>,
-  readonly?: boolean
+  toolbarSize?: ButtonGroupProps['size'],
+  readonly?: boolean,
 };
 
 

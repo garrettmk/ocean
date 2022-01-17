@@ -1,5 +1,5 @@
 import { useCloneDocumentAction, useConvertDocumentAction, useDeleteDocumentAction, useSaveDocumentAction } from '@/react-web/document-editor';
-import { ButtonGroup, IconButton } from '@chakra-ui/button';
+import { ButtonGroup, ButtonGroupProps, IconButton } from '@chakra-ui/button';
 import Icon from '@chakra-ui/icon';
 import { Flex, FlexProps } from '@chakra-ui/layout';
 import { Tooltip } from '@chakra-ui/react';
@@ -9,19 +9,21 @@ import { FiTrash } from 'react-icons/fi';
 import { IoMdSwap } from 'react-icons/io';
 import { DocumentConvertModal } from '../document-convert-modal';
 import { DocumentDeleteModal } from '../document-delete-modal';
-export type DocumentEditorToolbarProps = FlexProps;
 
 
+export type DocumentEditorToolbarProps = FlexProps & Pick<ButtonGroupProps, 'size'>;
 
 export function DocumentEditorToolbar(props: DocumentEditorToolbarProps) : JSX.Element {
+  const { size, ...flexProps } = props;
   const [canSaveDocument, saveDocument] = useSaveDocumentAction();
   const [canDeleteDocument, deleteDocument] = useDeleteDocumentAction();
   const [canCloneDocument, cloneDocument] = useCloneDocumentAction();
   const [canConvert, convertDocument] = useConvertDocumentAction();
 
   return (
-    <Flex {...props}>
+    <Flex {...flexProps}>
       <ButtonGroup
+        size={size}
         color='gray.500'
         isAttached
       >

@@ -1,6 +1,6 @@
 import { SlateContent } from '@/content';
 import { useDocumentEditor } from '@/react-web/hooks';
-import { Grid } from '@chakra-ui/react';
+import { Grid, Portal } from '@chakra-ui/react';
 import React from 'react';
 import { createEditor } from 'slate';
 import { Editable, Slate, withReact } from 'slate-react';
@@ -23,8 +23,9 @@ const DEFAULT_ONCHANGE = (newContent: any) => {};
 
 export function SlateEditor({
   toolbarRef,
+  toolbarSize,
   ...boxProps
-}: ContentEditorProps) : JSX.Element {
+}: ContentEditorProps = {}) : JSX.Element {
   const editor = useDocumentEditor();
   const slateEditor = React.useMemo(() => withCustom(withReact(createEditor())), []);
   const elementEditors = React.useMemo(() => ({
@@ -39,13 +40,18 @@ export function SlateEditor({
       value={(editor.document?.content as SlateContent) ?? DEFAULT_SLATE_CONTENT}
       onChange={handleSlateContentChange}
     >
+      {toolbarRef && (
+        <Portal containerRef={toolbarRef}>
+          <EditorToolbar size={toolbarSize}/>
+        </Portal>
+      )}
+
       <Grid
-        templateRows='auto 1fr'
+        templateRows='1fr'
         templateColumns='1fr'
         gap={4}
         {...boxProps}
       >
-        <EditorToolbar/>
         <FloatingElementEditor {...{ elementEditors }}/>
         <Editable
           renderElement={Element}

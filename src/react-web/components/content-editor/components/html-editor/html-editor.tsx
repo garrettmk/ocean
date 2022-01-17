@@ -8,6 +8,7 @@ import { EmbeddedHTML, HTMLEditorProvider, HTMLEditorToolbar, SelectionHalos } f
 
 export function HTMLEditor({
   toolbarRef,
+  toolbarSize,
   ...boxProps
 }: ContentEditorProps): JSX.Element {
   const editor = useDocumentEditor();
@@ -17,7 +18,7 @@ export function HTMLEditor({
     <HTMLEditorProvider embed={ref}>
       {toolbarRef && (
         <Portal containerRef={toolbarRef}>
-          <HTMLEditorToolbar/>
+          <HTMLEditorToolbar size={toolbarSize}/>
         </Portal>
       )}
       
