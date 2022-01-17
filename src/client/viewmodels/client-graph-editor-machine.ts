@@ -91,10 +91,17 @@ export type GraphEditorEvent =
 export type GraphEditorMachine = ReturnType<typeof makeGraphEditorMachine>;
 export type GraphEditorMachineState = State<GraphEditorContext, GraphEditorEvent, GraphEditorTypeState>;
 
-export function makeGraphEditorMachine(gateway: ClientDocumentsGateway) {
+const defaultInitialContext: GraphEditorContext = {
+  selectedDocuments: []
+}
+
+export function makeGraphEditorMachine(
+  gateway: ClientDocumentsGateway, 
+  initialContext: GraphEditorContext = defaultInitialContext
+) {
   return createMachine<GraphEditorContext, GraphEditorEvent, GraphEditorTypeState>({
     id: 'graph-editor',
-    context: { selectedDocuments: [] },
+    context: initialContext,
     initial: 'idle',
     states: {
       idle: {
