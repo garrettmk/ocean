@@ -2,6 +2,7 @@ import { Box, Heading, Text } from '@chakra-ui/react';
 import React from 'react';
 import { Handle, NodeProps, Position } from 'react-flow-renderer';
 import { useNodeResizing } from '../hooks';
+import { DragHandle } from '@/react-web/components';
 
 
 export function DocumentNode(props: NodeProps) {
@@ -15,6 +16,8 @@ export function DocumentNode(props: NodeProps) {
       p='4'
       overflow='hidden'
       borderRadius='4'
+      borderWidth='2px'
+      borderColor={selected ? 'blue.500' : 'transparent'}
     >
       <Handle id='top' type='target' position={Position.Top} />
       <Handle id='bottom' type='source' position={Position.Bottom}/>
@@ -27,14 +30,11 @@ export function DocumentNode(props: NodeProps) {
         {`${doc.contentType}`}
       </Text>
 
-      <Box
+      <DragHandle
         ref={resizeHandleRef}
         position='absolute'
         bottom='0'
         right='0'
-        width='4'
-        height='4'
-        bg='gray.400'
       />
     </Box>
   );
