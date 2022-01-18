@@ -14,3 +14,4 @@ export * from './graph-editor';
 export * from './graph-search-input';
 export * from './graph-editor-toolbar';
 export * from './graph-editor-provider';
+export * from './drag-handle';
