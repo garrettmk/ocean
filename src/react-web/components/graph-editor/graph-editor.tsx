@@ -1,10 +1,8 @@
-import type { DocumentHeader } from '@/domain';
 import { useGraphEditor } from '@/react-web/hooks';
-import { Box, Grid, GridProps } from '@chakra-ui/layout';
+import { Grid, GridProps } from '@chakra-ui/layout';
+import ELK from 'elkjs';
 import React from 'react';
-import { ForceGraph2D } from 'react-force-graph';
-import { useMeasure } from 'react-use';
-import ReactFlow, { Background, BackgroundVariant } from 'react-flow-renderer';
+import ReactFlow, { ReactFlowProvider, isNode } from 'react-flow-renderer';
 import { DocumentNode, Edge } from './components';
 
 
@@ -12,10 +10,10 @@ export type GraphEditorProps = GridProps & {};
 
 
 export function GraphEditor(props: GraphEditorProps) {
-  const [ref, { width, height }] = useMeasure<HTMLDivElement>();
   const { state, send } = useGraphEditor();
   const { graph, selectedDocuments, error } = state.context;
-  const selected = { from: selectedDocuments[0], to: selectedDocuments[1] };
+  const reactFlowInstanceRef = React.useRef<any>();
+  const setReactFlowInstance = (instance: any) => reactFlowInstanceRef.current = instance;
 
   // Load the graph on mount
   React.useEffect(() => {
@@ -23,49 +21,85 @@ export function GraphEditor(props: GraphEditorProps) {
     }});
   }, []);
 
-  // Create nodes and edges in the format required by react-flow
-  const graphElements = React.useMemo(() => [
-    ...(graph?.documents ?? []).map((doc, idx) => ({
-      id: doc.id,
-      type: 'document',
-      data: doc,
-      position: { x: idx * 10, y: 25 }
-    })),
+  // When the graph changes, use ELK to layout the nodes
+  const [graphElements, setGraphElements] = React.useState<any[]>([]);
+  const elk = React.useMemo(() => new ELK(), []);
 
-    ...(graph?.links ?? []).map((link, idx) => ({
-      id: `${link.from}:${link.to}`,
-      source: link.from,
-      target: link.to
-    }))
-  ], [graph]);
+  React.useEffect(() => {
+    // Describe the graph in ELK JSON format and tell elk to lay it out
+    elk.layout({
+      id: 'root',
+      layoutOptions: { 'algorithm': 'layered', 'elk.direction': 'DOWN' },
+      children: (graph?.documents ?? []).map(doc => ({
+        data: doc,
+        id: doc.id,
+        width: 250,
+        height: 250
+      })),
+      edges: (graph?.links ?? []).map(link => ({
+        data: link,
+        id: `${link.from}:${link.to}`,
+        sources: [link.from],
+        targets: [link.to],
+      }))
+    }).then(layout => {
+      // Use the layout result to create elements in the format
+      // used by react-flow
+      setGraphElements([
+        ...(layout.children ?? []).map(child => ({
+          id: child.id,
+          position: { x: child.x, y: child.y },
+          // @ts-ignore
+          data: child.data,
+          dragHandle: '#draghandle',
+          style: {
+            width: 'unset'
+          }
+        })),
+
+        ...(layout.edges ?? []).map(edge => ({
+          id: edge.id,
+          // @ts-ignore
+          source: edge.sources[0],
+          // @ts-ignore
+          target: edge.targets[0],
+          // @ts-ignore
+          data: edge.data
+        }))
+      ]);
+
+      // Fit the viewport to the graph
+      setTimeout(() => {
+        reactFlowInstanceRef.current.fitView();
+      }, 0);
+      
+    }).catch(console.error);
+  }, [graph]);
 
   // Respond to node clicks
-  const handleNodeClick = React.useCallback((node: any, event: MouseEvent) => {
-    const { id } = node;
-    send({ type: 'selectDocument', payload: id });
+  const handleElementClick = React.useCallback((event: any, element: any) => {
+    console.log(event);
+    if (isNode(element))
+      send({ type: 'selectDocument', payload: element.id });
   }, [send]);
-
-  // Selected nodes get a special color!
-  const nodeColor = (node: any) => 
-    node.id === selected.from ? '#9AE6B4' :
-    node.id === selected.to ? '9AE6B4' :
-    '#2b6cb0';
 
   return (    
     <Grid templateRows="1fr" templateColumns="1fr" {...props}>
-      <ReactFlow
-        elements={graphElements}
-        nodeTypes={{ 
-          default: DocumentNode,
-          document: DocumentNode,
-        }}
-        edgeTypes={{
-          default: Edge
-        }}
-        connectionLineStyle={{ stroke: 'black' }}
-      >
-
-      </ReactFlow>
+      <ReactFlowProvider>
+        <ReactFlow
+          onLoad={setReactFlowInstance}
+          onElementClick={handleElementClick}
+          elements={graphElements}
+          nodeTypes={{ 
+            default: DocumentNode,
+            document: DocumentNode,
+          }}
+          edgeTypes={{
+            default: Edge
+          }}
+          connectionLineStyle={{ stroke: 'black' }}
+        />
+      </ReactFlowProvider>
     </Grid>
   );
 }
