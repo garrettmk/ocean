@@ -5,6 +5,7 @@ import { ContentEditorProps } from '../content-editor';
 
 export function JSONEditor({
   toolbarRef,
+  toolbarSize,
   ...boxProps
 }: ContentEditorProps) : JSX.Element {
   const editor = useDocumentEditor();

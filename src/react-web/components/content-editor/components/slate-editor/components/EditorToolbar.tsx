@@ -5,9 +5,7 @@ import { useSlate } from 'slate-react';
 
 export type EditorToolbarProps = FlexProps & Pick<ButtonGroupProps, 'size'>;
 
-export function EditorToolbar(props: EditorToolbarProps) : JSX.Element {
-  const { size, ...flexProps } = props ?? {};
-
+export function EditorToolbar({ size, ...flexProps}: EditorToolbarProps = {}) : JSX.Element {
   return (
     <Flex {...flexProps}>
       <ButtonGroup

@@ -1,5 +1,5 @@
 import { useGraphEditor, useStateTransition } from '@/react-web/hooks';
-import { ButtonGroup, IconButton } from '@chakra-ui/button';
+import { ButtonGroup, ButtonGroupProps, IconButton } from '@chakra-ui/button';
 import Icon from '@chakra-ui/icon';
 import { Box, Flex, FlexProps } from '@chakra-ui/layout';
 import { Menu, MenuButton, MenuItem, MenuList } from '@chakra-ui/menu';
@@ -13,11 +13,11 @@ import { ImportUrlModal } from '../import-url-modal';
 
 
 export type GraphEditorToolbarProps = FlexProps & {
-
+  toolbarSize?: ButtonGroupProps['size'],
 };
 
 
-export function GraphEditorToolbar(props: GraphEditorToolbarProps) : JSX.Element {
+export function GraphEditorToolbar({ toolbarSize, ...flexProps }: GraphEditorToolbarProps = {}) : JSX.Element {
   const { state, send } = useGraphEditor();
   const toast = useToast();
   
@@ -107,8 +107,8 @@ export function GraphEditorToolbar(props: GraphEditorToolbarProps) : JSX.Element
         onClose={closeImportUrlModal}
         onImport={handleImport}
       />
-      <Flex {...props}>
-        <ButtonGroup isAttached color='gray.500'>
+      <Flex {...flexProps}>
+        <ButtonGroup isAttached color='gray.500' size={toolbarSize}>
           <Menu>
             <MenuButton
               as={IconButton}

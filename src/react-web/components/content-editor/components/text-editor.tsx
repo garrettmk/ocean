@@ -12,6 +12,7 @@ Enim nunc faucibus a pellentesque. Molestie nunc non blandit massa enim. Pellent
 
 export function TextEditor({
   toolbarRef,
+  toolbarSize,
   readonly,
   ...boxProps
 }: ContentEditorProps) : JSX.Element {
