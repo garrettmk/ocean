@@ -4,6 +4,7 @@ import ELK from 'elkjs';
 import React from 'react';
 import ReactFlow, { ReactFlowProvider, isNode } from 'react-flow-renderer';
 import { DocumentNode, Edge } from './components';
+import './react-flow-overrides.css';
 
 
 export type GraphEditorProps = GridProps & {};
@@ -52,9 +53,6 @@ export function GraphEditor(props: GraphEditorProps) {
           // @ts-ignore
           data: child.data,
           dragHandle: '#draghandle',
-          style: {
-            width: 'unset'
-          }
         })),
 
         ...(layout.edges ?? []).map(edge => ({

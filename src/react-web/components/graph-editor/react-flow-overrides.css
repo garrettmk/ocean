@@ -1,0 +1,7 @@
+.react-flow__node {
+  width: unset;
+  padding: 0;
+  border-color: transparent !important;
+  background-color: transparent;
+  box-shadow: none !important;
+}
