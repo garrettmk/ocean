@@ -16,6 +16,7 @@ export function FloatingWindow({
       shadow='2xl'
       pointerEvents='all'
       overflow='auto'
+      zIndex={100}
       {...boxProps}
     >
       {children}
