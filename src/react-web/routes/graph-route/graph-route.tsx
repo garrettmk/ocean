@@ -1,12 +1,18 @@
 import { ID } from '@/domain';
 import {
-  FloatingDocumentEditor, FloatingDocumentList, FloatingWindow, FloatingWindowCloseButton, FloatingWindowHeader, FloatingWindowLayout, GraphEditorProvider,
-  GraphEditorToolbar, GraphSearchInput
+  FloatingDocumentEditor,
+  FloatingDocumentList,
+  FloatingWindow,
+  FloatingWindowCloseButton,
+  FloatingWindowHeader,
+  FloatingWindowLayout,
+  GraphEditorProvider,
+  GraphEditorToolbar,
+  GraphSearchInput
 } from "@/react-web/components";
 import { GraphEditor } from "@/react-web/components/graph-editor";
 import { GraphRouteParams } from "@/react-web/config/routes";
-import { useAppBar, useGraphEditorMachine, useUrlQueryParamArray, useUrlQueryParamBoolean, useBooleanSetters } from '@/react-web/hooks';
-import { Avatar } from '@chakra-ui/avatar';
+import { useAppBar, useBooleanSetters, useGraphEditorMachine, useUrlQueryParamArray, useUrlQueryParamBoolean } from '@/react-web/hooks';
 import { Flex, Grid } from '@chakra-ui/layout';
 import { Portal } from '@chakra-ui/portal';
 import React from 'react';
@@ -57,12 +63,12 @@ export function GraphRoute({
             w='unset'
             onFocus={openDocumentList}
           />
-          <GraphEditorToolbar/>
+          <GraphEditorToolbar />
         </Flex>
       </Portal>
 
       <Grid templateRows='1fr' templateColumns='1fr'>
-        <GraphEditor/>
+        <GraphEditor />
         <FloatingWindowLayout top={`${appBar.measure.bottom + 16}px`}>
           <FloatingDocumentList
             gridColumn={floatingWindowColumns.list}
