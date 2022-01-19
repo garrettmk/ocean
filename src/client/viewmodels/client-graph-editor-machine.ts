@@ -244,7 +244,6 @@ export function makeGraphEditorMachine(
       async createDocument(context, event) {
         assertEventType<CreateDocumentEvent>(event, 'createDocument');
         const input = event.payload;
-
         return await gateway.createDocument(input);
       }
     },

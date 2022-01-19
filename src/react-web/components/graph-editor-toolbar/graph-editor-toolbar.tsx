@@ -86,7 +86,7 @@ export function GraphEditorToolbar({ toolbarSize, ...flexProps }: GraphEditorToo
     out: (current, previous) => current.context.error 
       ? toast.update('createDocument', {
         title: 'Error creating document',
-        description: current.context.error,
+        description: current.context.error + '',
         status: 'error',
         isClosable: true,
         duration: 5000

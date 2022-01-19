@@ -58,7 +58,7 @@ const CreateDocumentInputSchema = union([
   object({
     title: optional(NonEmptyStringSchema),
     isPublic: optional(boolean()),
-    meta: DocumentMetaSchema,
+    meta: optional(DocumentMetaSchema),
   }),
 
   object({
@@ -66,7 +66,7 @@ const CreateDocumentInputSchema = union([
     isPublic: optional(boolean()),
     contentType: ContentTypeSchema,
     content: unknown(),
-    meta: DocumentMetaSchema,
+    meta: optional(DocumentMetaSchema),
   })
 ]);
 
@@ -79,7 +79,7 @@ const UpdateDocumentInputSchema = union([
   object({
     title: optional(NonEmptyStringSchema),
     isPublic: optional(boolean()),
-    meta: DocumentMetaSchema,
+    meta: optional(DocumentMetaSchema),
   }),
 
   object({
@@ -87,7 +87,7 @@ const UpdateDocumentInputSchema = union([
     isPublic: optional(boolean()),
     contentType: ContentTypeSchema,
     content: unknown(),
-    meta: DocumentMetaSchema,
+    meta: optional(DocumentMetaSchema),
   })
 ]);
 

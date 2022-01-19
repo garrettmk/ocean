@@ -12,6 +12,7 @@ import {
   DocumentHeader,
   DocumentLink,
   DocumentLinkRepository,
+  DocumentMeta,
   DocumentQuery,
   DocumentRepository,
   ID,
@@ -305,7 +306,8 @@ export class ServerDocumentInteractor {
 
 type CreateTitleInput = {
   title?: string,
-  isPublic?: boolean
+  isPublic?: boolean,
+  meta?: DocumentMeta
 }
 
 type CreateContentInput = {
