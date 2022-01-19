@@ -1,6 +1,12 @@
 import React from 'react';
 import { useZoomPanHelper } from 'react-flow-renderer';
 
+enum MouseButtons {
+  Left = 0,
+  Middle = 1,
+  Right = 2,
+}
+
 
 export function useNodeResizing() {
   const { project } = useZoomPanHelper();
@@ -9,11 +15,8 @@ export function useNodeResizing() {
 
   // Respond to mousemove events by changing the size of resizeElement
   const resizeCallback = React.useCallback((event: MouseEvent) => {
-    if (!resizeElement.current)
-      return;
-
     // Get the bounding rect of the element to resize
-    const elementRect = resizeElement.current.getBoundingClientRect();
+    const elementRect = resizeElement.current!.getBoundingClientRect();
 
     // Translate both the element and mouse positions into react-flow's coordinate space
     const { x: mouseX, y: mouseY } = project({ x: event.pageX, y: event.pageY });
@@ -24,8 +27,8 @@ export function useNodeResizing() {
     const newHeight = mouseY - elementY;
 
     // Set the element styles directly to avoid firing lots of re-renders
-    resizeElement.current.style.width = `${newWidth}px`;
-    resizeElement.current.style.height = `${newHeight}px`;
+    resizeElement.current!.style.width = `${newWidth}px`;
+    resizeElement.current!.style.height = `${newHeight}px`;
   }, []);
 
   // Remove the mouse event listener
@@ -35,9 +38,11 @@ export function useNodeResizing() {
 
   // While resizing, listen to mouse events on the window
   // If mouseup, stop resizing
-  const startResizing = React.useCallback(() => {
-    window.addEventListener('mousemove', resizeCallback);
-    window.addEventListener('mouseup', stopResizing);
+  const startResizing = React.useCallback((event: MouseEvent) => {
+    if (resizeElement.current && event.button === MouseButtons.Left) {
+      window.addEventListener('mousemove', resizeCallback);
+      window.addEventListener('mouseup', stopResizing);
+    }
   }, [resizeCallback]);
 
   // Listen for mousedown events on resizeHandle
