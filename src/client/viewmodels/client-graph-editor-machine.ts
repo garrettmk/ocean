@@ -70,7 +70,7 @@ export type GraphEditorTypeState =
 
 
 export type LoadGraphEvent = { type: 'loadGraph', payload: DocumentGraphQuery };
-export type LinkDocumentsEvent = { type: 'linkDocuments' };
+export type LinkDocumentsEvent = { type: 'linkDocuments', payload?: Partial<DocumentLink> };
 export type UnlinkDocumentsEvent = { type: 'unlinkDocuments' };
 export type DeleteDocumentEvent = { type: 'deleteDocument' };
 export type SelectDocumentEvent = { type: 'selectDocument', payload: ID };
@@ -130,9 +130,14 @@ export function makeGraphEditorMachine(
       },
 
       linkingDocuments: {
+        entry: ['assignFromLinkDocumentsEvent'],
         initial: 'selectingFromDocument',
         states: {
           selectingFromDocument: {
+            always: [
+              { cond: 'hasToAndFrom', target: 'linking' },
+              { cond: 'hasFrom', target: 'selectingToDocument' }
+            ],
             on: {
               selectDocument: { target: 'selectingToDocument', actions: ['assignFromDocument'] },
               cancel: { target: '#graph-editor.ready', actions: ['assignClearSelection'] }
@@ -258,6 +263,17 @@ export function makeGraphEditorMachine(
         selectedDocuments: (context, event) => [(event as SelectDocumentEvent).payload],
       }),
 
+      assignFromLinkDocumentsEvent: assign({
+        selectedDocuments: (context, event) => {
+          const { from , to } = (event as LinkDocumentsEvent).payload ?? {};
+          return (
+            from && to ? [from, to] :
+            from ? [from] :
+            []
+          );
+        }
+      }),
+
       assignFromDocument: assign({
         selectedDocuments: (context, event) => [(event as SelectDocumentEvent).payload],
       }),
@@ -300,6 +316,16 @@ export function makeGraphEditorMachine(
           };
         },
       })
+    },
+
+    guards: {
+      hasFrom: (context, event) => {
+        return context.selectedDocuments.length === 1;
+      },
+
+      hasToAndFrom: (context, event) => {
+        return context.selectedDocuments.length === 2;
+      }
     }
   });
 }
