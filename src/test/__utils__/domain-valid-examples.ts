@@ -60,7 +60,8 @@ export const DOCUMENT_HEADERS: DocumentHeader[] = [
     author: AUTHORS[0],
     isPublic: true,
     title: TITLES[0],
-    contentType: CONTENT_TYPES[0]
+    contentType: CONTENT_TYPES[0],
+    meta: {}
   },
 ];
 

@@ -1,5 +1,5 @@
-import { array, assign, boolean, integer, min, number, object, optional, record, string, type, union, unknown } from 'superstruct';
-import { DocumentQuery, DocumentGraphQuery } from '.';
+import { array, assign, boolean, integer, min, number, object, optional, record, string, type, union, unknown, intersection } from 'superstruct';
+import { DocumentQuery, DocumentGraphQuery, DocumentMeta } from '.';
 import { AuthorSchema } from '../authors';
 import { ContentTypeSchema, ID, IDSchema, JSONSerializableSchema, NonEmptyStringSchema, validate } from "../common";
 import { CreateDocumentInput, Document, DocumentGraph, DocumentHeader, DocumentLink, DocumentLinkMeta, UpdateDocumentInput } from './domain-document-models';
@@ -10,12 +10,26 @@ export function validateDocumentId(value: any) : asserts value is ID {
   validate(value, IDSchema);
 }
 
-
 export function validateContentType(value: any) : asserts value is string {
   validate(value, ContentTypeSchema);
 };
 
-const DocumentMetaSchema = optional(record(string(), JSONSerializableSchema));
+
+const DocumentMetaSchema = intersection([
+  type({
+    layout: optional(object({
+      x: number(),
+      y: number(),
+      width: number(),
+      height: number()
+    }))
+  }),
+  record(string(), JSONSerializableSchema)
+]);
+
+export function validateDocumentMeta(value: any) : asserts value is DocumentMeta {
+  validate(value, DocumentMetaSchema);
+}
 
 const DocumentHeaderSchema = type({
   id: IDSchema,

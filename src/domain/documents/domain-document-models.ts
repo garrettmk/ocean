@@ -1,4 +1,4 @@
-import { ID, JSONSerializable } from "../common";
+import { ID, JSONSerializable, MetaObject } from "../common";
 import { Author } from '../authors';
 
 
@@ -9,8 +9,9 @@ export type NodeLayoutData = {
   height: number,
 }
 
-export type DocumentMeta = Record<string, JSONSerializable> & {
-  layout?: NodeLayoutData
+export type DocumentMeta = {
+  layout?: NodeLayoutData,
+  [key: string]: JSONSerializable | undefined
 };
 
 export interface DocumentHeader {
@@ -19,7 +20,7 @@ export interface DocumentHeader {
   isPublic: boolean,
   title: string,
   contentType: string,
-  meta?: DocumentMeta
+  meta: DocumentMeta
 }
 
 

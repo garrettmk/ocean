@@ -1,5 +1,5 @@
 import { array, boolean, Describe, lazy, literal, number, pattern, record, refine, string, union } from 'superstruct';
-import { JSONSerializable } from './domain-common-types';
+import { JSONSerializable, MetaObject } from './domain-common-types';
 import { mimeTypeRegex, validate } from './domain-common-utils';
 
 
@@ -12,6 +12,8 @@ export const JSONSerializableSchema: Describe<JSONSerializable> = union([
   array(lazy(() => JSONSerializableSchema)),
   record(string(), lazy(() => JSONSerializableSchema))
 ]);
+export const MetaObjectSchema: Describe<MetaObject> = record(string(), JSONSerializableSchema);
+
 
 export function validateJSONSerializable(value: any) : asserts value is JSONSerializable {
   validate(value, JSONSerializableSchema);

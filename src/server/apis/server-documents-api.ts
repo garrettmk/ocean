@@ -45,7 +45,7 @@ export class ServerDocumentsApi {
           isPublic: Boolean!
           title: String!
           contentType: String!
-          meta: JSON
+          meta: JSON!
         }
 
         type Document {
@@ -54,7 +54,7 @@ export class ServerDocumentsApi {
           isPublic: Boolean!
           title: String!
           contentType: String!
-          meta: JSON
+          meta: JSON!
           content: JSON
         }
 

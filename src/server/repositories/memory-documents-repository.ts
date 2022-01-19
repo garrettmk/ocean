@@ -31,7 +31,7 @@ export class MemoryDocumentRepository implements DocumentRepository {
       title: input.title ?? 'Untitled',
       contentType: 'contentType' in input ? input.contentType : 'text/plain',
       content: 'content' in input ? input.content : null,
-      meta: 'meta' in input ? input.meta : undefined,
+      meta: 'meta' in input ? input.meta ?? {} : {},
     };
 
     validateDocument(doc);
