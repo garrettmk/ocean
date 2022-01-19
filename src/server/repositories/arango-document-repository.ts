@@ -1,4 +1,4 @@
-import { Author, AuthorRepository, CreateDocumentInput, Document, DocumentHeader, DocumentQuery, DocumentRepository, ID, NotFoundError, UpdateDocumentInput, validateCreateDocumentInput, validateDocument, validateDocumentHeader, validateDocumentId, validateDocumentQuery, validateUpdateDocumentInput } from "@/domain";
+import { Author, AuthorRepository, CreateDocumentInput, Document, DocumentHeader, DocumentMeta, DocumentQuery, DocumentRepository, ID, JSONSerializable, NotFoundError, UpdateDocumentInput, validateCreateDocumentInput, validateDocument, validateDocumentHeader, validateDocumentId, validateDocumentQuery, validateUpdateDocumentInput } from "@/domain";
 import { aql, Database } from "arangojs";
 import { ArangoError } from "arangojs/error";
 import { CollectionType, DocumentCollection } from "arangojs/collection";
@@ -6,10 +6,11 @@ import { Document as ArangoDocument } from 'arangojs/documents';
 
 
 type DbDocument = {
-  authorId: ID,
-  isPublic: boolean,
-  title: string,
-  contentType: string,
+  authorId: ID
+  isPublic: boolean
+  title: string
+  contentType: string
+  meta: DocumentMeta
   content: any
 }
 
@@ -55,7 +56,8 @@ export class ArangoDocumentRepository implements DocumentRepository {
         isPublic: ${input.isPublic ?? false},
         title: ${input.title ?? 'Untitled' },
         contentType: ${'contentType' in input ? input.contentType : 'text/plain' },
-        content: ${'content' in input ? input.content : null }
+        meta: ${'meta' in input ? input.meta : null},
+        content: ${'content' in input ? input.content : null },
       } INTO ${this.collection}
       RETURN NEW
     `)

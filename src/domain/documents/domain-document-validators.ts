@@ -15,13 +15,15 @@ export function validateContentType(value: any) : asserts value is string {
   validate(value, ContentTypeSchema);
 };
 
+const DocumentMetaSchema = optional(record(string(), JSONSerializableSchema));
 
 const DocumentHeaderSchema = type({
   id: IDSchema,
   author: AuthorSchema,
   isPublic: boolean(),
   title: NonEmptyStringSchema,
-  contentType: ContentTypeSchema
+  contentType: ContentTypeSchema,
+  meta: DocumentMetaSchema,
 });
 
 export function validateDocumentHeader(value: any) : asserts value is DocumentHeader {
@@ -41,7 +43,8 @@ export function validateDocument(value: any) : asserts value is Document {
 const CreateDocumentInputSchema = union([
   object({
     title: optional(NonEmptyStringSchema),
-    isPublic: optional(boolean())
+    isPublic: optional(boolean()),
+    meta: DocumentMetaSchema,
   }),
 
   object({
@@ -49,6 +52,7 @@ const CreateDocumentInputSchema = union([
     isPublic: optional(boolean()),
     contentType: ContentTypeSchema,
     content: unknown(),
+    meta: DocumentMetaSchema,
   })
 ]);
 
@@ -60,14 +64,16 @@ export function validateCreateDocumentInput(value: any) : asserts value is Creat
 const UpdateDocumentInputSchema = union([
   object({
     title: optional(NonEmptyStringSchema),
-    isPublic: optional(boolean())
+    isPublic: optional(boolean()),
+    meta: DocumentMetaSchema,
   }),
 
   object({
     title: optional(NonEmptyStringSchema),
     isPublic: optional(boolean()),
     contentType: ContentTypeSchema,
-    content: unknown()
+    content: unknown(),
+    meta: DocumentMetaSchema,
   })
 ]);
 

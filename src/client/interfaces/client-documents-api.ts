@@ -63,6 +63,7 @@ export class DocumentsGraphQLClient implements ClientDocumentsGateway {
           }
           isPublic
           contentType
+          meta
         }
       }
     `;
@@ -88,6 +89,7 @@ export class DocumentsGraphQLClient implements ClientDocumentsGateway {
           isPublic
           contentType
           content
+          meta
         }
       }
     `;
@@ -115,6 +117,7 @@ export class DocumentsGraphQLClient implements ClientDocumentsGateway {
           isPublic
           contentType
           content
+          meta
         }
       }
     `;
@@ -142,6 +145,7 @@ export class DocumentsGraphQLClient implements ClientDocumentsGateway {
           isPublic
           contentType
           content
+          meta
         }
       }
     `;
@@ -167,6 +171,7 @@ export class DocumentsGraphQLClient implements ClientDocumentsGateway {
           isPublic
           contentType
           content
+          meta
         }
       }
     `;
@@ -192,6 +197,7 @@ export class DocumentsGraphQLClient implements ClientDocumentsGateway {
             isPublic
             title
             contentType
+            meta
           }
           links {
             from
@@ -263,6 +269,7 @@ export class DocumentsGraphQLClient implements ClientDocumentsGateway {
           isPublic
           contentType
           content
+          meta
         }
       }
     `;
@@ -290,6 +297,7 @@ export class DocumentsGraphQLClient implements ClientDocumentsGateway {
             isPublic
             title
             contentType
+            meta
           }
           links {
             from

@@ -45,6 +45,7 @@ export class ServerDocumentsApi {
           isPublic: Boolean!
           title: String!
           contentType: String!
+          meta: JSON
         }
 
         type Document {
@@ -53,6 +54,7 @@ export class ServerDocumentsApi {
           isPublic: Boolean!
           title: String!
           contentType: String!
+          meta: JSON
           content: JSON
         }
 
@@ -78,12 +80,14 @@ export class ServerDocumentsApi {
         input CreateDocumentInput {
           title: String,
           contentType: String,
+          meta: JSON
           content: JSON
         }
 
         input UpdateDocumentInput {
           title: String,
           contentType: String,
+          meta: JSON
           content: JSON
         }
 

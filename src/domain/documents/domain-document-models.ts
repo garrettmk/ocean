@@ -2,12 +2,24 @@ import { ID, JSONSerializable } from "../common";
 import { Author } from '../authors';
 
 
+export type NodeLayoutData = {
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+}
+
+export type DocumentMeta = Record<string, JSONSerializable> & {
+  layout?: NodeLayoutData
+};
+
 export interface DocumentHeader {
   id: ID,
   author: Author,
   isPublic: boolean,
   title: string,
   contentType: string,
+  meta?: DocumentMeta
 }
 
 
@@ -33,11 +45,13 @@ type ContentInput = {
 type CreateInput = {
   title?: string,
   isPublic?: boolean,
+  meta?: DocumentMeta,
 }
 
 type UpdateInput = {
   title?: string,
-  isPublic?: boolean
+  isPublic?: boolean,
+  meta?: DocumentMeta,
 }
 
 export type CreateDocumentInput = CreateInput | (CreateInput & ContentInput);
