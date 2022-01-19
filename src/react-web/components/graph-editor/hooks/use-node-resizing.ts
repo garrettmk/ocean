@@ -1,13 +1,21 @@
 import React from 'react';
 import { useZoomPanHelper } from 'react-flow-renderer';
 
+// https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/button#value
 enum MouseButtons {
   Left = 0,
   Middle = 1,
   Right = 2,
 }
 
-
+//
+// Usage:
+// const [resizeHandleRef, resizeElementRef] = useNodeResizing();
+// ...
+//<div ref={resizeElementRef}>
+//  <div ref={resizeHandleRef}/>
+//</div>
+//
 export function useNodeResizing() {
   const { project } = useZoomPanHelper();
   const resizeHandle = React.useRef<HTMLDivElement | null>(null);
@@ -54,7 +62,6 @@ export function useNodeResizing() {
       resizeHandle.current?.removeEventListener('mousedown', startResizing);
     }
   }, [resizeHandle.current]);
-
 
   return [resizeHandle, resizeElement];
 }

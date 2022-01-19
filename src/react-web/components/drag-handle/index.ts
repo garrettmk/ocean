@@ -1,1 +1,1 @@
-export * from './drage-handle';
+export * from './drag-handle';

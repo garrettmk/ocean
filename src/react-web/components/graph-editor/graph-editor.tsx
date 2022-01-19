@@ -67,6 +67,7 @@ export function GraphEditor(props: GraphEditorProps) {
       ]);
 
       // Fit the viewport to the graph
+      // but make sure it happens after the data updates
       setTimeout(() => {
         reactFlowInstanceRef.current.fitView();
       }, 0);
@@ -74,9 +75,8 @@ export function GraphEditor(props: GraphEditorProps) {
     }).catch(console.error);
   }, [graph]);
 
-  // Respond to node clicks
-  const handleElementClick = React.useCallback((event: any, element: any) => {
-    console.log(event);
+  // Select a node when you click on it
+  const selectNode = React.useCallback((event: any, element: any) => {
     if (isNode(element))
       send({ type: 'selectDocument', payload: element.id });
   }, [send]);
@@ -86,7 +86,7 @@ export function GraphEditor(props: GraphEditorProps) {
       <ReactFlowProvider>
         <ReactFlow
           onLoad={setReactFlowInstance}
-          onElementClick={handleElementClick}
+          onElementClick={selectNode}
           elements={graphElements}
           nodeTypes={{ 
             default: DocumentNode,
