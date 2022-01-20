@@ -30,7 +30,7 @@ export type GraphEditorTypeState =
     }
   }
   | {
-    value: 'linkingDocuments' | 'unlinkingDocuments' | 'importingUrl' | 'creatingDocument',
+    value: 'linkingDocuments' | 'unlinkingDocuments' | 'importingUrl' | 'creatingDocument' | 'updatingLayout',
     context: {
       graph: DocumentGraph,
       error?: Error,
@@ -69,13 +69,22 @@ export type GraphEditorTypeState =
   }
 
 
+export type UpdateLayoutInput = {
+  id: ID,
+  x: number,
+  y: number,
+  width: number,
+  height: number
+}
+
 export type LoadGraphEvent = { type: 'loadGraph', payload: DocumentGraphQuery };
 export type LinkDocumentsEvent = { type: 'linkDocuments', payload?: Partial<DocumentLink> };
 export type UnlinkDocumentsEvent = { type: 'unlinkDocuments' };
 export type DeleteDocumentEvent = { type: 'deleteDocument' };
 export type SelectDocumentEvent = { type: 'selectDocument', payload: ID };
 export type ImportUrlEvent = { type: 'importUrl', payload: string };
-export type CreateDocumentEvent = { type: 'createDocument', payload: CreateDocumentInput }
+export type CreateDocumentEvent = { type: 'createDocument', payload: CreateDocumentInput };
+export type UpdateLayoutEvent = { type: 'updateLayout', payload: UpdateLayoutInput };
 export type CancelEvent = { type: 'cancel' };
 
 export type GraphEditorEvent = 
@@ -86,6 +95,7 @@ export type GraphEditorEvent =
   | SelectDocumentEvent
   | ImportUrlEvent
   | CreateDocumentEvent
+  | UpdateLayoutEvent
   | CancelEvent;
 
 export type GraphEditorMachine = ReturnType<typeof makeGraphEditorMachine>;
@@ -125,7 +135,8 @@ export function makeGraphEditorMachine(
           linkDocuments: { target: 'linkingDocuments' },
           unlinkDocuments: { target: 'unlinkingDocuments' },
           importUrl: { target: 'importingUrl' },
-          createDocument: { target: 'creatingDocument' }
+          createDocument: { target: 'creatingDocument' },
+          updateLayout: { target: 'updatingLayout' },
         }
       },
 
@@ -208,8 +219,20 @@ export function makeGraphEditorMachine(
             }
           }
         }
-      }
+      },
 
+      updatingLayout: {
+        initial: 'updating',
+        states: {
+          updating: {
+            invoke: {
+              src: 'updateLayout',
+              onDone: { target: '#graph-editor.ready', actions: ['assignUpdatedLayout'] },
+              onError: { target: '#graph-editor.ready', actions: ['assignError'] }
+            }
+          }
+        }
+      }
     }
   }, {
     services: {
@@ -245,7 +268,17 @@ export function makeGraphEditorMachine(
         assertEventType<CreateDocumentEvent>(event, 'createDocument');
         const input = event.payload;
         return await gateway.createDocument(input);
-      }
+      },
+
+      async updateLayout(context, event) {
+        assertEventType<UpdateLayoutEvent>(event, 'updateLayout');
+        const { id, ...layout } = event.payload;
+
+        return await gateway.updateDocument(id, { 
+          // @ts-ignore
+          meta: { layout } 
+        });
+      },
     },
 
 
@@ -314,6 +347,18 @@ export function makeGraphEditorMachine(
             links: context.graph!.links
           };
         },
+      }),
+
+      assignUpdatedLayout: assign({
+        graph: (context, event) => {
+          //@ts-ignore
+          const { content, ...header } = event.data;
+
+          return {
+            documents: context.graph!.documents.filter(doc => doc.id !== header.id).concat([header]),
+            links: context.graph!.links
+          };
+        }
       })
     },
 
