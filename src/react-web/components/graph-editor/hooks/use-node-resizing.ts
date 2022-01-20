@@ -8,6 +8,11 @@ enum MouseButtons {
   Right = 2,
 }
 
+export type UseNodeResizingOptions = {
+  start?: (rect: DOMRect) => void,
+  stop?: (rect: DOMRect) => void
+}
+
 //
 // Usage:
 // const [resizeHandleRef, resizeElementRef] = useNodeResizing();
@@ -16,7 +21,7 @@ enum MouseButtons {
 //  <div ref={resizeHandleRef}/>
 //</div>
 //
-export function useNodeResizing() {
+export function useNodeResizing(options?: UseNodeResizingOptions) {
   const { project } = useZoomPanHelper();
   const resizeHandle = React.useRef<HTMLDivElement | null>(null);
   const resizeElement = React.useRef<HTMLDivElement | null>(null);
@@ -41,13 +46,26 @@ export function useNodeResizing() {
 
   // Remove the mouse event listener
   const stopResizing = React.useCallback(() => {
+    // Notify the callback
+    if (options?.stop) {
+      const elementRect = resizeElement.current!.getBoundingClientRect();
+      options.stop(elementRect);
+    }
+
     window.removeEventListener('mousemove', resizeCallback);
+    window.removeEventListener('mouseup', stopResizing);
   }, [resizeCallback]);
 
   // While resizing, listen to mouse events on the window
   // If mouseup, stop resizing
   const startResizing = React.useCallback((event: MouseEvent) => {
     if (resizeElement.current && event.button === MouseButtons.Left) {
+      // Notify the callback
+      if (options?.start) {
+        const elementRect = resizeElement.current!.getBoundingClientRect();
+        options.start(elementRect);
+      }
+
       window.addEventListener('mousemove', resizeCallback);
       window.addEventListener('mouseup', stopResizing);
     }
