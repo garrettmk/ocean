@@ -1,5 +1,7 @@
+import { ID } from '@/domain';
+import { DateTime } from 'graphql-scalars/mocks';
 import React from 'react';
-import { useZoomPanHelper } from 'react-flow-renderer';
+import { useZoomPanHelper, useStore } from 'react-flow-renderer';
 
 // https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/button#value
 enum MouseButtons {
@@ -10,7 +12,8 @@ enum MouseButtons {
 
 export type UseNodeResizingOptions = {
   start?: (rect: DOMRect) => void,
-  stop?: (rect: DOMRect) => void
+  stop?: (rect: DOMRect) => void,
+  delay?: number[]
 }
 
 //
@@ -23,11 +26,26 @@ export type UseNodeResizingOptions = {
 //
 export function useNodeResizing(options?: UseNodeResizingOptions) {
   const { project } = useZoomPanHelper();
+  const flowStore = useStore();
   const resizeHandle = React.useRef<HTMLDivElement | null>(null);
   const resizeElement = React.useRef<HTMLDivElement | null>(null);
+  const isResizingRef = React.useRef<boolean>(false);  
 
   // Respond to mousemove events by changing the size of resizeElement
   const resizeCallback = React.useCallback((event: MouseEvent) => {
+    // If this is the first event, notify the callback
+    if (!isResizingRef.current && options?.start) {
+      const nodeId = resizeElement.current?.parentElement?.dataset['id']!;
+      const elementRect = resizeElement.current!.getBoundingClientRect();
+      const { x, y } = project({ x: elementRect.x, y: elementRect.y });
+      const { x: width, y: height } = project({ x: elementRect.width, y: elementRect.height });
+
+      options.start(new DOMRect(x, y, width, height));
+    }
+    
+    if (!isResizingRef.current)
+      isResizingRef.current = true;
+    
     // Get the bounding rect of the element to resize
     const elementRect = resizeElement.current!.getBoundingClientRect();
 
@@ -47,10 +65,22 @@ export function useNodeResizing(options?: UseNodeResizingOptions) {
   // Remove the mouse event listener
   const stopResizing = React.useCallback(() => {
     // Notify the callback
-    if (options?.stop) {
-      const elementRect = resizeElement.current!.getBoundingClientRect();
-      options.stop(elementRect);
+    if (isResizingRef.current && options?.stop) {
+      setTimeout(() => {
+        const nodeId = resizeElement.current?.parentElement?.dataset['id']!;
+        const node = flowStore.getState().nodes.find(node => node.id === nodeId)!;
+
+        const { width, height } = resizeElement.current!.getBoundingClientRect();
+        const x = node.position.x;
+        const y = node.position.y;
+
+        options.stop!(new DOMRect(x, y, width, height));
+      }, 0);
+      isResizingRef.current = false;
     }
+
+    if (isResizingRef.current)
+      isResizingRef.current = false;
 
     window.removeEventListener('mousemove', resizeCallback);
     window.removeEventListener('mouseup', stopResizing);
@@ -60,12 +90,6 @@ export function useNodeResizing(options?: UseNodeResizingOptions) {
   // If mouseup, stop resizing
   const startResizing = React.useCallback((event: MouseEvent) => {
     if (resizeElement.current && event.button === MouseButtons.Left) {
-      // Notify the callback
-      if (options?.start) {
-        const elementRect = resizeElement.current!.getBoundingClientRect();
-        options.start(elementRect);
-      }
-
       window.addEventListener('mousemove', resizeCallback);
       window.addEventListener('mouseup', stopResizing);
     }
