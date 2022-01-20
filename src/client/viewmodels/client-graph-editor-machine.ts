@@ -2,58 +2,11 @@ import { Document, DocumentHeader, DocumentGraph, DocumentGraphQuery, DocumentLi
 import { CreateDocumentInput } from "@/server/usecases";
 import { createMachine, assign, DoneInvokeEvent, ErrorPlatformEvent, State } from "xstate";
 import { ClientDocumentsGateway } from "../interfaces";
-import { assertEventType } from "../utils";
-import ELK, { ElkEdge, ElkNode } from 'elkjs';
-const elk = new ELK();
+import { assertEventType, makeELK, elkNodeToDoc, elkEdgeToLink, docToElkNode, linkToElkEdge } from "../utils";
 
 
-interface ElkNodeWithData extends ElkNode {
-  data: DocumentHeader
-}
+const elk = makeELK();
 
-interface ElkEdgeWithData extends ElkEdge {
-  data: DocumentLink
-}
-
-function docToElkNode(doc: DocumentHeader) : ElkNodeWithData {
-  return {
-    data: doc,
-    id: doc.id,
-    x: doc.meta?.layout?.x ?? 0,
-    y: doc.meta?.layout?.y ?? 0,
-    width: doc.meta?.layout?.width ?? 250,
-    height: doc.meta?.layout?.height ?? 100,
-  };
-}
-
-function elkNodeToDoc(node: ElkNode) : DocumentHeader {
-  const { x, y, width, height, data } = node as Required<ElkNodeWithData>;
-
-  return {
-    ...data,
-    meta: {
-      ...data.meta,
-      layout: { x, y, width, height }
-    }
-  };
-}
-
-function linkToElkEdge(link: DocumentLink) : ElkEdge {
-  return {
-    // @ts-ignore
-    data: link,
-    id: `${link.from}:${link.to}`,
-    sources: [link.from],
-    targets: [link.to],
-  };
-}
-
-function elkEdgeToLink(edge: ElkEdge) : DocumentLink {
-  const { data } = edge as ElkEdgeWithData;
-  return {
-    ...data,
-  };
-}
 
 export type GraphEditorContext = {
   graph?: DocumentGraph,
