@@ -13,12 +13,21 @@ import ReactFlow, {
   Connection,
   Node as ReactFlowNode,
   Edge as ReactFlowEdge,
-  OnConnectFunc
+  OnConnectFunc,
+  useStoreState,
 } from 'react-flow-renderer';
 import { State } from 'xstate';
 import { GraphEditorContext, GraphEditorEvent, GraphEditorMachineState } from '@/client/viewmodels';
 
 export type GraphEditorProps = GridProps & {};
+
+
+function FlowStateLogger() {
+  const state = useStoreState(s => s);
+  React.useEffect(() => console.log(state), [state]);
+
+  return <></>;
+}
 
 
 export function GraphEditor(props: GraphEditorProps) {
@@ -47,9 +56,9 @@ export function GraphEditor(props: GraphEditorProps) {
 
     // Fit the viewport to the graph
     // but make sure it happens after the data updates
-    setTimeout(() => {
-      reactFlowInstanceRef.current.fitView();
-    }, 0);    
+    // setTimeout(() => {
+    //   reactFlowInstanceRef.current.fitView();
+    // }, 0);    
   }, [graph]);
 
   
@@ -61,9 +70,9 @@ export function GraphEditor(props: GraphEditorProps) {
 
   // When the graph changes, translate it into react-flow elements
   React.useEffect(() => {
-    if (state.history?.matches('loading'))
-      layoutGraph();
-    else
+    // if (state.history?.matches('loading'))
+    //   layoutGraph();
+    // else
       setGraphElements([
         ...(graph?.documents ?? []).map(docToFlowNode),
         ...(graph?.links ?? []).map(linkToFlowEdge)
@@ -89,10 +98,21 @@ export function GraphEditor(props: GraphEditorProps) {
     send({ type: 'selectDocument', payload: target as ID });
   }, []);
 
+  // Moving nodes around
+  const updateDocumentPosition = React.useCallback((event: React.MouseEvent, node: ReactFlowNode) => {
+    const { id } = node;
+    const { x, y } = node.position;
+    // @ts-ignore
+    const { width, height } = event.target.offsetParent.getBoundingClientRect();
+    
+    send({ type: 'updateLayout', payload: { id, x, y, width, height }});
+  }, [send]);
+
   return (    
     <Grid templateRows="1fr" templateColumns="1fr" {...props}>
       <ReactFlowProvider>
         <ReactFlow
+          snapToGrid
           nodeTypes={{ 
             default: DocumentNode,
             document: DocumentNode,
@@ -108,6 +128,7 @@ export function GraphEditor(props: GraphEditorProps) {
           onConnect={linkDocuments}
           onConnectStart={startLinking}
           onConnectEnd={cancelLinking}
+          onNodeDragStop={updateDocumentPosition}
         />
       </ReactFlowProvider>
     </Grid>
@@ -120,10 +141,10 @@ function docToElkNode(doc: DocumentHeader) : ElkNode {
     // @ts-ignore
     data: doc,
     id: doc.id,
-    x: doc.meta?.layout?.x,
-    y: doc.meta?.layout?.y,
+    x: doc.meta?.layout?.x ?? 0,
+    y: doc.meta?.layout?.y ?? 0,
     width: doc.meta?.layout?.width ?? 250,
-    height: doc.meta?.layout?.height ?? 100
+    height: doc.meta?.layout?.height ?? 100,
   };
 }
 
@@ -166,8 +187,8 @@ function docToFlowNode(doc: DocumentHeader) : ReactFlowNode {
     id: doc.id,
     dragHandle: '#draghandle',
     position: {
-      x: doc.meta?.layout?.x ?? 250,
-      y: doc.meta?.layout?.y ?? 250,
+      x: doc.meta?.layout?.x ?? 0,
+      y: doc.meta?.layout?.y ?? 0,
     },
   };
 }

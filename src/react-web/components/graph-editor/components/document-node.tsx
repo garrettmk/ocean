@@ -2,12 +2,22 @@ import { Box, Heading, Text } from '@chakra-ui/react';
 import React from 'react';
 import { Handle, NodeProps, Position } from 'react-flow-renderer';
 import { useNodeResizing } from '../hooks';
-import { DragHandle } from '@/react-web/components';
+import { ScaledDragHandle } from './scaled-drag-handle';
+import { useGraphEditor } from '@/react-web/hooks';
 
 
 export function DocumentNode(props: NodeProps) {
   const { id, data: doc, type, selected, sourcePosition, targetPosition } = props;
-  const [resizeHandleRef, resizeElementRef] = useNodeResizing();
+  const { state, send } = useGraphEditor();
+  const [resizeHandleRef, resizeElementRef] = useNodeResizing({
+    stop: ({ x, y, width, height }) => send({ type: 'updateLayout', payload: {
+      id, x, y, width, height
+    } })
+    // stop: () => console.log('stop resizing')
+  });
+
+  const width = doc.meta.layout?.width ? `${doc.meta.layout.width}px` : undefined;
+  const height = doc.meta.layout?.height ? `${doc.meta.layout.height}px` : undefined;
 
   return (
     <Box
@@ -18,6 +28,8 @@ export function DocumentNode(props: NodeProps) {
       borderRadius='4'
       borderWidth='2px'
       borderColor={selected ? 'blue.500' : 'transparent'}
+      width={width}
+      height={height}
     >
       <Handle id='top' type='target' position={Position.Top} />
       <Handle id='bottom' type='source' position={Position.Bottom}/>
@@ -30,7 +42,7 @@ export function DocumentNode(props: NodeProps) {
         {`${doc.contentType}`}
       </Text>
 
-      <DragHandle
+      <ScaledDragHandle
         ref={resizeHandleRef}
         position='absolute'
         bottom='0'
