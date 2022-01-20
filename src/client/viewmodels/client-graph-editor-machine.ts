@@ -1,10 +1,59 @@
-import { Document, DocumentGraph, DocumentGraphQuery, DocumentLink, ID } from "@/domain";
+import { Document, DocumentHeader, DocumentGraph, DocumentGraphQuery, DocumentLink, ID } from "@/domain";
 import { CreateDocumentInput } from "@/server/usecases";
 import { createMachine, assign, DoneInvokeEvent, ErrorPlatformEvent, State } from "xstate";
 import { ClientDocumentsGateway } from "../interfaces";
 import { assertEventType } from "../utils";
+import ELK, { ElkEdge, ElkNode } from 'elkjs';
+const elk = new ELK();
 
 
+interface ElkNodeWithData extends ElkNode {
+  data: DocumentHeader
+}
+
+interface ElkEdgeWithData extends ElkEdge {
+  data: DocumentLink
+}
+
+function docToElkNode(doc: DocumentHeader) : ElkNodeWithData {
+  return {
+    data: doc,
+    id: doc.id,
+    x: doc.meta?.layout?.x ?? 0,
+    y: doc.meta?.layout?.y ?? 0,
+    width: doc.meta?.layout?.width ?? 250,
+    height: doc.meta?.layout?.height ?? 100,
+  };
+}
+
+function elkNodeToDoc(node: ElkNode) : DocumentHeader {
+  const { x, y, width, height, data } = node as Required<ElkNodeWithData>;
+
+  return {
+    ...data,
+    meta: {
+      ...data.meta,
+      layout: { x, y, width, height }
+    }
+  };
+}
+
+function linkToElkEdge(link: DocumentLink) : ElkEdge {
+  return {
+    // @ts-ignore
+    data: link,
+    id: `${link.from}:${link.to}`,
+    sources: [link.from],
+    targets: [link.to],
+  };
+}
+
+function elkEdgeToLink(edge: ElkEdge) : DocumentLink {
+  const { data } = edge as ElkEdgeWithData;
+  return {
+    ...data,
+  };
+}
 
 export type GraphEditorContext = {
   graph?: DocumentGraph,
@@ -30,7 +79,7 @@ export type GraphEditorTypeState =
     }
   }
   | {
-    value: 'linkingDocuments' | 'unlinkingDocuments' | 'importingUrl' | 'creatingDocument' | 'updatingLayout',
+    value: 'linkingDocuments' | 'unlinkingDocuments' | 'importingUrl' | 'creatingDocument' | 'updatingLayout' | 'layingOutGraph',
     context: {
       graph: DocumentGraph,
       error?: Error,
@@ -85,6 +134,7 @@ export type SelectDocumentEvent = { type: 'selectDocument', payload: ID };
 export type ImportUrlEvent = { type: 'importUrl', payload: string };
 export type CreateDocumentEvent = { type: 'createDocument', payload: CreateDocumentInput };
 export type UpdateLayoutEvent = { type: 'updateLayout', payload: UpdateLayoutInput };
+export type LayoutGraphEvent = { type: 'layoutGraph' };
 export type CancelEvent = { type: 'cancel' };
 
 export type GraphEditorEvent = 
@@ -96,6 +146,7 @@ export type GraphEditorEvent =
   | ImportUrlEvent
   | CreateDocumentEvent
   | UpdateLayoutEvent
+  | LayoutGraphEvent
   | CancelEvent;
 
 export type GraphEditorMachine = ReturnType<typeof makeGraphEditorMachine>;
@@ -137,6 +188,7 @@ export function makeGraphEditorMachine(
           importUrl: { target: 'importingUrl' },
           createDocument: { target: 'creatingDocument' },
           updateLayout: { target: 'updatingLayout' },
+          layoutGraph: { target: 'layingOutGraph' },
         }
       },
 
@@ -232,7 +284,20 @@ export function makeGraphEditorMachine(
             }
           }
         }
-      }
+      },
+
+      layingOutGraph: {
+        initial: 'working',
+        states: {
+          working: {
+            invoke: {
+              src: 'layoutGraph',
+              onDone: { target: '#graph-editor.ready', actions: ['assignGraph'] },
+              onError: { target: '#graph-editor.ready', actions: ['assignError'] }
+            }
+          }
+        }
+      },
     }
   }, {
     services: {
@@ -279,6 +344,26 @@ export function makeGraphEditorMachine(
           meta: { layout } 
         });
       },
+
+      async layoutGraph(context, event) {
+        assertEventType<LayoutGraphEvent>(event, 'layoutGraph');
+        
+        // Describe the graph in ELK JSON format and tell elk to lay it out
+        const layout = await elk.layout({
+          id: 'root',
+          layoutOptions: { 'algorithm': 'layered', 'elk.direction': 'DOWN' },
+          children: (context.graph?.documents ?? []).map(docToElkNode),
+          edges: (context.graph?.links ?? []).map(linkToElkEdge)
+        });
+
+        // Transform the elk layout back into docs/links
+        const newGraph: DocumentGraph = {
+          documents: layout.children!.map(elkNodeToDoc),
+          links: layout.edges!.map(elkEdgeToLink),
+        };
+
+        return newGraph;
+      }
     },
 
 

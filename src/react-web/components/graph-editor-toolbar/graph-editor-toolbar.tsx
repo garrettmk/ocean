@@ -9,6 +9,7 @@ import { AiOutlineSisternode } from 'react-icons/ai';
 import { IoLink, IoUnlink } from 'react-icons/io5';
 import { State } from 'xstate';
 import { ImportUrlModal } from '../import-url-modal';
+import { FaSitemap } from 'react-icons/fa';
 
 
 
@@ -66,7 +67,7 @@ export function GraphEditorToolbar({ toolbarSize, ...flexProps }: GraphEditorToo
 
 
   const handleCreateDocument = (event: React.MouseEvent<HTMLButtonElement>) => {
-    const  contentType = (event.target as HTMLButtonElement).value;
+    const contentType = (event.target as HTMLButtonElement).value;
 
     send({ type: 'createDocument', payload: {
       title: 'Untitled',
@@ -99,6 +100,37 @@ export function GraphEditorToolbar({ toolbarSize, ...flexProps }: GraphEditorToo
         duration: 5000
       })
   });
+
+
+  const handleLayoutGraph = () => {
+    send({ type: 'layoutGraph' });
+  };
+
+  useStateTransition(state as State<any>, 'layingOutGraph', {
+    in: () => !toast.isActive('layoutGraph') && toast({
+      id: 'layoutGraph',
+      title: 'Layout Graph',
+      description: 'Calculating...',
+      status: 'info',
+      isClosable: false,
+    }),
+
+    out: (current) => current.context.error
+      ? toast.update('layoutGraph', {
+        title: 'Layout Graph',
+        description: current.context.error + '',
+        status: 'error',
+        isClosable: true,
+        duration: 5000
+      })
+      : toast.update('layoutGraph', {
+        title: 'Great success!',
+        description: 'Layout applied.',
+        status: 'success',
+        isClosable: true,
+        duration: 5000
+      })
+  });
   
   return (
     <>
@@ -109,6 +141,12 @@ export function GraphEditorToolbar({ toolbarSize, ...flexProps }: GraphEditorToo
       />
       <Flex {...flexProps}>
         <ButtonGroup isAttached color='gray.500' size={toolbarSize}>
+          <IconButton
+            icon={<Icon as={FaSitemap}/>}
+            aria-label='Layout Graph'
+            onClick={handleLayoutGraph}
+            disabled={!state.matches('ready')}
+          />
           <Menu>
             <MenuButton
               as={IconButton}
