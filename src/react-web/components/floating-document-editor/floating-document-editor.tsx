@@ -1,7 +1,7 @@
 import { ID } from '@/domain';
 import { FloatingWindowCloseButton } from '@/react-web/components/floating-window-close-button';
 import { createDocumentRoute } from '@/react-web/config/routes';
-import { useDocumentEditorMachine, useGraphEditor } from '@/react-web/hooks';
+import { useDocumentEditorMachine, useGraphEditor, useStateTransition } from '@/react-web/hooks';
 import { ButtonGroup, IconButton } from '@chakra-ui/button';
 import { ExternalLinkIcon } from '@chakra-ui/icons';
 import { Box } from '@chakra-ui/react';
@@ -39,6 +39,14 @@ export function FloatingDocumentEditor({
     if (documentId)
       editor.openDocument(documentId);
   }, [documentId]);
+
+  // Close the document if deleted
+  useStateTransition(editor.state, 'deletingDocument.deleting', {
+    out: (current, previous) => {
+      if (!current.context.error)
+        onClose?.();
+    }
+  });
 
   return (
     <DocumentEditorProvider editor={editor}>

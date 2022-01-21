@@ -1,5 +1,5 @@
 import { Document, DocumentHeader, DocumentGraph, DocumentGraphQuery, DocumentLink, ID } from "@/domain";
-import { CreateDocumentInput } from "@/server/usecases";
+import { CreateDocumentInput, UpdateDocumentInput } from "@/server/usecases";
 import { createMachine, assign, DoneInvokeEvent, ErrorPlatformEvent, State } from "xstate";
 import { ClientDocumentsGateway } from "../interfaces";
 import { assertEventType, makeELK, elkNodeToDoc, elkEdgeToLink, docToElkNode, linkToElkEdge } from "../utils";
@@ -32,7 +32,7 @@ export type GraphEditorTypeState =
     }
   }
   | {
-    value: 'linkingDocuments' | 'unlinkingDocuments' | 'importingUrl' | 'creatingDocument' | 'updatingLayout' | 'layingOutGraph',
+    value: 'linkingDocuments' | 'unlinkingDocuments' | 'importingUrl' | 'creatingDocument' | 'updatingDocument' | 'layingOutGraph',
     context: {
       graph: DocumentGraph,
       error?: Error,
@@ -71,22 +71,19 @@ export type GraphEditorTypeState =
   }
 
 
-export type UpdateLayoutInput = {
-  id: ID,
-  x: number,
-  y: number,
-  width: number,
-  height: number
+export type UpdateDocumentPayload = UpdateDocumentInput & {
+  id: ID
 }
 
 export type LoadGraphEvent = { type: 'loadGraph', payload: DocumentGraphQuery };
 export type LinkDocumentsEvent = { type: 'linkDocuments', payload?: Partial<DocumentLink> };
 export type UnlinkDocumentsEvent = { type: 'unlinkDocuments' };
-export type DeleteDocumentEvent = { type: 'deleteDocument' };
+export type DeleteDocumentEvent = { type: 'deleteDocument', payload: ID };
+export type RemoveDocumentEvent = { type: 'removeDocument', payload: ID };
 export type SelectDocumentEvent = { type: 'selectDocument', payload: ID };
 export type ImportUrlEvent = { type: 'importUrl', payload: string };
 export type CreateDocumentEvent = { type: 'createDocument', payload: CreateDocumentInput };
-export type UpdateLayoutEvent = { type: 'updateLayout', payload: UpdateLayoutInput };
+export type UpdateDocumentEvent = { type: 'updateDocument', payload: UpdateDocumentPayload };
 export type LayoutGraphEvent = { type: 'layoutGraph' };
 export type CancelEvent = { type: 'cancel' };
 
@@ -95,10 +92,11 @@ export type GraphEditorEvent =
   | LinkDocumentsEvent
   | UnlinkDocumentsEvent
   | DeleteDocumentEvent
+  | RemoveDocumentEvent
   | SelectDocumentEvent
   | ImportUrlEvent
   | CreateDocumentEvent
-  | UpdateLayoutEvent
+  | UpdateDocumentEvent
   | LayoutGraphEvent
   | CancelEvent;
 
@@ -140,7 +138,9 @@ export function makeGraphEditorMachine(
           unlinkDocuments: { target: 'unlinkingDocuments' },
           importUrl: { target: 'importingUrl' },
           createDocument: { target: 'creatingDocument' },
-          updateLayout: { target: 'updatingLayout' },
+          deleteDocument: { target: 'deletingDocument' },
+          removeDocument: { actions: ['assignRemoveDocument'] },
+          updateDocument: { target: 'updatingDocument' },
           layoutGraph: { target: 'layingOutGraph' },
         }
       },
@@ -226,13 +226,26 @@ export function makeGraphEditorMachine(
         }
       },
 
-      updatingLayout: {
+      deletingDocument: {
+        initial: 'deleting',
+        states: {
+          deleting: {
+            invoke: {
+              src: 'deleteDocument',
+              onDone: { target: '#graph-editor.ready', actions: ['assignDeleteDocument'] },
+              onError: { target: '#graph-editor.ready', actions: ['assignError'] }
+            }
+          }
+        }
+      },
+
+      updatingDocument: {
         initial: 'updating',
         states: {
           updating: {
             invoke: {
-              src: 'updateLayout',
-              onDone: { target: '#graph-editor.ready', actions: ['assignUpdatedLayout'] },
+              src: 'updateDocument',
+              onDone: { target: '#graph-editor.ready', actions: ['assignUpdatedDocument'] },
               onError: { target: '#graph-editor.ready', actions: ['assignError'] }
             }
           }
@@ -288,14 +301,18 @@ export function makeGraphEditorMachine(
         return await gateway.createDocument(input);
       },
 
-      async updateLayout(context, event) {
-        assertEventType<UpdateLayoutEvent>(event, 'updateLayout');
-        const { id, ...layout } = event.payload;
+      async deleteDocument(context, event) {
+        assertEventType<DeleteDocumentEvent>(event, 'deleteDocument');
+        const id = event.payload;
 
-        return await gateway.updateDocument(id, { 
-          // @ts-ignore
-          meta: { layout } 
-        });
+        return await gateway.deleteDocument(id);
+      },
+
+      async updateDocument(context, event) {
+        assertEventType<UpdateDocumentEvent>(event, 'updateDocument');
+        const { id, ...input } = event.payload;
+
+        return await gateway.updateDocument(id, input);
       },
 
       async layoutGraph(context, event) {
@@ -375,9 +392,7 @@ export function makeGraphEditorMachine(
 
       assignNewDocument: assign({
         graph: (context, event) => {
-          // TODO: how to assert multiple event types
-          // assertEventType<DoneInvokeEvent<Document>>(event, 'done.invoke.importUrl');
-          // @ts-ignore
+          assertEventType<DoneInvokeEvent<Document>>(event, ['done.invoke.importUrl', 'done.invoke.createDocument']);
           const { content, ...header } = event.data;
 
           return {
@@ -387,9 +402,33 @@ export function makeGraphEditorMachine(
         },
       }),
 
-      assignUpdatedLayout: assign({
+      assignDeleteDocument: assign({
         graph: (context, event) => {
-          //@ts-ignore
+          assertEventType<DoneInvokeEvent<Document>>(event, 'done.invoke.deleteDocument');
+          const { id } = event.data;
+
+          return {
+            documents: context.graph!.documents.filter(doc => doc.id != id),
+            links: context.graph!.links.filter(link => ![link.from, link.to].includes(id))
+          };
+        }
+      }),
+
+      assignRemoveDocument: assign({
+        graph: (context, event) => {
+          assertEventType<RemoveDocumentEvent>(event, 'removeDocument');
+          const id = event.payload;
+
+          return {
+            documents: context.graph!.documents.filter(doc => doc.id !== id),
+            links: context.graph!.links.filter(link => ![link.from, link.to].includes(id))
+          };
+        }
+      }),
+
+      assignUpdatedDocument: assign({
+        graph: (context, event) => {
+          assertEventType<DoneInvokeEvent<Document>>(event, 'done.invoke.updateDocument');
           const { content, ...header } = event.data;
 
           return {

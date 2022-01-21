@@ -10,10 +10,9 @@ export function DocumentNode(props: NodeProps) {
   const { id, data: doc, type, selected, sourcePosition, targetPosition } = props;
   const { state, send } = useGraphEditor();
   const [resizeHandleRef, resizeElementRef] = useNodeResizing({
-    stop: ({ x, y, width, height }) => send({ type: 'updateLayout', payload: {
-      id, x, y, width, height
-    } })
-    // stop: () => console.log('stop resizing')
+    stop: ({ x, y, width, height }) => send({ type: 'updateDocument', payload: {id, meta: {
+      x, y, width, height
+    } }})
   });
 
   const width = doc.meta.layout?.width ? `${doc.meta.layout.width}px` : undefined;

@@ -7,7 +7,7 @@ import ReactFlow, {
 } from 'react-flow-renderer';
 import { DocumentNode, Edge } from './components';
 import './react-flow-overrides.css';
-
+import { getNodeContainerElement } from './utils';
 
 export type GraphEditorProps = GridProps & {};
 
@@ -64,10 +64,11 @@ export function GraphEditor(props: GraphEditorProps) {
   const updateDocumentPosition = React.useCallback((event: React.MouseEvent, node: ReactFlowNode) => {
     const { id } = node;
     const { x, y } = node.position;
-    // @ts-ignore
-    const { width, height } = event.target.offsetParent.getBoundingClientRect();
+    const { width, height } = getNodeContainerElement(event.target as HTMLElement)!.getBoundingClientRect();
 
-    send({ type: 'updateLayout', payload: { id, x, y, width, height }});
+    send({ type: 'updateDocument', payload: { id, meta: {
+      layout: {x, y, width, height }
+    }}});
   }, [send]);
 
   return (    
