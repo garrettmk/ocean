@@ -1,7 +1,7 @@
-import { ID } from '@/domain';
-import { DateTime } from 'graphql-scalars/mocks';
 import React from 'react';
 import { useZoomPanHelper, useStore } from 'react-flow-renderer';
+import { getNodeContainerElement } from '../utils';
+
 
 // https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/button#value
 enum MouseButtons {
@@ -18,7 +18,9 @@ export type UseNodeResizingOptions = {
 
 //
 // Usage:
-// const [resizeHandleRef, resizeElementRef] = useNodeResizing();
+// const [resizeHandleRef, resizeElementRef] = useNodeResizing({
+//  stop: (rect) => (...apply new size)
+// });
 // ...
 //<div ref={resizeElementRef}>
 //  <div ref={resizeHandleRef}/>
@@ -35,10 +37,11 @@ export function useNodeResizing(options?: UseNodeResizingOptions) {
   const resizeCallback = React.useCallback((event: MouseEvent) => {
     // If this is the first event, notify the callback
     if (!isResizingRef.current && options?.start) {
-      const nodeId = resizeElement.current?.parentElement?.dataset['id']!;
-      const elementRect = resizeElement.current!.getBoundingClientRect();
-      const { x, y } = project({ x: elementRect.x, y: elementRect.y });
-      const { x: width, y: height } = project({ x: elementRect.width, y: elementRect.height });
+      const nodeId = getNodeContainerElement(resizeElement.current!)!.dataset['id']!;
+      const node = flowStore.getState().nodes.find(node => node.id === nodeId)!;
+
+      const { x, y } = node.position;
+      const { width, height } = resizeElement.current!.getBoundingClientRect();
 
       options.start(new DOMRect(x, y, width, height));
     }
@@ -67,12 +70,11 @@ export function useNodeResizing(options?: UseNodeResizingOptions) {
     // Notify the callback
     if (isResizingRef.current && options?.stop) {
       setTimeout(() => {
-        const nodeId = resizeElement.current?.parentElement?.dataset['id']!;
+        const nodeId = getNodeContainerElement(resizeElement.current!)!.dataset['id']!;
         const node = flowStore.getState().nodes.find(node => node.id === nodeId)!;
 
+        const { x, y } = node.position;
         const { width, height } = resizeElement.current!.getBoundingClientRect();
-        const x = node.position.x;
-        const y = node.position.y;
 
         options.stop!(new DOMRect(x, y, width, height));
       }, 0);
