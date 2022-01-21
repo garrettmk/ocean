@@ -7,7 +7,6 @@ import { useToast } from '@chakra-ui/toast';
 import React from 'react';
 import { AiOutlineSisternode } from 'react-icons/ai';
 import { IoLink, IoUnlink } from 'react-icons/io5';
-import { State } from 'xstate';
 import { ImportUrlModal } from '../import-url-modal';
 import { FaSitemap } from 'react-icons/fa';
 
@@ -75,7 +74,7 @@ export function GraphEditorToolbar({ toolbarSize, ...flexProps }: GraphEditorToo
     } });
   }
 
-  useStateTransition(state as State<any>, 'creatingDocument', {
+  useStateTransition(state, 'creatingDocument', {
     in: (current, previous) => !toast.isActive('createDocument') && toast({
       id: 'createDocument',
       title: 'Creating document',
@@ -106,7 +105,7 @@ export function GraphEditorToolbar({ toolbarSize, ...flexProps }: GraphEditorToo
     send({ type: 'layoutGraph' });
   };
 
-  useStateTransition(state as State<any>, 'layingOutGraph', {
+  useStateTransition(state, 'layingOutGraph', {
     in: () => !toast.isActive('layoutGraph') && toast({
       id: 'layoutGraph',
       title: 'Layout Graph',

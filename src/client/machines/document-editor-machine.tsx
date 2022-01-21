@@ -3,23 +3,26 @@ import { assertEventType } from "@/client/utils";
 import { ContentMigrationManager, Document, ID, UpdateDocumentInput } from "@/domain";
 import { assign, createMachine, DoneInvokeEvent, ErrorPlatformEvent, EventObject, Interpreter, State, StateMachine } from 'xstate';
 
+
+// Describes the machine's context
 export type DocumentEditorMachineContext = {
   document?: Document,
   conversions?: string[],
   error?: Error
 };
 
-export type OpenDocumentEvent = { type: 'openDocument', payload: ID };
-export type EditDocumentEvent = { type: 'editDocument', payload: UpdateDocumentInput };
-export type ConvertDocumentEvent = { type: 'convertDocument' };
-export type ConfirmConvertDocumentEvent = { type: 'confirmConvertDocument', payload: string };
-export type SaveDocumentEvent = { type: 'saveDocument' };
-export type DeleteDocumentEvent = { type: 'deleteDocument' };
-export type ConfirmDeleteDocumentEvent = { type: 'confirmDeleteDocument' };
-export type CloneDocumentEvent = { type: 'cloneDocument' };
-export type CancelEvent = { type: 'cancel' };
+// Event types, for reference in this file
+type OpenDocumentEvent = { type: 'openDocument', payload: ID };
+type EditDocumentEvent = { type: 'editDocument', payload: UpdateDocumentInput };
+type ConvertDocumentEvent = { type: 'convertDocument' };
+type ConfirmConvertDocumentEvent = { type: 'confirmConvertDocument', payload: string };
+type SaveDocumentEvent = { type: 'saveDocument' };
+type DeleteDocumentEvent = { type: 'deleteDocument' };
+type ConfirmDeleteDocumentEvent = { type: 'confirmDeleteDocument' };
+type CloneDocumentEvent = { type: 'cloneDocument' };
+type CancelEvent = { type: 'cancel' };
 
-export type _DocumentEditorEvent = 
+export type DocumentEditorEvent = 
   | OpenDocumentEvent
   | EditDocumentEvent
   | ConvertDocumentEvent
@@ -29,13 +32,11 @@ export type _DocumentEditorEvent =
   | ConfirmDeleteDocumentEvent
   | CloneDocumentEvent
   | CancelEvent
-  | DoneInvokeEvent<string[]>
+  | DoneInvokeEvent<any>
+  | ErrorPlatformEvent
 
-export interface DocumentEditorEvent extends EventObject {
-  type: _DocumentEditorEvent['type'],
-  payload?: any
-}
 
+// Describes the various states the machine can be in
 export type DocumentEditorStateSchema = {
   states: {
     closed: {},
@@ -71,7 +72,7 @@ export type DocumentEditorStateSchema = {
   }
 };
 
-
+// Describes the machine's context in various states
 export type DocumentEditorTypeState = 
   | {
     value: 
@@ -111,11 +112,13 @@ export type DocumentEditorTypeState =
     }
   };
 
+// High-level types for convenience
 export type DocumentEditorMachine = StateMachine<DocumentEditorMachineContext, DocumentEditorStateSchema, DocumentEditorEvent, DocumentEditorTypeState>;
 export type DocumentEditorMachineState = State<DocumentEditorMachineContext, DocumentEditorEvent, DocumentEditorStateSchema, DocumentEditorTypeState>;
 export type DocumentEditorMachineDispatch = Interpreter<DocumentEditorMachineContext, DocumentEditorStateSchema, DocumentEditorEvent, DocumentEditorTypeState>['send'];
 
 
+// Create a machine using the given dependencies
 export function makeDocumentEditorMachine(gateway: ClientDocumentsGateway, migrations: ContentMigrationManager) : DocumentEditorMachine {
   return createMachine<DocumentEditorMachineContext, DocumentEditorEvent, DocumentEditorTypeState>({
     id: 'document-editor',

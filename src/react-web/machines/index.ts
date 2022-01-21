@@ -1,3 +1,3 @@
-export * from '../document-editor/document-editor-machine';
+export * from '../../client/machines/document-editor-machine';
 export * from './text-content-editor-machine';
 

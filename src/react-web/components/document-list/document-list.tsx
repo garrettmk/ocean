@@ -1,4 +1,4 @@
-import { makeBrowseDocumentsMachine } from "@/client/viewmodels";
+import { makeBrowseDocumentsMachine } from "@/client/machines";
 import { useServices } from "@/react-web/services";
 import { Box, BoxProps, Heading, Link, Skeleton, StackDivider, Text, VStack } from '@chakra-ui/react';
 import { useMachine } from '@xstate/react';

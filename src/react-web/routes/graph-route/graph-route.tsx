@@ -43,7 +43,8 @@ export function GraphRoute({
   }, [isDocumentListOpen, isAsideOpen, isEditorOpen]);
 
   // Create a graph editor machine, using the query params for initial state
-  const [state, send] = useGraphEditorMachine({ selectedDocuments });
+  const graphEditor = useGraphEditorMachine({ selectedDocuments });
+  const { state, send } = graphEditor;
 
   // If we're in the "ready" state, keep the selection in sync with the URL params
   // If we have at least one document selected, open the editor
@@ -56,7 +57,7 @@ export function GraphRoute({
   }, [state.context.selectedDocuments]);
 
   return (
-    <GraphEditorProvider state={state} send={send}>
+    <GraphEditorProvider editor={graphEditor}>
       <Portal containerRef={appBar.ref}>
         <Flex justifyContent='space-between'>
           <GraphSearchInput

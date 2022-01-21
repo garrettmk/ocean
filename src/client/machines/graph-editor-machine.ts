@@ -1,19 +1,20 @@
 import { Document, DocumentHeader, DocumentGraph, DocumentGraphQuery, DocumentLink, ID } from "@/domain";
 import { CreateDocumentInput, UpdateDocumentInput } from "@/server/usecases";
-import { createMachine, assign, DoneInvokeEvent, ErrorPlatformEvent, State } from "xstate";
+import { Interpreter, createMachine, assign, DoneInvokeEvent, ErrorPlatformEvent, State, EventObject } from "xstate";
 import { ClientDocumentsGateway } from "../interfaces";
 import { assertEventType, makeELK, elkNodeToDoc, elkEdgeToLink, docToElkNode, linkToElkEdge } from "../utils";
 
-
+// Should this be a dependency?
 const elk = makeELK();
 
-
+// Describe the machine's context
 export type GraphEditorContext = {
   graph?: DocumentGraph,
   error?: Error,
   selectedDocuments: ID[],
 };
 
+// Describe the context in various states
 export type GraphEditorTypeState =
   | {
     value: 'idle' | 'loading',
@@ -70,23 +71,20 @@ export type GraphEditorTypeState =
     }
   }
 
+// Event types, for use in this file
+type LoadGraphEvent = { type: 'loadGraph', payload: DocumentGraphQuery };
+type LinkDocumentsEvent = { type: 'linkDocuments', payload?: Partial<DocumentLink>};
+type UnlinkDocumentsEvent = { type: 'unlinkDocuments' };
+type DeleteDocumentEvent = { type: 'deleteDocument', payload: ID };
+type RemoveDocumentEvent = { type: 'removeDocument', payload: ID };
+type SelectDocumentEvent = { type: 'selectDocument', payload: ID };
+type ImportUrlEvent = { type: 'importUrl', payload: string };
+type CreateDocumentEvent = { type: 'createDocument', payload: CreateDocumentInput };
+type UpdateDocumentEvent = { type: 'updateDocument', payload: UpdateDocumentInput & Pick<Document, 'id'> };
+type LayoutGraphEvent = { type: 'layoutGraph' };
+type CancelEvent = { type: 'cancel' };
 
-export type UpdateDocumentPayload = UpdateDocumentInput & {
-  id: ID
-}
-
-export type LoadGraphEvent = { type: 'loadGraph', payload: DocumentGraphQuery };
-export type LinkDocumentsEvent = { type: 'linkDocuments', payload?: Partial<DocumentLink> };
-export type UnlinkDocumentsEvent = { type: 'unlinkDocuments' };
-export type DeleteDocumentEvent = { type: 'deleteDocument', payload: ID };
-export type RemoveDocumentEvent = { type: 'removeDocument', payload: ID };
-export type SelectDocumentEvent = { type: 'selectDocument', payload: ID };
-export type ImportUrlEvent = { type: 'importUrl', payload: string };
-export type CreateDocumentEvent = { type: 'createDocument', payload: CreateDocumentInput };
-export type UpdateDocumentEvent = { type: 'updateDocument', payload: UpdateDocumentPayload };
-export type LayoutGraphEvent = { type: 'layoutGraph' };
-export type CancelEvent = { type: 'cancel' };
-
+// Main event type
 export type GraphEditorEvent = 
   | LoadGraphEvent
   | LinkDocumentsEvent
@@ -98,15 +96,22 @@ export type GraphEditorEvent =
   | CreateDocumentEvent
   | UpdateDocumentEvent
   | LayoutGraphEvent
-  | CancelEvent;
+  | CancelEvent
+  | DoneInvokeEvent<any>
 
+
+// High-level types for convenient use
 export type GraphEditorMachine = ReturnType<typeof makeGraphEditorMachine>;
 export type GraphEditorMachineState = State<GraphEditorContext, GraphEditorEvent, GraphEditorTypeState>;
+export type GraphEditorMachineDispatch = Interpreter<GraphEditorContext, GraphEditorMachineState, GraphEditorEvent, GraphEditorTypeState>['send'];
 
+// The default context value
 const defaultInitialContext: GraphEditorContext = {
   selectedDocuments: []
 }
 
+
+// Create and return a machine, using the given dependencies
 export function makeGraphEditorMachine(
   gateway: ClientDocumentsGateway, 
   initialContext: GraphEditorContext = defaultInitialContext
