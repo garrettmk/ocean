@@ -1,7 +1,7 @@
 import { ClientDocumentsGateway } from "@/client/interfaces";
 import { assertEventType } from "@/client/utils";
 import { ContentMigrationManager, Document, ID, UpdateDocumentInput } from "@/domain";
-import { assign, createMachine, DoneInvokeEvent, ErrorPlatformEvent, EventObject, Interpreter, State, StateMachine } from 'xstate';
+import { Sender, sendParent, assign, createMachine, DoneInvokeEvent, ErrorPlatformEvent, EventObject, Interpreter, State, StateMachine } from 'xstate';
 
 
 // Describes the machine's context
@@ -115,14 +115,15 @@ export type DocumentEditorTypeState =
 // High-level types for convenience
 export type DocumentEditorMachine = StateMachine<DocumentEditorMachineContext, DocumentEditorStateSchema, DocumentEditorEvent, DocumentEditorTypeState>;
 export type DocumentEditorMachineState = State<DocumentEditorMachineContext, DocumentEditorEvent, DocumentEditorStateSchema, DocumentEditorTypeState>;
-export type DocumentEditorMachineDispatch = Interpreter<DocumentEditorMachineContext, DocumentEditorStateSchema, DocumentEditorEvent, DocumentEditorTypeState>['send'];
+export type DocumentEditorMachineDispatch = Sender<DocumentEditorEvent>
 
 
 // Create a machine using the given dependencies
-export function makeDocumentEditorMachine(gateway: ClientDocumentsGateway, migrations: ContentMigrationManager) : DocumentEditorMachine {
+export function makeDocumentEditorMachine(gateway: ClientDocumentsGateway, migrations: ContentMigrationManager, openDocumentId?: ID) : DocumentEditorMachine {
   return createMachine<DocumentEditorMachineContext, DocumentEditorEvent, DocumentEditorTypeState>({
     id: 'document-editor',
-    initial: 'closed',
+    context: {},
+    initial: openDocumentId ? 'openingDocument' : 'closed',
     states: {
       closed: {
         on: {
@@ -144,7 +145,6 @@ export function makeDocumentEditorMachine(gateway: ClientDocumentsGateway, migra
       },
 
       ready: {
-        initial: 'pristine',
         states: {
           hist: { type: 'history' },
           pristine: {},
@@ -168,7 +168,7 @@ export function makeDocumentEditorMachine(gateway: ClientDocumentsGateway, migra
           saving: {
             invoke: {
               src: 'saveDocument',
-              onDone: { target: '#document-editor.ready.pristine', actions: ['assignSaveDocumentResult'] },
+              onDone: { target: '#document-editor.ready.pristine', actions: ['assignSaveDocumentResult', 'notifyParent'] },
               onError: { target: '#document-editor.ready.edited', actions: ['assignError'] },
             }
           }
@@ -216,7 +216,7 @@ export function makeDocumentEditorMachine(gateway: ClientDocumentsGateway, migra
           deleting: {
             invoke: {
               src: 'deleteDocument',
-              onDone: { target: '#document-editor.closed', actions: ['assignDeleteDocumentResult'] },
+              onDone: { target: '#document-editor.closed', actions: ['assignDeleteDocumentResult', 'notifyParentDeleted'] },
               onError: { target: '#document-editor.ready.hist', actions: ['assignError'] }
             }
           }
@@ -226,6 +226,9 @@ export function makeDocumentEditorMachine(gateway: ClientDocumentsGateway, migra
   }, {
     services: {
       async openDocument(context, event) {
+        if (event.type === 'xstate.init' && openDocumentId)
+          return await gateway.getDocument(openDocumentId);
+
         assertEventType<OpenDocumentEvent>(event, 'openDocument');
         const { payload: id } = event;
 
@@ -268,6 +271,13 @@ export function makeDocumentEditorMachine(gateway: ClientDocumentsGateway, migra
     },
 
     actions: {
+      notifyParent: sendParent((context) => ({ type: 'documentChanged', payload: context?.document })),
+
+      notifyParentDeleted: sendParent((context, event) => {
+        assertEventType<DoneInvokeEvent<Document>>(event, 'done.invoke.deleteDocument');
+        return { type: 'documentDeleted', payload: event.data.id };
+      }),
+
       assignError: assign<DocumentEditorMachineContext, DocumentEditorEvent>({
         error: (context, event) => (event as ErrorPlatformEvent).data,
       }),

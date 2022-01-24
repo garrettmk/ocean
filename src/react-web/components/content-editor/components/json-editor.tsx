@@ -9,7 +9,7 @@ export function JSONEditor({
   ...boxProps
 }: ContentEditorProps) : JSX.Element {
   const editor = useDocumentEditor();
-  const content = editor.document?.content;
+  const content = editor?.state?.context.document?.content;
 
   return (
     <Box {...boxProps}>

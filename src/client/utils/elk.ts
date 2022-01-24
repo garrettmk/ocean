@@ -21,10 +21,10 @@ export function docToElkNode(doc: DocumentHeader) : ElkNodeWithData {
   return {
     data: doc,
     id: doc.id,
-    x: doc.meta?.layout?.x ?? 0,
-    y: doc.meta?.layout?.y ?? 0,
-    width: doc.meta?.layout?.width ?? 250,
-    height: doc.meta?.layout?.height ?? 100,
+    x: doc.meta?.x ?? 0,
+    y: doc.meta?.y ?? 0,
+    width: doc.meta?.width ?? 250,
+    height: doc.meta?.height ?? 100,
   };
 }
 
@@ -35,7 +35,7 @@ export function elkNodeToDoc(node: ElkNode) : DocumentHeader {
     ...data,
     meta: {
       ...data.meta,
-      layout: { x, y, width, height }
+      x, y, width, height,
     }
   };
 }

@@ -62,12 +62,12 @@ export function GraphEditor(props: GraphEditorProps) {
 
   // Moving nodes around
   const updateDocumentPosition = React.useCallback((event: React.MouseEvent, node: ReactFlowNode) => {
-    const { id } = node;
+    const { id, data: meta } = node;
     const { x, y } = node.position;
-    const { width, height } = getNodeContainerElement(event.target as HTMLElement)!.getBoundingClientRect();
+    // const { width, height } = getNodeContainerElement(event.target as HTMLElement)!.getBoundingClientRect();
 
     send({ type: 'updateDocument', payload: { id, meta: {
-      layout: {x, y, width, height }
+      ...meta, x, y,
     }}});
   }, [send]);
 
@@ -85,13 +85,15 @@ export function GraphEditor(props: GraphEditorProps) {
           }}
           elements={graphElements}
           onLoad={setReactFlowInstance}
-          onElementClick={selectNode}
+          // onElementClick={selectNode}
           connectionLineStyle={{ stroke: 'black' }}
           // @ts-ignore
           onConnect={linkDocuments}
           onConnectStart={startLinking}
           onConnectEnd={cancelLinking}
           onNodeDragStop={updateDocumentPosition}
+          elementsSelectable={false}
+          selectNodesOnDrag={false}
         />
       </ReactFlowProvider>
     </Grid>
@@ -106,8 +108,8 @@ function docToFlowNode(doc: DocumentHeader) : ReactFlowNode {
     id: doc.id,
     dragHandle: '#draghandle',
     position: {
-      x: doc.meta?.layout?.x ?? 0,
-      y: doc.meta?.layout?.y ?? 0,
+      x: doc.meta.x ?? 0,
+      y: doc.meta.y ?? 0,
     },
   };
 }

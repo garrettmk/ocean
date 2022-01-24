@@ -10,7 +10,11 @@ export type NodeLayoutData = {
 }
 
 export type DocumentMeta = {
-  layout?: NodeLayoutData,
+  x?: number,
+  y?: number,
+  width?: number,
+  height?: number,
+  isOpen?: boolean,
   [key: string]: JSONSerializable | undefined
 };
 

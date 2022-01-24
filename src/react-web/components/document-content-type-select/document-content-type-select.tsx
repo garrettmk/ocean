@@ -13,7 +13,7 @@ export type DocumentContentTypeSelectProps = {  };
 export function DocumentContentTypeSelect(props: DocumentContentTypeSelectProps) : JSX.Element {
   const services = useServices();
   const editor = useDocumentEditor();
-  const document = editor.document;
+  const document = editor?.state.context.document;
 
   // Content type options
   const [contentTypeOptions, setContentTypeOptions] = React.useState<ContentType[]>([]);
@@ -47,7 +47,7 @@ export function DocumentContentTypeSelect(props: DocumentContentTypeSelectProps)
 
       const newContent = await services.migrations.migrate(document?.content, migration);
 
-      editor.send({ type: 'editDocument', payload: {
+      editor?.send({ type: 'editDocument', payload: {
         contentType: to.value,
         content: newContent
       }});

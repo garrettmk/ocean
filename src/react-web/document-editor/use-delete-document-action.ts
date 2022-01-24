@@ -37,7 +37,7 @@ export function useDeleteDocumentAction() : [boolean, () => void] {
   const editor = useDocumentEditor();
   const toast = useToast();
 
-  useStateTransition(editor.state, 'deletingDocument', {
+  useStateTransition(editor?.state, 'deletingDocument', {
     in: () => toast.isActive(toastId)
       ? toast.update(toastId, deleteToast)
       : toast(deleteToast),
@@ -46,8 +46,8 @@ export function useDeleteDocumentAction() : [boolean, () => void] {
       : toast.update(toastId, successToast)
   });
 
-  const canDelete = editor.state.nextEvents.includes('deleteDocument');
-  const deleteDoc = React.useCallback(() => editor.send({
+  const canDelete = !!editor?.state?.nextEvents.includes('deleteDocument');
+  const deleteDoc = React.useCallback(() => editor?.send({
     type: 'deleteDocument'
   }), [editor]);
 

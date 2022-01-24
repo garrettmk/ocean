@@ -32,12 +32,15 @@ export function SlateEditor({
     link: LinkElementEditor
   }), []);
 
-  const handleSlateContentChange = (newContent: any) => editor.setContent(newContent);
+  const handleSlateContentChange = (newContent: any) => editor?.send({ type: 'editDocument', payload: {
+    content: newContent,
+    contentType: editor?.state?.context.document?.contentType || 'application/json;format=slate'
+  } });
 
   return (
     <Slate
       editor={slateEditor}
-      value={(editor.document?.content as SlateContent) ?? DEFAULT_SLATE_CONTENT}
+      value={(editor?.state?.context.document?.content as SlateContent) ?? DEFAULT_SLATE_CONTENT}
       onChange={handleSlateContentChange}
     >
       {toolbarRef && (

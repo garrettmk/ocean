@@ -1,7 +1,7 @@
 import { ID } from '@/domain';
 import { FloatingWindowCloseButton } from '@/react-web/components/floating-window-close-button';
 import { createDocumentRoute } from '@/react-web/config/routes';
-import { useDocumentEditorMachine, useGraphEditor, useStateTransition } from '@/react-web/hooks';
+import { useActor, useDocumentEditor, useDocumentEditorMachine, useGraphEditor, useStateTransition } from '@/react-web/hooks';
 import { ButtonGroup, IconButton } from '@chakra-ui/button';
 import { ExternalLinkIcon } from '@chakra-ui/icons';
 import { Box } from '@chakra-ui/react';
@@ -27,21 +27,22 @@ export function FloatingDocumentEditor({
   onClose,
   ...windowProps
 }: FloatingDocumentEditorProps) : JSX.Element {
-  const editor = useDocumentEditorMachine();
+  const graphEditor = useGraphEditor()
+  const documentEditor = useActor(graphEditor.state.context.editors?.[documentId!]);
   const editorToolbarRef = React.useRef<HTMLDivElement | null>(null);
+
+  // Open the editor if it isn't already open
+  React.useEffect(() => {
+    if (!documentEditor && documentId)
+      graphEditor.send({ type: 'editDocument', payload: documentId });
+  }, [documentEditor, documentId]);
   
   // Navigate to the document route when the button is clicked
   const [_, setLocation] = useLocation();
   const handleViewAsPage = () => documentId ? setLocation(createDocumentRoute(documentId)) : null;
 
-  // Load the document when the component mounts
-  React.useEffect(() => {
-    if (documentId)
-      editor.openDocument(documentId);
-  }, [documentId]);
-
   // Close the document if deleted
-  useStateTransition(editor.state, 'deletingDocument.deleting', {
+  useStateTransition(documentEditor?.state, 'deletingDocument.deleting', {
     out: (current, previous) => {
       if (!current.context.error)
         onClose?.();
@@ -49,13 +50,13 @@ export function FloatingDocumentEditor({
   });
 
   return (
-    <DocumentEditorProvider editor={editor}>
+    <DocumentEditorProvider editor={documentEditor}>
       <FloatingWindow
         display={isOpen ? undefined : 'none'} 
         bg='gray.300'
         {...windowProps}
       >
-        <FloatingWindowHeader title={editor.document?.title ?? ''}>
+        <FloatingWindowHeader title={documentEditor?.state?.context.document?.title ?? ''}>
           <Box 
             ref={editorToolbarRef}
             marginRight='2'

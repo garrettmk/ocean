@@ -1,13 +1,13 @@
 import React from 'react';
-import { DragHandle, DragHandleProps } from '@/react-web/components';
+import { ResizeHandle, ResizeHandleProps } from '@/react-web/components';
 import { useStoreState, useZoomPanHelper } from 'react-flow-renderer';
 
 
-export const ScaledDragHandle = React.forwardRef<HTMLDivElement, DragHandleProps>(function ScaledDragHandle(props: DragHandleProps, ref) {
+export const ScaledResizeHandle = React.forwardRef<HTMLDivElement, ResizeHandleProps>(function ScaledResizeHandle(props: ResizeHandleProps, ref) {
   const zoom = useStoreState(state => state.transform[2]);
 
   return (
-    <DragHandle
+    <ResizeHandle
       ref={ref}
       {...props}
       transform={`${props.transform ?? ''} scale(${1/zoom}, ${1/zoom})`}

@@ -37,7 +37,7 @@ export function useSaveDocumentAction() : [boolean, () => void] {
   const editor = useDocumentEditor();
   const toast = useToast();
 
-  useStateTransition(editor.state, 'savingDocument', {
+  useStateTransition(editor?.state, 'savingDocument', {
     in: () => toast.isActive(toastId)
       ? toast.update(toastId, savingToast)
       : toast(savingToast),
@@ -46,8 +46,8 @@ export function useSaveDocumentAction() : [boolean, () => void] {
       : toast.update(toastId, successToast)
   });
 
-  const canSave = editor.state.nextEvents.includes('saveDocument');
-  const save = React.useCallback(() => editor.saveDocument(), [editor]);
+  const canSave = !!editor?.state?.nextEvents.includes('saveDocument');
+  const save = React.useCallback(() => editor?.send('saveDocument'), [editor]);
 
   return [canSave, save];
 }

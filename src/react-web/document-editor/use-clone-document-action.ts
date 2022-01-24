@@ -36,7 +36,7 @@ export function useCloneDocumentAction() : [boolean, () => void] {
   const editor = useDocumentEditor();
   const toast = useToast();
 
-  useStateTransition(editor.state, 'cloningDocument', {
+  useStateTransition(editor?.state, 'cloningDocument', {
     in: () => toast.isActive(toastId)
       ? toast.update(toastId, cloneToast)
       : toast(cloneToast),
@@ -45,8 +45,8 @@ export function useCloneDocumentAction() : [boolean, () => void] {
       : toast.update(toastId, successToast)
   });
 
-  const canClone = editor.state.nextEvents.includes('cloneDocument');
-  const cloneDocument = React.useCallback(() => editor.send({
+  const canClone = !!editor?.state?.nextEvents.includes('cloneDocument');
+  const cloneDocument = React.useCallback(() => editor?.send({
     type: 'cloneDocument'
   }), [editor]);
 

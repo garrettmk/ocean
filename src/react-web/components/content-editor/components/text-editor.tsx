@@ -10,35 +10,45 @@ Malesuada fames ac turpis egestas. Congue nisi vitae suscipit tellus mauris a di
 
 Enim nunc faucibus a pellentesque. Molestie nunc non blandit massa enim. Pellentesque habitant morbi tristique senectus et netus et. Pharetra sit amet aliquam id diam maecenas ultricies mi eget. Sit amet consectetur adipiscing elit ut aliquam purus. At tellus at urna condimentum mattis pellentesque. Donec pretium vulputate sapien nec. Odio aenean sed adipiscing diam donec. Enim tortor at auctor urna nunc id cursus. Dictum fusce ut placerat orci nulla pellentesque. Commodo elit at imperdiet dui. Nec ultrices dui sapien eget mi proin. Ut porttitor leo a diam sollicitudin tempor id eu. Non quam lacus suspendisse faucibus interdum posuere. Nec tincidunt praesent semper feugiat nibh. Venenatis a condimentum vitae sapien pellentesque.`;
 
-export function TextEditor({
-  toolbarRef,
-  toolbarSize,
-  readonly,
-  ...boxProps
-}: ContentEditorProps) : JSX.Element {
+
+export const TextEditor = React.forwardRef<HTMLDivElement, ContentEditorProps>(function TextEditor(props, ref) {
+  const {
+    toolbarRef,
+    toolbarSize,
+    readonly,
+    ...boxProps
+  } = props;
+
   const editor = useDocumentEditor();
-  const content = (editor.document?.content as string) ?? '';
+  const content = (editor?.state?.context.document?.content as string) ?? '';
+  const setContent = React.useCallback((event: React.ChangeEvent<HTMLTextAreaElement>) => {
+    editor?.send({ type: 'editDocument', payload: {
+      contentType: editor?.state?.context.document?.contentType || 'text/plain',
+      content: event.target.value 
+    } });
+  }, [editor]);
   
   return (
-    <Container
+    <Box
+      // @ts-ignore
+      ref={ref}
       display='grid'
-      maxW='container.sm'
+      bg='white'
       {...boxProps}
     >
       <Textarea
         w='100%'
         h='100%'
-        px='8'
-        py='8'
-        backgroundColor='white'
+        p='0'
+        resize='none'
         focusBorderColor='transparent'
         borderColor='transparent !important'
         borderRadius='0'
         placeholder={loremIpsumText}
         value={content}
         readOnly={readonly}
-        onChange={event => editor.setContent(event.target.value)}
+        onChange={setContent}
       />
-    </Container>
+    </Box>
   );
-}
+});

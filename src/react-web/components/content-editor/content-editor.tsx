@@ -10,25 +10,23 @@ import {
 } from './components';
 
 
-export type ContentEditorProps = BoxProps & {
+export type ContentEditorProps = Omit<BoxProps, 'onChange'> & {
   toolbarRef?: React.RefObject<HTMLDivElement>,
   toolbarSize?: ButtonGroupProps['size'],
   readonly?: boolean,
 };
 
 
-export function ContentEditor(props: ContentEditorProps): JSX.Element {
+export const ContentEditor = React.forwardRef<HTMLDivElement, ContentEditorProps>(function ContentEditor(props, ref): JSX.Element {
   const editor = useDocumentEditor();
-  const contentType = editor.document?.contentType ?? '';
+  const contentType = editor?.state?.context.document?.contentType ?? '';
 
   const ContentEditorComponent = React.useMemo(() => ({
     'text/plain': TextEditor,
-    'application/json': JSONEditor,
-    'application/json;format=slate': SlateEditor,
+    // 'application/json': JSONEditor,
+    // 'application/json;format=slate': SlateEditor,
     'text/html': HTMLEditor,
   }[contentType] ?? JSONEditor), [contentType]);
 
-  return (
-    <ContentEditorComponent {...props}/>
-  );
-}
+  return <ContentEditorComponent ref={ref} {...props}/>;
+});

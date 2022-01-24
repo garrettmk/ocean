@@ -1,3 +1,4 @@
+import React from 'react';
 import { useDocumentEditor } from "@/react-web/hooks";
 import {
   Modal,
@@ -13,12 +14,18 @@ import {
 
 
 export function DocumentDeleteModal() {
+  const bodyRef = React.useRef(document.body);
   const editor = useDocumentEditor();
-  const isOpen = editor.state.matches('deletingDocument');
-  const confirm = () => editor.send({ type: 'confirmDeleteDocument' });
+  const isOpen = !!editor?.state.matches('deletingDocument');
+  const confirm = () => editor?.send({ type: 'confirmDeleteDocument' });
+  const cancel = () => editor?.send({ type: 'cancel' });
   
   return (
-    <Modal isOpen={isOpen} onClose={editor.cancel}>
+    <Modal
+      isOpen={isOpen}
+      onClose={cancel}
+      portalProps={{ containerRef: bodyRef }}
+    >
       <ModalOverlay/>
       <ModalContent>
         <ModalHeader>Delete document?</ModalHeader>
@@ -27,7 +34,7 @@ export function DocumentDeleteModal() {
           <Text>Do you really want to delete this document?</Text>
         </ModalBody>
         <ModalFooter>
-          <Button variant='outline' mr='3' onClick={editor.cancel}>
+          <Button variant='outline' mr='3' onClick={cancel}>
             Cancel
           </Button>
           <Button colorScheme='red' onClick={confirm}>

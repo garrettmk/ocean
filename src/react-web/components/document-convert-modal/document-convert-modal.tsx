@@ -20,9 +20,10 @@ import React from 'react';
 
 
 export function DocumentConvertModal() {
+  const bodyRef = React.useRef(document.body);
   const editor = useDocumentEditor();
-  const isOpen = editor.state.matches('convertingDocument');
-  const paths: string[] = editor.state.context.conversions ?? [];
+  const isOpen = !!editor?.state?.matches('convertingDocument');
+  const paths: string[] = editor?.state?.context.conversions ?? [];
 
   const [selectValue, setSelectValue] = React.useState(paths[0]);
 
@@ -35,11 +36,17 @@ export function DocumentConvertModal() {
   };
 
   const handleConvert = () => {
-    editor.confirmConvertDocument(selectValue);
+    editor?.send({ type: 'confirmConvertDocument', payload: selectValue });
   };
 
+  const cancel = () => editor?.send({ type: 'cancel' });
+
   return (
-    <Modal isOpen={isOpen} onClose={editor.cancel}>
+    <Modal 
+      isOpen={isOpen} 
+      onClose={cancel}
+      portalProps={{ containerRef: bodyRef }}
+    >
       <ModalOverlay/>
       <ModalContent>
         <ModalHeader>Convert Document</ModalHeader>
@@ -47,7 +54,7 @@ export function DocumentConvertModal() {
         <ModalBody>
           <FormControl id='from' isReadOnly mb='4'>
             <FormLabel>From type:</FormLabel>
-            <Input value={getButtonLabel(editor.document?.contentType)}/>
+            <Input value={getButtonLabel(editor?.state?.context.document?.contentType)}/>
           </FormControl>
           <FormControl id='to'>
             <FormLabel>To type:</FormLabel>
@@ -61,7 +68,7 @@ export function DocumentConvertModal() {
           </FormControl>            
         </ModalBody>
         <ModalFooter>
-          <Button variant='outline' mr='3' onClick={editor.cancel}>
+          <Button variant='outline' mr='3' onClick={cancel}>
             Cancel
           </Button>
           <Button colorScheme='blue' onClick={handleConvert}>

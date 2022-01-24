@@ -1,9 +1,10 @@
 import React from 'react';
-import { useDocumentEditorMachine } from '../hooks';
+import { DocumentEditorMachineDispatch, DocumentEditorMachineState } from '../document-editor';
 
 
-export type DocumentEditorContextValue = ReturnType<typeof useDocumentEditorMachine>
+export type DocumentEditorContextValue = {
+  state: DocumentEditorMachineState,
+  send: DocumentEditorMachineDispatch
+}
 
-
- // @ts-ignore
- export const DocumentEditorContext = React.createContext<DocumentEditorContextValue>();
+export const DocumentEditorContext = React.createContext<DocumentEditorContextValue | undefined>(undefined);

@@ -10,7 +10,9 @@ enum MouseButtons {
   Right = 2,
 }
 
-export type UseNodeResizingOptions = {
+export type UseNodeResizingOptions<T extends HTMLElement> = {
+  resizeElementRef?: React.RefObject<T>,
+  resizeHandleRef?: React.RefObject<T>,
   start?: (rect: DOMRect) => void,
   stop?: (rect: DOMRect) => void,
   delay?: number[]
@@ -26,11 +28,11 @@ export type UseNodeResizingOptions = {
 //  <div ref={resizeHandleRef}/>
 //</div>
 //
-export function useNodeResizing(options?: UseNodeResizingOptions) {
+export function useNodeResizing<T extends HTMLElement = HTMLElement>(options?: UseNodeResizingOptions<T>) {
   const { project } = useZoomPanHelper();
   const flowStore = useStore();
-  const resizeHandle = React.useRef<HTMLDivElement | null>(null);
-  const resizeElement = React.useRef<HTMLDivElement | null>(null);
+  const resizeHandle = React.useMemo(() => options?.resizeHandleRef ?? React.createRef<T>(), [options?.resizeHandleRef]);
+  const resizeElement = React.useMemo(() => options?.resizeElementRef ?? React.createRef<T>(), [options?.resizeElementRef]);
   const isResizingRef = React.useRef<boolean>(false);  
 
   // Respond to mousemove events by changing the size of resizeElement
@@ -63,7 +65,7 @@ export function useNodeResizing(options?: UseNodeResizingOptions) {
     // Set the element styles directly to avoid firing lots of re-renders
     resizeElement.current!.style.width = `${newWidth}px`;
     resizeElement.current!.style.height = `${newHeight}px`;
-  }, []);
+  }, [resizeElement]);
 
   // Remove the mouse event listener
   const stopResizing = React.useCallback(() => {
@@ -86,7 +88,7 @@ export function useNodeResizing(options?: UseNodeResizingOptions) {
 
     window.removeEventListener('mousemove', resizeCallback);
     window.removeEventListener('mouseup', stopResizing);
-  }, [resizeCallback]);
+  }, [resizeCallback, resizeElement]);
 
   // While resizing, listen to mouse events on the window
   // If mouseup, stop resizing
@@ -95,7 +97,7 @@ export function useNodeResizing(options?: UseNodeResizingOptions) {
       window.addEventListener('mousemove', resizeCallback);
       window.addEventListener('mouseup', stopResizing);
     }
-  }, [resizeCallback]);
+  }, [resizeCallback, resizeElement]);
 
   // Listen for mousedown events on resizeHandle
   React.useLayoutEffect(() => {
@@ -107,5 +109,8 @@ export function useNodeResizing(options?: UseNodeResizingOptions) {
     }
   }, [resizeHandle.current]);
 
-  return [resizeHandle, resizeElement];
+  return {
+    resizeHandleRef: resizeHandle,
+    resizeElementRef: resizeElement
+  };
 }

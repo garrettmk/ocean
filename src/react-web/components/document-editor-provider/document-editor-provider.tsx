@@ -6,7 +6,7 @@ export function DocumentEditorProvider({
   editor,
   children
 }: React.PropsWithChildren<{
-  editor: DocumentEditorContextValue
+  editor: DocumentEditorContextValue | undefined
 }>) {
 
   return (

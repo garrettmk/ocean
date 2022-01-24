@@ -17,12 +17,11 @@ export function validateContentType(value: any) : asserts value is string {
 
 const DocumentMetaSchema = intersection([
   type({
-    layout: optional(object({
-      x: number(),
-      y: number(),
-      width: number(),
-      height: number()
-    }))
+    x: optional(number()),
+    y: optional(number()),
+    width: optional(number()),
+    height: optional(number()),
+    isOpen: optional(boolean()),
   }),
   record(string(), JSONSerializableSchema)
 ]);

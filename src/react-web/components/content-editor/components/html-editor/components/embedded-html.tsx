@@ -62,6 +62,7 @@ export const EmbeddedHTML = React.forwardRef<HTMLDivElement, EmbeddedHTMLProps>(
   return (
     <Box 
       ref={ref}
+      transform='scale(1)'
       {...boxProps}
     />
   );

@@ -1,8 +1,11 @@
-import { Document, DocumentHeader, DocumentGraph, DocumentGraphQuery, DocumentLink, ID } from "@/domain";
+import { ContentMigrationManager, Document, DocumentHeader, DocumentGraph, DocumentGraphQuery, DocumentLink, ID } from "@/domain";
 import { CreateDocumentInput, UpdateDocumentInput } from "@/server/usecases";
-import { Interpreter, createMachine, assign, DoneInvokeEvent, ErrorPlatformEvent, State, EventObject } from "xstate";
+import { spawn, Interpreter, createMachine, assign, DoneInvokeEvent, ErrorPlatformEvent, State, EventObject, ActorRef } from "xstate";
+import { stop } from "xstate/lib/actions";
+import { DocumentEditorEvent, DocumentEditorMachineState } from ".";
 import { ClientDocumentsGateway } from "../interfaces";
 import { assertEventType, makeELK, elkNodeToDoc, elkEdgeToLink, docToElkNode, linkToElkEdge } from "../utils";
+import { makeDocumentEditorMachine } from './document-editor-machine';
 
 // Should this be a dependency?
 const elk = makeELK();
@@ -12,6 +15,7 @@ export type GraphEditorContext = {
   graph?: DocumentGraph,
   error?: Error,
   selectedDocuments: ID[],
+  editors?: Record<string, ActorRef<DocumentEditorEvent, DocumentEditorMachineState>>
 };
 
 // Describe the context in various states
@@ -84,6 +88,11 @@ type UpdateDocumentEvent = { type: 'updateDocument', payload: UpdateDocumentInpu
 type LayoutGraphEvent = { type: 'layoutGraph' };
 type CancelEvent = { type: 'cancel' };
 
+type EditDocumentEvent = { type: 'editDocument', payload: ID };
+type CloseEditorEvent = { type: 'closeEditor', payload: ID };
+type ChildUpdateEvent = { type: 'documentChanged', payload: Document };
+type DocumentDeletedEvent = { type: 'documentDeleted', payload: ID };
+
 // Main event type
 export type GraphEditorEvent = 
   | LoadGraphEvent
@@ -98,6 +107,10 @@ export type GraphEditorEvent =
   | LayoutGraphEvent
   | CancelEvent
   | DoneInvokeEvent<any>
+  | EditDocumentEvent
+  | CloseEditorEvent
+  | ChildUpdateEvent
+  | DocumentDeletedEvent;
 
 
 // High-level types for convenient use
@@ -113,14 +126,19 @@ const defaultInitialContext: GraphEditorContext = {
 
 // Create and return a machine, using the given dependencies
 export function makeGraphEditorMachine(
-  gateway: ClientDocumentsGateway, 
+  gateway: ClientDocumentsGateway,
+  migrations: ContentMigrationManager,
   initialContext: GraphEditorContext = defaultInitialContext
 ) {
   return createMachine<GraphEditorContext, GraphEditorEvent, GraphEditorTypeState>({
     id: 'graph-editor',
     context: initialContext,
     initial: 'idle',
+    on: {
+      documentChanged: { actions: 'handleChildUpdate' }
+    },
     states: {
+
       idle: {
         on: {
           loadGraph: { target: 'loading' }
@@ -147,6 +165,9 @@ export function makeGraphEditorMachine(
           removeDocument: { actions: ['assignRemoveDocument'] },
           updateDocument: { target: 'updatingDocument' },
           layoutGraph: { target: 'layingOutGraph' },
+          editDocument: { actions: 'startEditor' },
+          closeEditor: { actions: 'closeEditor' },
+          documentDeleted: { actions: ['assignRemoveDocument'] },
         }
       },
 
@@ -421,7 +442,7 @@ export function makeGraphEditorMachine(
 
       assignRemoveDocument: assign({
         graph: (context, event) => {
-          assertEventType<RemoveDocumentEvent>(event, 'removeDocument');
+          assertEventType<RemoveDocumentEvent>(event, ['removeDocument', 'documentDeleted']);
           const id = event.payload;
 
           return {
@@ -441,7 +462,36 @@ export function makeGraphEditorMachine(
             links: context.graph!.links
           };
         }
-      })
+      }),
+
+      startEditor: assign({
+        // @ts-ignore
+        editors: (context, event) => {
+          assertEventType<EditDocumentEvent>(event, 'editDocument');
+          const id = event.payload;
+          const actor = context.editors?.[id] ?? spawn(makeDocumentEditorMachine(gateway, migrations, id), id);
+
+          return {
+            ...context.editors,
+            [id]: actor
+          }
+        }
+      }),
+
+      closeEditor: stop<GraphEditorContext, GraphEditorEvent>((context, event) => 
+        context.editors?.[(event as CloseEditorEvent).payload]!
+      ),
+
+      handleChildUpdate: assign({
+        graph: (context, event) => {
+          assertEventType<ChildUpdateEvent>(event, 'documentChanged');
+          const { content, ...header } = event.payload;
+
+          return {
+            documents: context.graph!.documents.filter(doc => doc.id !== header.id).concat([header]),
+            links: context.graph!.links,
+          }
+      }})
     },
 
     guards: {

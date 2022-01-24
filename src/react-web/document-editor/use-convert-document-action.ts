@@ -36,7 +36,7 @@ export function useConvertDocumentAction() : [boolean, () => void] {
   const editor = useDocumentEditor();
   const toast = useToast();
 
-  useStateTransition(editor.state, 'convertingDocument', {
+  useStateTransition(editor?.state, 'convertingDocument', {
     in: () => toast.isActive(toastId)
       ? toast.update(toastId, convertToast)
       : toast(convertToast),
@@ -45,8 +45,8 @@ export function useConvertDocumentAction() : [boolean, () => void] {
       : toast.update(toastId, successToast)
   });
 
-  const canClone = editor.state.nextEvents.includes('convertDocument');
-  const cloneDocument = React.useCallback(() => editor.send({
+  const canClone = !!editor?.state?.nextEvents.includes('convertDocument');
+  const cloneDocument = React.useCallback(() => editor?.send({
     type: 'convertDocument'
   }), [editor]);
 

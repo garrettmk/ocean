@@ -1,43 +1,39 @@
 import { HTMLContent } from '@/content';
 import { useDocumentEditor } from '@/react-web/hooks';
-import { Grid, Portal } from '@chakra-ui/react';
+import { Portal } from '@chakra-ui/react';
 import React from 'react';
 import { ContentEditorProps } from '../../content-editor';
 import { EmbeddedHTML, HTMLEditorProvider, HTMLEditorToolbar, SelectionHalos } from './components';
 
 
-export function HTMLEditor({
-  toolbarRef,
-  toolbarSize,
-  ...boxProps
-}: ContentEditorProps): JSX.Element {
+export const HTMLEditor = React.forwardRef<HTMLDivElement, ContentEditorProps>(function HTMLEditor(props, ref) {
+  const {
+    toolbarRef,
+    toolbarSize,
+    ...boxProps
+  } = props;
+
   const editor = useDocumentEditor();
-  const ref = React.useRef<HTMLDivElement>(null);
+  const combinedRef = React.useMemo(() => ref 
+    ? ref as React.RefObject<HTMLDivElement> 
+    : React.createRef<HTMLDivElement>()
+  , [ref]);
 
   return (
-    <HTMLEditorProvider embed={ref}>
+    <HTMLEditorProvider embed={combinedRef}>
       {toolbarRef && (
         <Portal containerRef={toolbarRef}>
           <HTMLEditorToolbar size={toolbarSize}/>
         </Portal>
       )}
-      
-      <Grid
-        templateRows='auto 1fr'
-        templateColumns='1fr'
-        gap={4}
-        bg='white'
-        {...boxProps}
-      >
         <SelectionHalos />
 
         <EmbeddedHTML
-          ref={ref}
-          html={editor.document?.content as HTMLContent}
-          onChange={editor.setContent}
-          overflow='auto'
+          ref={combinedRef}
+          html={editor?.state?.context.document?.content as HTMLContent}
+          onChange={(value: any) => editor?.send({ type: 'editDocument', payload: { content: value, contentType: 'text/html' }})}
+          {...boxProps}
         />
-      </Grid>
     </HTMLEditorProvider>
   );
-}
+});

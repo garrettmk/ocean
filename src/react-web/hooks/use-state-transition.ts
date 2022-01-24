@@ -15,15 +15,15 @@ export type StateTransitionOptions<
 
 export function useStateTransition<
   TState extends State<any, any>
->(state: TState, matches: StateValue, options: StateTransitionOptions<TState>) {
+>(state: TState | undefined, matches: StateValue, options: StateTransitionOptions<TState>) {
   const { in: inFn, out: outFn } = options;
   const prevStateRef = React.useRef<TState | undefined>();
   const prevState = prevStateRef.current;
 
   React.useEffect(() => {
-    if (state.matches(matches) && !prevState?.matches(matches))
+    if (state && state.matches(matches) && !prevState?.matches(matches))
       inFn?.(state, prevState);
-    else if (!state.matches(matches) && prevState?.matches(matches))
+    else if (state && !state.matches(matches) && prevState?.matches(matches))
       outFn?.(state, prevState);
 
     prevStateRef.current = state;
