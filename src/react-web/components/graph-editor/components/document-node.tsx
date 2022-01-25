@@ -11,6 +11,8 @@ import { DocumentEditorProvider } from '../../document-editor-provider';
 import { DocumentEditorToolbar } from '../../document-editor-toolbar';
 import { useNodeResizing } from '../hooks';
 import { canElementScroll } from '@/react-web/utils';
+import { useLocation } from 'wouter';
+import { createDocumentRoute } from '@/react-web/config/routes';
 
 
 export function DocumentNode({
@@ -86,6 +88,10 @@ export function DocumentNode({
       title: event.target.value
     }});
   }, [documentEditor]);
+
+  // Open the full editor on click
+  const [_, setLocation] = useLocation();
+  const handleViewAsPage = () => setLocation(createDocumentRoute(data.id));
   
   // Extract display data from the node, or the document editor if it's open
   const { title, contentType } = { ...data, ...documentEditor?.state?.context.document };
@@ -99,7 +105,7 @@ export function DocumentNode({
       overflow='hidden'
       borderRadius='4'
       borderWidth='2px'
-      borderColor={selected ? 'blue.500' : 'transparent'}
+      borderColor={selected ? 'blue.500' : 'gray.400'}
       cursor='default'
       templateRows='auto 1fr'
       templateColumns='auto 1fr auto'
@@ -124,6 +130,7 @@ export function DocumentNode({
       </Grid>
 
       <Input
+        borderColor='transparent'
         alignSelf='center'
         pointerEvents='all'
         size='md'
@@ -132,6 +139,7 @@ export function DocumentNode({
         onChange={handleTitleChange}
         px='1'
         py='0'
+        height='1.5em'
       />
 
       <Fade in={isHovered}>
@@ -146,6 +154,7 @@ export function DocumentNode({
               aria-label='Open'
               icon={<ExternalLinkIcon color='gray.500'/>}
               size='sm'
+              onClick={handleViewAsPage}
             />
             <IconButton
               onClick={onToggle}
