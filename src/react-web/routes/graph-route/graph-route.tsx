@@ -1,21 +1,13 @@
-import { ID } from '@/domain';
-import {
-  FloatingDocumentEditor,
-  FloatingDocumentList,
-  FloatingWindow,
-  FloatingWindowCloseButton,
-  FloatingWindowHeader,
-  FloatingWindowLayout,
-  GraphEditorProvider,
-  GraphEditorToolbar,
-  GraphSearchInput
-} from "@/react-web/components";
-import { GraphEditor } from "@/react-web/components/graph-editor";
-import { GraphRouteParams } from "@/react-web/config/routes";
-import { useAppBar, useBooleanSetters, useGraphEditorMachine, useUrlQueryParamArray, useUrlQueryParamBoolean } from '@/react-web/hooks';
-import { Flex, Grid } from '@chakra-ui/layout';
-import { Portal } from '@chakra-ui/portal';
 import React from 'react';
+import { NotFoundError } from "@/domain";
+import { DocumentEditorProvider } from "@/react-web/components/document-editor-provider";
+import { GraphRouteParams } from "@/react-web/config/routes";
+import { GraphEditor } from "@/react-web/editors";
+import { useDocumentEditorMachine, useStateTransition } from "@/react-web/hooks";
+import { useServices } from "@/react-web/services";
+import { useAsync, useDebounce } from 'react-use';
+import { docToGraphNode, linkToGraphEdge } from '@/react-web/editors/graph-editor/graph-editor-utils';
+
 
 
 export function GraphRoute({
@@ -23,78 +15,50 @@ export function GraphRoute({
 }: {
   params: GraphRouteParams
 }) {
-  const appBar = useAppBar();
-  const [selectedDocuments, setSelectedDocuments] = useUrlQueryParamArray('select');
-  const [isDocumentListOpen, openDocumentList, closeDocumentList] = useBooleanSetters(useUrlQueryParamBoolean('list', true));
-  const [isEditorOpen, openDocumentEditor, closeDocumentEditor] = useBooleanSetters(useUrlQueryParamBoolean('editor', !!selectedDocuments?.length));
-  const [isAsideOpen, openAside, closeAside] = useBooleanSetters(useUrlQueryParamBoolean('aside', false));
+  const services = useServices();
+  const userId = services.auth.getUserId();
+  const documentEditor = useDocumentEditorMachine(`${userId}-default-graph`);
 
-  // Calculate the layout based on which tool windows are open
-  const floatingWindowColumns = React.useMemo(() => {
-    const list = isDocumentListOpen ? 3 : 0;
-    const aside = isAsideOpen ? 3 : 0;
-    const editor = isEditorOpen ? 12 - list - aside : 0;
-
-    return {
-      list: `span ${list}`,
-      editor: `span ${editor}`,
-      aside: `10 / span ${aside}`
+  // If the default graph is not found, create it, then try again to open
+  useStateTransition(documentEditor.state, 'closed', {
+    in: (current, previous) => {
+      if (current.context.error?.name === NotFoundError.name) {
+        services.documents.createDocument({
+          title: `Default graph for ${userId}`,
+          contentType: 'ocean/graph',
+          content: {
+            nodes: [],
+            edges: []
+          }
+        }).then(doc => {
+          documentEditor.send({ type: 'openDocument', payload: doc.id });
+        });
+      } else {
+        console.log(`Error loading default graph for ${userId}: ${current.context.error?.message}`, current.context.error);
+      }
     }
-  }, [isDocumentListOpen, isAsideOpen, isEditorOpen]);
+  });
 
-  // Create a graph editor machine, using the query params for initial state
-  const graphEditor = useGraphEditorMachine({ selectedDocuments });
-  const { state, send } = graphEditor;
-
-  // If we're in the "ready" state, keep the selection in sync with the URL params
-  // If we have at least one document selected, open the editor
+  // Use the graph search API to populate the graph document
+  const queryResult = useAsync(() => services.documents.graphByQuery({}), []);
   React.useEffect(() => {
-    if (state.matches('ready')) {
-      setSelectedDocuments(state.context.selectedDocuments);
-      if (state.context.selectedDocuments.length)
-        openDocumentEditor();
-    }
-  }, [state.context.selectedDocuments]);
+    if (queryResult.value && documentEditor.state.matches('ready'))
+      documentEditor.send({
+        type: 'editDocument',
+        payload: {
+          contentType: 'ocean/graph',
+          content: {
+            nodes: queryResult.value.documents.map(docToGraphNode),
+            edges: queryResult.value.links.map(linkToGraphEdge)
+          }
+        }
+      });
+  }, [queryResult.value]);
+  
 
   return (
-    <GraphEditorProvider editor={graphEditor}>
-      <Portal containerRef={appBar.ref}>
-        <Flex justifyContent='space-between'>
-          <GraphSearchInput
-            w='unset'
-            onFocus={openDocumentList}
-          />
-          <GraphEditorToolbar />
-        </Flex>
-      </Portal>
-
-      <Grid templateRows='1fr' templateColumns='1fr'>
-        <GraphEditor />
-        <FloatingWindowLayout top={`${appBar.measure.bottom + 16}px`}>
-          <FloatingDocumentList
-            gridColumn={floatingWindowColumns.list}
-            isOpen={isDocumentListOpen}
-            onClose={closeDocumentList}
-          />
-
-          <FloatingDocumentEditor
-            gridColumn={floatingWindowColumns.editor}
-            isOpen={isEditorOpen}
-            onClose={closeDocumentEditor}
-            documentId={selectedDocuments[0] as ID}
-          />
-
-          <FloatingWindow
-            gridColumn={floatingWindowColumns.aside}
-            display={isAsideOpen ? undefined : 'none'}
-          >
-            <FloatingWindowHeader title='Aside'>
-              <FloatingWindowCloseButton onClick={closeAside} />
-            </FloatingWindowHeader>
-            Right side
-          </FloatingWindow>
-        </FloatingWindowLayout>
-      </Grid>
-    </GraphEditorProvider>
+    <DocumentEditorProvider editor={documentEditor}>
+      <GraphEditor/>
+    </DocumentEditorProvider>
   );
 }

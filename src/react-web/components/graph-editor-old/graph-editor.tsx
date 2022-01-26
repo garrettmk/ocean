@@ -7,7 +7,7 @@ import ReactFlow, {
 } from 'react-flow-renderer';
 import { DocumentNode, Edge } from './components';
 import './react-flow-overrides.css';
-import { getNodeContainerElement } from './utils';
+import { docToFlowNode, linkToFlowEdge } from './utils';
 
 export type GraphEditorProps = GridProps & {};
 
@@ -98,28 +98,4 @@ export function GraphEditor(props: GraphEditorProps) {
       </ReactFlowProvider>
     </Grid>
   );
-}
-
-
-function docToFlowNode(doc: DocumentHeader) : ReactFlowNode {
-  return {
-    // @ts-ignore
-    data: doc,
-    id: doc.id,
-    dragHandle: '#draghandle',
-    position: {
-      x: doc.meta.x ?? 0,
-      y: doc.meta.y ?? 0,
-    },
-  };
-}
-
-function linkToFlowEdge(link: DocumentLink) : ReactFlowEdge {
-  return {
-    // @ts-ignore
-    data: link,
-    id: `${link.from}:${link.to}`,
-    source: link.from,
-    target: link.to
-  };
 }

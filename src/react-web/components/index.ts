@@ -10,7 +10,7 @@ export * from './floating-window-header';
 export * from './floating-window-close-button';
 export * from './floating-document-list';
 export * from './floating-document-editor';
-export * from './graph-editor';
+export * from './graph-editor-old';
 export * from './graph-search-input';
 export * from './graph-editor-toolbar';
 export * from './graph-editor-provider';

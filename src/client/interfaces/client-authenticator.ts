@@ -1,3 +1,4 @@
 export interface ClientAuthenticator {
-  getAccessToken: () => Promise<string>
+  getAccessToken: () => Promise<string>,
+  getUserId: () => string | undefined
 }
