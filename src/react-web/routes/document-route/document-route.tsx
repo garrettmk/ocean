@@ -24,7 +24,7 @@ export function DocumentRoute({
   
   // Load the document when the component mounts
   React.useEffect(() => {
-    editor.openDocument(params.id);
+    editor.send({ type: 'openDocument', payload: params.id });
   }, [params.id]);
 
   return (

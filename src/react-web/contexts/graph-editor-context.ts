@@ -4,6 +4,4 @@ import { useGraphEditorMachine } from '../hooks';
 
 export type GraphEditorContextValue = ReturnType<typeof useGraphEditorMachine>;
 
-
-// @ts-ignore
-export const DocumentGraphContext = React.createContext<GraphEditorContextValue>();
+export const DocumentGraphContext = React.createContext<GraphEditorContextValue | undefined>(undefined);

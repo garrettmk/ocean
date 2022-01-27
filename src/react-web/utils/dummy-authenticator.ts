@@ -20,10 +20,6 @@ export class DummyAuthenticator implements ClientAuthenticator {
     }, this.secret);
   }
 
-  getUserId() {
-    return this.userId;
-  }
-
   useUserId(userId: string | undefined) {
     this.userId = userId;
   }

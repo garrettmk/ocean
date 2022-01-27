@@ -1,7 +1,7 @@
 import React from 'react';
-import { DocumentGraphContext, GraphEditorContextValue } from '../contexts';
+import { DocumentGraphContext } from '../contexts';
 
 
-export function useGraphEditor() : GraphEditorContextValue {
+export function useGraphEditor() {
   return React.useContext(DocumentGraphContext);
 }

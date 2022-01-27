@@ -115,7 +115,8 @@ export type DocumentEditorTypeState =
 // High-level types for convenience
 export type DocumentEditorMachine = StateMachine<DocumentEditorMachineContext, DocumentEditorStateSchema, DocumentEditorEvent, DocumentEditorTypeState>;
 export type DocumentEditorMachineState = State<DocumentEditorMachineContext, DocumentEditorEvent, DocumentEditorStateSchema, DocumentEditorTypeState>;
-export type DocumentEditorMachineDispatch = Sender<DocumentEditorEvent>
+export type DocumentEditorMachineDispatch = Sender<DocumentEditorEvent>;
+export type DocumentEditorService = Interpreter<DocumentEditorMachineContext, DocumentEditorStateSchema, DocumentEditorEvent, DocumentEditorTypeState>;
 
 
 // Create a machine using the given dependencies
