@@ -23,11 +23,12 @@ import {
   validateDocumentGraphQuery,
   validateContentType,
 } from "@/domain";
-
+import { Observable } from "@/client/utils";
 
 export interface GraphQLClient {
-  query(q: DocumentNode, variables?: Record<string, any>): Promise<GraphQLResult>,
+  query(q: DocumentNode, variables?: Record<string, any>): Promise<GraphQLResult>
   mutation(m: DocumentNode, variables?: Record<string, any>): Promise<GraphQLResult>
+  subscribe(q: DocumentNode, variables?: Record<string, any>): Observable<GraphQLResult>
 }
 
 export type GraphQLResult = {

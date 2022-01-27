@@ -1,8 +1,10 @@
 import { cacheExchange, Client, dedupExchange, fetchExchange, makeOperation } from '@urql/core';
 import { authExchange } from '@urql/exchange-auth';
 import { DocumentNode } from 'graphql';
+import { Observable } from '../utils';
 import { ClientAuthenticator } from './client-authenticator';
 import { GraphQLClient, GraphQLResult } from './client-documents-api';
+import { pipe, toObservable } from 'wonka';
 
 
 type Fetch = ConstructorParameters<Client>[0]['fetch'];
@@ -61,5 +63,12 @@ export class UrqlGraphQLClient implements GraphQLClient {
 
   async mutation(m: DocumentNode, variables?: Record<string, any>) : Promise<GraphQLResult> {
     return this.client.mutation(m, variables).toPromise();
+  }
+
+  subscribe(q: DocumentNode, variables?: Record<string, any>): Observable<GraphQLResult> {
+    return pipe(
+      this.client.subscription(q, variables),
+      toObservable
+    );
   }
 }
