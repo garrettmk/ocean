@@ -1,28 +1,29 @@
 import { GraphContent, GraphEdge, GraphNode, GraphViewport } from "@/content";
-import { ValidationError } from "@/domain";
-import { ContentEditorProps } from "@/react-web/components/content-editor";
-import { useDocumentEditor } from "@/react-web/hooks";
-import { Grid } from "@chakra-ui/react";
+import { DocumentNode } from "@/react-web/components";
+import { BoxProps, Grid } from "@chakra-ui/react";
 import React from 'react';
-import ReactFlow, { 
-  Connection, 
-  Edge as ReactFlowEdge, 
-  FlowElement, 
-  FlowTransform, 
-  Node as ReactFlowNode, 
-  OnLoadFunc, 
-  ReactFlowProvider 
+import ReactFlow, {
+  Connection,
+  Edge as ReactFlowEdge, FlowTransform,
+  Node as ReactFlowNode,
+  OnLoadFunc,
+  ReactFlowProvider
 } from "react-flow-renderer";
-import { graphContentToFlowElements, addEdge, replaceNode } from "./graph-editor-utils";
+import { addEdge, graphContentToFlowElements, replaceNode } from "./graph-editor-utils";
 
+
+export type GraphEditorProps = BoxProps & {
+  content?: GraphContent,
+  onChangeContent?: (newContent: GraphContent) => void
+}
+
+const nodeTypes = { default: DocumentNode };
 
 export function GraphEditor({
-  toolbarRef,
-  toolbarSize,
+  content,
+  onChangeContent,
   ...boxProps
-}: ContentEditorProps) {
-  const documentEditor = useDocumentEditor();
-  const content = documentEditor?.state.context.document?.content as GraphContent;
+}: GraphEditorProps) {
   const flowInstanceRef = React.useRef<any>();
 
   // Translate the content into ReactFlow elements
@@ -47,14 +48,8 @@ export function GraphEditor({
       targetId: target,
     }
 
-    documentEditor?.send({
-      type: 'editDocument',
-      payload: {
-        contentType: 'ocean/graph',
-        content: addEdge(content, edge)
-      }
-    });
-  }, [documentEditor, content]);
+    onChangeContent?.(addEdge(content, edge));
+  }, [content, onChangeContent]);
 
   // Update the graph when the user drags a node to a new position
   const handleNodeDragStop = React.useCallback((event: React.MouseEvent, node: ReactFlowNode<GraphNode>) => {
@@ -67,14 +62,8 @@ export function GraphEditor({
       y: y
     };
 
-    documentEditor?.send({
-      type: 'editDocument',
-      payload: {
-        contentType: 'ocean/graph',
-        content: replaceNode(content!, newGraphNode)
-      }
-    });
-  }, [documentEditor, content]);
+    onChangeContent?.(replaceNode(content!, newGraphNode));
+  }, [content, onChangeContent]);
 
 
   // Update the graph when the user pans or zooms
@@ -87,23 +76,18 @@ export function GraphEditor({
       panY: tx.y
     };
 
-    documentEditor?.send({
-      type: 'editDocument',
-      payload: {
-        contentType: 'ocean/graph',
-        content: {
-          ...content!,
-          viewport: newViewport
-        }
-      }
+    onChangeContent?.({
+      ...content!,
+      viewport: newViewport
     });
-  }, [documentEditor, content]);
+  }, [content, onChangeContent]);
   
   return (
     <Grid templateRows='1fr' templateColumns='1fr' {...boxProps}>
       <ReactFlowProvider>
         <ReactFlow
           snapToGrid
+          nodeTypes={nodeTypes}
           elements={elements}
           onLoad={handleLoad}
           onConnect={handleConnect}

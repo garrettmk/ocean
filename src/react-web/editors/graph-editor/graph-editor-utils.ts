@@ -1,4 +1,4 @@
-import { ValidationError, DocumentHeader, DocumentLink } from "@/domain";
+import { ValidationError, DocumentHeader, DocumentLink, Document } from "@/domain";
 import type { GraphContent, GraphNode, GraphEdge, DocumentGraphNode } from "@/content";
 import type { Edge as ReactFlowEdge, Node as ReactFlowNode, FlowElement as ReactFlowElement } from "react-flow-renderer";
 
@@ -49,13 +49,14 @@ export function linkToFlowEdge(link: DocumentLink) : ReactFlowEdge {
 
 
 // Create a GraphNode from a DocumentHeader
-export function docToGraphNode(doc: DocumentHeader) : DocumentGraphNode {
+export function docToGraphNode(doc: DocumentHeader | Document) : DocumentGraphNode {
   const { id } = doc;
   
   return {
     id,
     type: 'document',
     documentId: id,
+    data: doc
   };
 }
 

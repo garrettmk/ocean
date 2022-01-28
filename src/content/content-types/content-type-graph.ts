@@ -1,15 +1,16 @@
 import { parseContentType } from "@/content/utils";
-import { ID } from "@/domain";
+import { ID, Document, DocumentHeader } from "@/domain";
 
 
-export type DefaultGraphNode = {
+export type DefaultGraphNode<T = any> = {
   id: ID,
   type: string,
   x?: number,
   y?: number,
+  data?: T
 }
 
-export type DocumentGraphNode = DefaultGraphNode & {
+export type DocumentGraphNode = DefaultGraphNode<Document | DocumentHeader> & {
   type: 'document',
   documentId?: ID,
   width?: number,

@@ -10,6 +10,7 @@ import { docToFlowNode, docToGraphNode, linkToFlowEdge, linkToGraphEdge } from '
 import { Grid } from '@chakra-ui/react';
 import ReactFlow, { FlowElement, ReactFlowProvider, NodeTypesType } from 'react-flow-renderer';
 import { DocumentNode } from '@/react-web/components';
+import { GraphContent } from '@/content';
 
 
 const nodeTypes: NodeTypesType = {
@@ -23,27 +24,27 @@ export function GraphRoute({
   params: GraphRouteParams
 }) {
   const services = useServices();
-  const [elements, setElements] = React.useState<FlowElement[]>([]);
-
+  const [content, setContent] = React.useState<GraphContent>();
+  
   // Use the graph search API to populate the graph
   const queryResult = useAsync(() => services.documents.graphByQuery({}), []);
   React.useEffect(() => {
+    console.log(queryResult.value);
     if (queryResult.value)
-      setElements([
-        ...queryResult.value.documents.map(docToFlowNode),
-        ...queryResult.value.links.map(linkToFlowEdge)
-      ]);
+      setContent({
+        ...content,
+        nodes: queryResult.value.documents.map(docToGraphNode),
+        edges: queryResult.value.links.map(linkToGraphEdge)
+      });
   }, [queryResult.value]);
   
 
   return (
     <Grid templateRows='1fr' templateColumns='1fr'>
-      <ReactFlowProvider>
-        <ReactFlow
-          elements={elements}
-          nodeTypes={nodeTypes}
-        />       
-      </ReactFlowProvider>
+      <GraphEditor
+        content={content}
+        onChangeContent={setContent}
+      />
     </Grid>
   );
 }

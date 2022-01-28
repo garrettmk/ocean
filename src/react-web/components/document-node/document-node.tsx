@@ -29,30 +29,24 @@ export function DocumentNode({
   const toolbarRef = React.useRef<HTMLDivElement>(null);
   const contentContainerRef = React.useRef<HTMLDivElement>(null);
 
-  // Hook in to the local graph editor
-  // And document editor for this ID, if it exists
-  const graphEditor = useGraphEditor();
-  const documentEditor = useActor(graphEditor?.state.context.editors?.[id]) as DocumentEditorContextValue;
-
 
   // Track whether the node is in open (edit) mode
-  const { isOpen, onToggle } = useDisclosure({ defaultIsOpen: data.meta.isOpen });
+  const { isOpen, onToggle } = useDisclosure({ defaultIsOpen: data.meta?.isOpen });
 
   // Open an editor if the node is opened
   React.useEffect(() => {
-    if (isOpen) graphEditor?.send({ type: 'editDocument', payload: data.id });
+    
   }, [isOpen]);
 
   // Save the document if the node is closed
   React.useEffect(() => {
-    if (documentEditor) documentEditor.send({ type: 'saveDocument' });
   }, [isOpen]);
 
   // Update the node if the open status changes
-  React.useEffect(() => { isOpen !== !!data.meta.isOpen && graphEditor?.send({
-    type: 'updateDocument',
-    payload: { id, meta: { ...data.meta, isOpen: isOpen } }
-  })}, [isOpen]);
+  // React.useEffect(() => { isOpen !== !!data.meta?.isOpen && graphEditor?.send({
+  //   type: 'updateDocument',
+  //   payload: { id, meta: { ...data.meta, isOpen: isOpen } }
+  // })}, [isOpen]);
 
 
   // Track if the node is hovered, to show items like toolbars
@@ -70,31 +64,31 @@ export function DocumentNode({
   // If we're editing the node and node loses focus, save the changes
   const { focusElementRef, focusElementProps } = useFocus({
     ref: rootRef,
-    out: () => documentEditor?.send({ type: 'saveDocument' })
+    // out: () => documentEditor?.send({ type: 'saveDocument' })
   });
 
   // Handle node resizing behavior
   const { resizeHandleRef } = useNodeResizing<HTMLDivElement>({
     resizeElementRef: contentContainerRef,
-    stop: ({ x, y, width, height }) => graphEditor?.send({ type: 'updateDocument', payload: {
-      id, 
-      meta: { x, y, width, height }
-    }})
+    // stop: ({ x, y, width, height }) => graphEditor?.send({ type: 'updateDocument', payload: {
+    //   id, 
+    //   meta: { x, y, width, height }
+    // }})
   });
 
   // Connect the title input to the document editor machine
   const handleTitleChange = React.useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-    documentEditor?.send({ type: 'editDocument', payload: {
-      title: event.target.value
-    }});
-  }, [documentEditor]);
+    // documentEditor?.send({ type: 'editDocument', payload: {
+    //   title: event.target.value
+    // }});
+  }, []);
 
   // Open the full editor on click
   const [_, setLocation] = useLocation();
   const handleViewAsPage = () => setLocation(createDocumentRoute(data.id));
   
   // Extract display data from the node, or the document editor if it's open
-  const { title, contentType } = { ...data, ...documentEditor?.state?.context.document };
+  const { title, contentType } = { ...data };
   const width = data.meta?.width ? `${data.meta.width}px` : undefined;
   const height = data.meta?.height ? `${data.meta.height}px` : undefined;
 
@@ -186,12 +180,12 @@ export function DocumentNode({
           templateColumns='1fr'
           overflow='auto'
         >
-          <DocumentEditorProvider editor={documentEditor}>
+          {/* <DocumentEditorProvider editor={documentEditor}>
             <Portal containerRef={toolbarRef}>
               <DocumentEditorToolbar size='sm'/>
             </Portal>
             <ContentEditor maxWidth={width}/>
-          </DocumentEditorProvider>
+          </DocumentEditorProvider> */}
         </Grid>
       </Collapse>
 
