@@ -1,18 +1,16 @@
-import { DocumentHeader } from '@/domain';
-import { ContentEditor, ResizeHandle } from '@/react-web/components';
-import { useActor, useFocus, useGraphEditor, useHover } from '@/react-web/hooks';
+import { DocumentGraphNode } from '@/content';
+import { ResizeHandle } from '@/react-web/components';
+import { createDocumentRoute } from '@/react-web/config/routes';
+import { useGraphContentEditor } from '@/react-web/hooks';
+import { useDocumentEditorMachine2, useFocus, useHover, useNodeResizing } from '@/react-web/hooks';
+import { canElementScroll } from '@/react-web/utils';
 import { ExternalLinkIcon } from '@chakra-ui/icons';
-import { Box, ButtonGroup, Collapse, Fade, Flex, Grid, Icon, IconButton, Input, Portal, useDisclosure } from '@chakra-ui/react';
+import { Box, ButtonGroup, Collapse, Fade, Flex, Grid, Icon, IconButton, Input, useDisclosure } from '@chakra-ui/react';
 import React from 'react';
 import { Handle, NodeProps, Position } from 'react-flow-renderer';
 import { HiOutlineDocumentText } from 'react-icons/hi';
 import { MdOutlineKeyboardArrowDown, MdOutlineKeyboardArrowUp } from 'react-icons/md';
-import { DocumentEditorProvider, DocumentEditorToolbar } from '@/react-web/components';
-import { useNodeResizing } from '@/react-web/hooks';
-import { canElementScroll } from '@/react-web/utils';
 import { useLocation } from 'wouter';
-import { createDocumentRoute } from '@/react-web/config/routes';
-import { DocumentEditorContextValue } from '@/react-web/contexts';
 
 
 export function DocumentNode({
@@ -22,32 +20,38 @@ export function DocumentNode({
   selected,
   sourcePosition,
   targetPosition,
-}: NodeProps<DocumentHeader>) {
+}: NodeProps<DocumentGraphNode>) {
+  const graphEditor = useGraphContentEditor();
+
   // Keep a ref to the root element, and to the toolbar element
   // also the content container
   const rootRef = React.useRef<HTMLDivElement>(null);
+  const titleInputRef = React.useRef<HTMLInputElement>(null);
   const toolbarRef = React.useRef<HTMLDivElement>(null);
   const contentContainerRef = React.useRef<HTMLDivElement>(null);
+  const { documentEditor, startDocumentEditor } = useDocumentEditorMachine2({
+    documentId: data.documentId
+  });
 
+  // Start the document editor if the node is opened, and save if it's closed
+  const { isOpen, onToggle } = useDisclosure({ 
+    defaultIsOpen: data.isOpen,
+    onOpen: startDocumentEditor,
+    onClose: () => documentEditor?.send({ type: 'saveDocument' })
+  });
 
-  // Track whether the node is in open (edit) mode
-  const { isOpen, onToggle } = useDisclosure({ defaultIsOpen: data.meta?.isOpen });
-
-  // Open an editor if the node is opened
-  React.useEffect(() => {
-    
-  }, [isOpen]);
-
-  // Save the document if the node is closed
-  React.useEffect(() => {
-  }, [isOpen]);
+  // Start the editor if the title input gets focus
+  // If the node as a whole loses focus, save the document
+  const { focusElementRef, focusElementProps } = useFocus({
+    ref: rootRef,
+    in: () => titleInputRef.current === document.activeElement && startDocumentEditor(),
+    out: () => documentEditor?.send({ type: 'saveDocument' })
+  });
 
   // Update the node if the open status changes
-  // React.useEffect(() => { isOpen !== !!data.meta?.isOpen && graphEditor?.send({
-  //   type: 'updateDocument',
-  //   payload: { id, meta: { ...data.meta, isOpen: isOpen } }
-  // })}, [isOpen]);
-
+  React.useEffect(() => { isOpen !== !!data.isOpen && graphEditor?.updateNode({
+    id, type: 'document', isOpen
+  })}, [isOpen]);
 
   // Track if the node is hovered, to show items like toolbars
   const { isHovered } = useHover({ hoverElementRef: rootRef });
@@ -60,37 +64,30 @@ export function DocumentNode({
     out: () => contentContainerRef.current?.removeEventListener('wheel', stopPropagation)
   }, []);
 
-
-  // If we're editing the node and node loses focus, save the changes
-  const { focusElementRef, focusElementProps } = useFocus({
-    ref: rootRef,
-    // out: () => documentEditor?.send({ type: 'saveDocument' })
-  });
-
   // Handle node resizing behavior
   const { resizeHandleRef } = useNodeResizing<HTMLDivElement>({
     resizeElementRef: contentContainerRef,
-    // stop: ({ x, y, width, height }) => graphEditor?.send({ type: 'updateDocument', payload: {
-    //   id, 
-    //   meta: { x, y, width, height }
-    // }})
+    stop: ({ x, y, width, height }) => graphEditor?.updateNode({
+      id, type: 'document', x, y, width, height
+    })
   });
 
   // Connect the title input to the document editor machine
   const handleTitleChange = React.useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-    // documentEditor?.send({ type: 'editDocument', payload: {
-    //   title: event.target.value
-    // }});
-  }, []);
+    documentEditor?.send({ type: 'editDocument', payload: {
+      title: event.target.value
+    }});
+  }, [documentEditor]);
 
   // Open the full editor on click
   const [_, setLocation] = useLocation();
   const handleViewAsPage = () => setLocation(createDocumentRoute(data.id));
   
   // Extract display data from the node, or the document editor if it's open
-  const { title, contentType } = { ...data };
-  const width = data.meta?.width ? `${data.meta.width}px` : undefined;
-  const height = data.meta?.height ? `${data.meta.height}px` : undefined;
+  const doc = documentEditor?.state.context.document;
+  const title = doc?.title ?? '';
+  const width = data.width ? `${data.width}px` : undefined;
+  const height = data.height ? `${data.height}px` : undefined;
 
   return (
     <Grid
@@ -124,6 +121,7 @@ export function DocumentNode({
       </Grid>
 
       <Input
+        ref={titleInputRef}
         borderColor='transparent'
         alignSelf='center'
         pointerEvents='all'

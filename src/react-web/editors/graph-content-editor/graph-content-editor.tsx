@@ -9,21 +9,22 @@ import ReactFlow, {
   OnLoadFunc,
   ReactFlowProvider
 } from "react-flow-renderer";
-import { addEdge, graphContentToFlowElements, replaceNode } from "./graph-editor-utils";
+import { GraphContentEditorProvider } from "./graph-content-editor-provider";
+import { addEdge, graphContentToFlowElements, replaceNode } from "./graph-content-editor-utils";
 
 
-export type GraphEditorProps = BoxProps & {
+export type GraphContentEditorProps = BoxProps & {
   content?: GraphContent,
-  onChangeContent?: (newContent: GraphContent) => void
+  onChangeContent?: (newContent: GraphContent) => void,
 }
 
 const nodeTypes = { default: DocumentNode };
 
-export function GraphEditor({
+export function GraphContentEditor({
   content,
   onChangeContent,
   ...boxProps
-}: GraphEditorProps) {
+}: GraphContentEditorProps) {
   const flowInstanceRef = React.useRef<any>();
 
   // Translate the content into ReactFlow elements
@@ -81,20 +82,28 @@ export function GraphEditor({
       viewport: newViewport
     });
   }, [content, onChangeContent]);
+
+
+  // Callbacks used by nodes
+  const updateNode = React.useCallback((node: GraphNode) => {
+    onChangeContent?.(replaceNode(content!, node));
+  }, [content]);
   
   return (
     <Grid templateRows='1fr' templateColumns='1fr' {...boxProps}>
-      <ReactFlowProvider>
-        <ReactFlow
-          snapToGrid
-          nodeTypes={nodeTypes}
-          elements={elements}
-          onLoad={handleLoad}
-          onConnect={handleConnect}
-          onNodeDragStop={handleNodeDragStop}
-          onMoveEnd={handleMoveEnd}
-        />
-      </ReactFlowProvider>
+      <GraphContentEditorProvider updateNode={updateNode}>
+        <ReactFlowProvider>
+          <ReactFlow
+            snapToGrid
+            nodeTypes={nodeTypes}
+            elements={elements}
+            onLoad={handleLoad}
+            onConnect={handleConnect}
+            onNodeDragStop={handleNodeDragStop}
+            onMoveEnd={handleMoveEnd}
+          />
+        </ReactFlowProvider>
+      </GraphContentEditorProvider>
     </Grid>
   );
 }

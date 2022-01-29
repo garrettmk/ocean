@@ -121,6 +121,7 @@ export type DocumentEditorService = Interpreter<DocumentEditorMachineContext, Do
 
 // Create a machine using the given dependencies
 export function makeDocumentEditorMachine(gateway: ClientDocumentsGateway, migrations: ContentMigrationManager, openDocumentId?: ID) : DocumentEditorMachine {
+  // @ts-ignore
   return createMachine<DocumentEditorMachineContext, DocumentEditorEvent, DocumentEditorTypeState>({
     id: 'document-editor',
     context: {},
@@ -169,7 +170,7 @@ export function makeDocumentEditorMachine(gateway: ClientDocumentsGateway, migra
           saving: {
             invoke: {
               src: 'saveDocument',
-              onDone: { target: '#document-editor.ready.pristine', actions: ['assignSaveDocumentResult', 'notifyParent'] },
+              onDone: { target: '#document-editor.ready.pristine', actions: ['assignSaveDocumentResult'] },
               onError: { target: '#document-editor.ready.edited', actions: ['assignError'] },
             }
           }
@@ -217,7 +218,7 @@ export function makeDocumentEditorMachine(gateway: ClientDocumentsGateway, migra
           deleting: {
             invoke: {
               src: 'deleteDocument',
-              onDone: { target: '#document-editor.closed', actions: ['assignDeleteDocumentResult', 'notifyParentDeleted'] },
+              onDone: { target: '#document-editor.closed', actions: ['assignDeleteDocumentResult'] },
               onError: { target: '#document-editor.ready.hist', actions: ['assignError'] }
             }
           }
@@ -272,13 +273,6 @@ export function makeDocumentEditorMachine(gateway: ClientDocumentsGateway, migra
     },
 
     actions: {
-      notifyParent: sendParent((context) => ({ type: 'documentChanged', payload: context?.document })),
-
-      notifyParentDeleted: sendParent((context, event) => {
-        assertEventType<DoneInvokeEvent<Document>>(event, 'done.invoke.deleteDocument');
-        return { type: 'documentDeleted', payload: event.data.id };
-      }),
-
       assignError: assign<DocumentEditorMachineContext, DocumentEditorEvent>({
         error: (context, event) => (event as ErrorPlatformEvent).data,
       }),

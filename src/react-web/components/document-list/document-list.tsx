@@ -10,6 +10,7 @@ import { Link as RouterLink } from 'wouter';
 export function DocumentList(props: BoxProps) {
   const services = useServices();
   const machine = React.useMemo(() => makeBrowseDocumentsMachine(services.documents), []);
+  // @ts-ignore
   const [state, send] = useMachine(machine);
   const docs = state.context.documents ?? [];
 

@@ -32,7 +32,7 @@ export function DocumentNode({
   // Hook in to the local graph editor
   // And document editor for this ID, if it exists
   const graphEditor = useGraphEditor();
-  const documentEditor = useActor(graphEditor.state.context.editors?.[id]);
+  const documentEditor = useActor(graphEditor?.state.context.editors?.[id]);
 
 
   // Track whether the node is in open (edit) mode
@@ -40,7 +40,7 @@ export function DocumentNode({
 
   // Open an editor if the node is opened
   React.useEffect(() => {
-    if (isOpen) graphEditor.send({ type: 'editDocument', payload: data.id });
+    if (isOpen) graphEditor?.send({ type: 'editDocument', payload: data.id });
   }, [isOpen]);
 
   // Save the document if the node is closed
@@ -49,7 +49,7 @@ export function DocumentNode({
   }, [isOpen]);
 
   // Update the node if the open status changes
-  React.useEffect(() => { isOpen !== !!data.meta.isOpen && graphEditor.send({
+  React.useEffect(() => { isOpen !== !!data.meta.isOpen && graphEditor?.send({
     type: 'updateDocument',
     payload: { id, meta: { ...data.meta, isOpen: isOpen } }
   })}, [isOpen]);
@@ -76,7 +76,7 @@ export function DocumentNode({
   // Handle node resizing behavior
   const { resizeHandleRef } = useNodeResizing<HTMLDivElement>({
     resizeElementRef: contentContainerRef,
-    stop: ({ x, y, width, height }) => graphEditor.send({ type: 'updateDocument', payload: {
+    stop: ({ x, y, width, height }) => graphEditor?.send({ type: 'updateDocument', payload: {
       id, 
       meta: { x, y, width, height }
     }})
@@ -186,7 +186,10 @@ export function DocumentNode({
           templateColumns='1fr'
           overflow='auto'
         >
-          <DocumentEditorProvider editor={documentEditor}>
+          <DocumentEditorProvider 
+            // @ts-ignore
+            editor={documentEditor
+          }>
             <Portal containerRef={toolbarRef}>
               <DocumentEditorToolbar size='sm'/>
             </Portal>

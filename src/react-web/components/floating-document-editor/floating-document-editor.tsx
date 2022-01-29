@@ -28,13 +28,13 @@ export function FloatingDocumentEditor({
   ...windowProps
 }: FloatingDocumentEditorProps) : JSX.Element {
   const graphEditor = useGraphEditor()
-  const documentEditor = useActor(graphEditor.state.context.editors?.[documentId!]);
+  const documentEditor = useActor(graphEditor?.state.context.editors?.[documentId!]);
   const editorToolbarRef = React.useRef<HTMLDivElement | null>(null);
 
   // Open the editor if it isn't already open
   React.useEffect(() => {
     if (!documentEditor && documentId)
-      graphEditor.send({ type: 'editDocument', payload: documentId });
+      graphEditor?.send({ type: 'editDocument', payload: documentId });
   }, [documentEditor, documentId]);
   
   // Navigate to the document route when the button is clicked
@@ -50,7 +50,10 @@ export function FloatingDocumentEditor({
   });
 
   return (
-    <DocumentEditorProvider editor={documentEditor}>
+    <DocumentEditorProvider 
+      // @ts-ignore
+      editor={documentEditor}
+    >
       <FloatingWindow
         display={isOpen ? undefined : 'none'} 
         bg='gray.300'

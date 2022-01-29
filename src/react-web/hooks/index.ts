@@ -10,3 +10,4 @@ export * from './use-focus';
 export * from './use-actor';
 export * from './use-hover';
 export * from './use-node-resizing';
+export * from './use-graph-content-editor';

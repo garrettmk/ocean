@@ -7,6 +7,7 @@ import { makeGraphEditorMachine, GraphEditorContext } from "@/client/machines";
 export function useGraphEditorMachine(initialContext?: GraphEditorContext) {
   const services = useServices();
   const machine = React.useMemo(() => makeGraphEditorMachine(services.documents, services.migrations, initialContext), []);
+  // @ts-ignore
   const [state, send] = useMachine(machine);
 
   return {

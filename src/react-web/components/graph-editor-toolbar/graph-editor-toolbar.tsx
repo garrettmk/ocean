@@ -2,8 +2,8 @@ import { useGraphEditor, useStateTransition } from '@/react-web/hooks';
 import { ButtonGroup, ButtonGroupProps, IconButton } from '@chakra-ui/button';
 import Icon from '@chakra-ui/icon';
 import { Box, Flex, FlexProps } from '@chakra-ui/layout';
-import { Menu, MenuButton, MenuItem, MenuList } from '@chakra-ui/menu';
-import { useToast } from '@chakra-ui/toast';
+import { Menu, MenuButton, MenuItem, MenuList } from '@chakra-ui/react';
+import { useToast } from '@chakra-ui/react';
 import React from 'react';
 import { AiOutlineSisternode } from 'react-icons/ai';
 import { IoLink, IoUnlink } from 'react-icons/io5';
@@ -18,34 +18,34 @@ export type GraphEditorToolbarProps = FlexProps & {
 
 
 export function GraphEditorToolbar({ toolbarSize, ...flexProps }: GraphEditorToolbarProps = {}) : JSX.Element {
-  const { state, send } = useGraphEditor();
+  const graphEditor = useGraphEditor();
   const toast = useToast();
   
   const handleToggleLinking = () => {
-    const isLinking = state.matches('linkingDocuments');
-    const isReady = state.matches('ready');
+    const isLinking = graphEditor?.state.matches('linkingDocuments');
+    const isReady = graphEditor?.state.matches('ready');
 
     if (isReady)
-      send({ type: 'linkDocuments' });
+      graphEditor?.send({ type: 'linkDocuments' });
     if (isLinking)
-      send({ type: 'cancel' });
+      graphEditor?.send({ type: 'cancel' });
     else
-      send([
+      graphEditor?.send([
         { type: 'cancel' },
         { type: 'linkDocuments' }
       ]);
   };
 
   const handleToggleUnlinking = () => {
-    const isUnlinking = state.matches('unlinkingDocuments');
-    const isReady = state.matches('ready');
+    const isUnlinking = graphEditor?.state.matches('unlinkingDocuments');
+    const isReady = graphEditor?.state.matches('ready');
 
     if (isReady)
-      send({ type: 'unlinkDocuments' });
+      graphEditor?.send({ type: 'unlinkDocuments' });
     if (isUnlinking)
-      send({ type: 'cancel' });
+      graphEditor?.send({ type: 'cancel' });
     else
-      send([
+      graphEditor?.send([
         { type: 'cancel' },
         { type: 'unlinkDocuments' }
       ]);
@@ -54,7 +54,7 @@ export function GraphEditorToolbar({ toolbarSize, ...flexProps }: GraphEditorToo
   const [isImportUrlModalOpen, setIsImportModalOpen] = React.useState(false);
   const openImportUrlModal = () => setIsImportModalOpen(true);
   const closeImportUrlModal = () => setIsImportModalOpen(false);
-  const handleImport = (url: string) => { closeImportUrlModal(); send({ type: 'importUrl', payload: url }) };
+  const handleImport = (url: string) => { closeImportUrlModal(); graphEditor?.send({ type: 'importUrl', payload: url }) };
   React.useEffect(() => {
     // @ts-ignore
     if (state.matches('ready') && state.event.type === 'done.invoke.importUrl') {
@@ -62,19 +62,19 @@ export function GraphEditorToolbar({ toolbarSize, ...flexProps }: GraphEditorToo
       // @ts-ignore
       send({ type: 'selectDocument', payload: state.event.data.id });
     }
-  }, [state]);
+  }, [graphEditor?.state]);
 
 
   const handleCreateDocument = (event: React.MouseEvent<HTMLButtonElement>) => {
     const contentType = (event.target as HTMLButtonElement).value;
 
-    send({ type: 'createDocument', payload: {
+    graphEditor?.send({ type: 'createDocument', payload: {
       title: 'Untitled',
       contentType,
     } });
   }
 
-  useStateTransition(state, 'creatingDocument', {
+  useStateTransition(graphEditor?.state, 'creatingDocument', {
     in: (current, previous) => !toast.isActive('createDocument') && toast({
       id: 'createDocument',
       title: 'Creating document',
@@ -102,10 +102,10 @@ export function GraphEditorToolbar({ toolbarSize, ...flexProps }: GraphEditorToo
 
 
   const handleLayoutGraph = () => {
-    send({ type: 'layoutGraph' });
+    graphEditor?.send({ type: 'layoutGraph' });
   };
 
-  useStateTransition(state, 'layingOutGraph', {
+  useStateTransition(graphEditor?.state, 'layingOutGraph', {
     in: () => !toast.isActive('layoutGraph') && toast({
       id: 'layoutGraph',
       title: 'Layout Graph',
@@ -144,7 +144,7 @@ export function GraphEditorToolbar({ toolbarSize, ...flexProps }: GraphEditorToo
             icon={<Icon as={FaSitemap}/>}
             aria-label='Layout Graph'
             onClick={handleLayoutGraph}
-            disabled={!state.matches('ready')}
+            disabled={!graphEditor?.state.matches('ready')}
           />
           <Menu>
             <MenuButton
@@ -192,13 +192,13 @@ export function GraphEditorToolbar({ toolbarSize, ...flexProps }: GraphEditorToo
             icon={<Icon as={IoLink}/>}
             aria-label='Link documents'
             onClick={handleToggleLinking}
-            isActive={state.matches('linkingDocuments')}
+            isActive={graphEditor?.state.matches('linkingDocuments')}
           />
           <IconButton
             icon={<Icon as={IoUnlink}/>}
             aria-label='Unlink documents'
             onClick={handleToggleUnlinking}
-            isActive={state.matches('unlinkingDocuments')}           
+            isActive={graphEditor?.state.matches('unlinkingDocuments')}           
           />
         </ButtonGroup>
       </Flex>

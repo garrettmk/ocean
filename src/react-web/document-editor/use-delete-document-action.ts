@@ -1,6 +1,6 @@
 import React from 'react';
 import { useDocumentEditor, useStateTransition } from '../hooks';
-import { useToast } from '@chakra-ui/toast';
+import { useToast } from '@chakra-ui/react';
 // import { uiConfig } from '@/react-web/config';
 
 const toastId = 'delete-document-toast';

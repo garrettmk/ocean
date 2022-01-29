@@ -1,11 +1,11 @@
-import { ValidationError, DocumentHeader, DocumentLink, Document } from "@/domain";
+import { ValidationError, DocumentHeader, DocumentLink, Document, DocumentGraph } from "@/domain";
 import type { GraphContent, GraphNode, GraphEdge, DocumentGraphNode } from "@/content";
 import type { Edge as ReactFlowEdge, Node as ReactFlowNode, FlowElement as ReactFlowElement } from "react-flow-renderer";
 
-const nodeContainerClass = 'react-flow__node';
 
 // Walk up an element's chain up parents until you reach the one that has
 // the nodeContainerClass, and return it
+const nodeContainerClass = 'react-flow__node';
 export function getNodeContainerElement(el: HTMLElement) {
   // Start with the given element
   let element: HTMLElement | null = el;
@@ -22,33 +22,8 @@ export function getNodeContainerElement(el: HTMLElement) {
   return null;
 }
 
-// Create a ReactFlowNode from a DocumentHeader
-export function docToFlowNode(doc: DocumentHeader) : ReactFlowNode {
-  return {
-    // @ts-ignore
-    data: doc,
-    id: doc.id,
-    dragHandle: '#draghandle',
-    position: {
-      x: doc.meta.x ?? 0,
-      y: doc.meta.y ?? 0,
-    },
-  };
-}
 
-// Create a ReactFlowEdge from a DocumentLink
-export function linkToFlowEdge(link: DocumentLink) : ReactFlowEdge {
-  return {
-    // @ts-ignore
-    data: link,
-    id: `${link.from}:${link.to}`,
-    source: link.from,
-    target: link.to
-  };
-}
-
-
-// Create a GraphNode from a DocumentHeader
+// Create a GraphNode from a Document or DocumentHeader
 export function docToGraphNode(doc: DocumentHeader | Document) : DocumentGraphNode {
   const { id } = doc;
   
@@ -56,21 +31,30 @@ export function docToGraphNode(doc: DocumentHeader | Document) : DocumentGraphNo
     id,
     type: 'document',
     documentId: id,
-    data: doc
   };
 }
 
 
 // Create a GraphEdge from a DocumentLink
 export function linkToGraphEdge(link: DocumentLink) : GraphEdge {
-  const { from, to, meta } = link;
+  const { from, to } = link;
   
   return {
     id: `${from}:${to}`,
     sourceId: from,
-    targetId: to
+    targetId: to,
   };
 }
+
+
+// Create a GraphContent from a DocumentGraph
+export function documentGraphToGraphContent(documentGraph: DocumentGraph) : GraphContent {
+  return {
+    nodes: documentGraph.documents.map(docToGraphNode),
+    edges: documentGraph.links.map(linkToGraphEdge)
+  };
+}
+
 
 // Convert a GraphNode to a ReactFlowNode
 export function graphNodeToFlowNode(node: GraphNode) : ReactFlowNode<GraphNode> {
@@ -79,8 +63,9 @@ export function graphNodeToFlowNode(node: GraphNode) : ReactFlowNode<GraphNode> 
   return {
     id,
     type,
+    data: node,
     position: { x, y },
-    data: node
+    dragHandle: '#draghandle',
   };
 }
 
@@ -90,9 +75,9 @@ export function graphEdgeToFlowEdge(edge: GraphEdge) : ReactFlowEdge<GraphEdge> 
 
   return {
     id,
+    data: edge,
     source: sourceId,
     target: targetId,
-    data: edge
   };
 }
 
@@ -103,6 +88,14 @@ export function graphContentToFlowElements(content: GraphContent) : ReactFlowEle
     ...content.edges.map(graphEdgeToFlowEdge)
   ];
 }
+
+
+// Convert a DocumentGraph into ReactFlowElements
+export function documentGraphToFlowElements(documentGraph: DocumentGraph) : ReactFlowElement[] {
+  const graphContent = documentGraphToGraphContent(documentGraph);
+  return graphContentToFlowElements(graphContent);
+}
+
 
 // Add an edge to some GraphContent
 export function addEdge(content: GraphContent, edge: GraphEdge) : GraphContent {
@@ -119,7 +112,19 @@ export function addEdge(content: GraphContent, edge: GraphEdge) : GraphContent {
 
   return {
     ...content,
-    edges: content.edges.concat([edge])
+    edges: [...content.edges, edge]
+  };
+}
+
+// Add a node to some GraphContent
+export function addNode(content: GraphContent, node: GraphNode) : GraphContent {
+  const alreadyInGraph = content.nodes.some(n => n.id === node.id)
+  if (alreadyInGraph)
+    return content;
+
+  return {
+    ...content,
+    nodes: [...content.nodes, node]
   };
 }
 

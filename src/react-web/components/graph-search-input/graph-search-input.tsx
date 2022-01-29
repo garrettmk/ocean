@@ -10,7 +10,7 @@ export type GraphSearchInputProps = InputProps & {
 
 
 export function GraphSearchInput(props: GraphSearchInputProps) : JSX.Element {
-  const { send } = useGraphEditor();
+  const graphEditor = useGraphEditor();
   const [value, setValue] = React.useState('');
 
   const handleChange = React.useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
@@ -19,7 +19,7 @@ export function GraphSearchInput(props: GraphSearchInputProps) : JSX.Element {
   }, []);
   
   const [, cancel] = useDebounce(() => {
-    send({ type: 'loadGraph', payload: {
+    graphEditor?.send({ type: 'loadGraph', payload: {
       title: value ? value.split(' ') : undefined
     }});
   }, 300, [value]);

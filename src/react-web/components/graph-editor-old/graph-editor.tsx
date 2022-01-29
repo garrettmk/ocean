@@ -21,15 +21,15 @@ function FlowStateLogger() {
 
 
 export function GraphEditor(props: GraphEditorProps) {
-  const { state, send } = useGraphEditor();
-  const { graph, selectedDocuments, error } = state.context;
+  const graphEditor = useGraphEditor()!;
+  const { graph, selectedDocuments, error } = graphEditor?.state.context;
   const reactFlowInstanceRef = React.useRef<any>();
   const setReactFlowInstance = (instance: any) => reactFlowInstanceRef.current = instance;
   const [graphElements, setGraphElements] = React.useState<any[]>([]);
 
   // Load the graph on mount
   React.useEffect(() => {
-    send({ type: 'loadGraph', payload: {
+    graphEditor?.send({ type: 'loadGraph', payload: {
     }});
   }, []);
 
@@ -44,20 +44,20 @@ export function GraphEditor(props: GraphEditorProps) {
   // Select a node when you click on it
   const selectNode = React.useCallback((event: any, element: any) => {
     if (isNode(element))
-      send({ type: 'selectDocument', payload: element.id });
-  }, [send]);
+      graphEditor?.send({ type: 'selectDocument', payload: element.id });
+  }, [graphEditor?.send]);
 
   // Handle node connections
   const startLinking = React.useCallback<OnConnectStartFunc>((event, params) => {
-    send({ type: 'linkDocuments', payload: { from: params.nodeId as ID } })
+    graphEditor?.send({ type: 'linkDocuments', payload: { from: params.nodeId as ID } })
   }, []);
 
   const cancelLinking = React.useCallback<OnConnectEndFunc>((event) => {
-    send({ type: 'cancel' });
+    graphEditor?.send({ type: 'cancel' });
   }, []);
 
   const linkDocuments = React.useCallback<OnConnectFunc>(({ source, target }) => {
-    send({ type: 'selectDocument', payload: target as ID });
+    graphEditor?.send({ type: 'selectDocument', payload: target as ID });
   }, []);
 
   // Moving nodes around
@@ -66,10 +66,10 @@ export function GraphEditor(props: GraphEditorProps) {
     const { x, y } = node.position;
     // const { width, height } = getNodeContainerElement(event.target as HTMLElement)!.getBoundingClientRect();
 
-    send({ type: 'updateDocument', payload: { id, meta: {
+    graphEditor?.send({ type: 'updateDocument', payload: { id, meta: {
       ...meta, x, y,
     }}});
-  }, [send]);
+  }, [graphEditor?.send]);
 
   return (    
     <Grid templateRows="1fr" templateColumns="1fr" {...props}>

@@ -1,1 +1,1 @@
-export * from './graph-editor';
+export * from './graph-content-editor';

@@ -19,9 +19,9 @@ export function FloatingDocumentList({
   onClose,
   ...windowProps
 }: FloatingDocumentListProps): JSX.Element {
-  const { state, send } = useGraphEditor();
-  const docs = state.context.graph?.documents ?? [];
-  const isSelected = (doc: DocumentHeader) => state.context.selectedDocuments.includes(doc.id);
+  const graphEditor = useGraphEditor();
+  const docs = graphEditor?.state.context.graph?.documents ?? [];
+  const isSelected = (doc: DocumentHeader) => graphEditor?.state.context.selectedDocuments.includes(doc.id);
 
   return (
     <FloatingWindow maxW='100%' display={isOpen ? undefined : 'none'} {...windowProps}>
@@ -29,7 +29,7 @@ export function FloatingDocumentList({
         <FloatingWindowCloseButton onClick={onClose}/>
       </FloatingWindowHeader>
 
-      {state.matches('loading') && !docs.length ? (
+      {graphEditor?.state.matches('loading') && !docs.length ? (
         <VStack
           divider={<StackDivider borderColor='gray.300'/>}
           align='stretch'
@@ -54,7 +54,7 @@ export function FloatingDocumentList({
               cursor='pointer'
               bg={isSelected(doc) ? 'blue.100' : undefined}
             >
-              <Link onClick={() => send({ type: 'selectDocument', payload: doc.id })}>
+              <Link onClick={() => graphEditor?.send({ type: 'selectDocument', payload: doc.id })}>
                 <Heading 
                   fontSize='md'
                   whiteSpace='nowrap'

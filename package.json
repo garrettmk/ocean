@@ -102,6 +102,7 @@
     "url-parse": "^1.5.3",
     "utf-8-validate": "^5.0.7",
     "web-worker": "^1.2.0",
+    "wonka": "^4.0.15",
     "wouter": "^2.7.4",
     "xstate": "^4.23.1"
   },

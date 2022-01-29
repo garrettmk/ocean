@@ -1,6 +1,6 @@
 import React from 'react';
 import { useDocumentEditor, useStateTransition } from '../hooks';
-import { useToast } from '@chakra-ui/toast';
+import { useToast } from '@chakra-ui/react';
 
 const toastId = 'convert-document-toast';
 
