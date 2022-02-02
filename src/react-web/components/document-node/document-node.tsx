@@ -1,8 +1,10 @@
 import { DocumentGraphNode } from '@/content';
+import { DocumentHeader } from '@/domain';
 import { ResizeHandle } from '@/react-web/components';
 import { createDocumentRoute } from '@/react-web/config/routes';
-import { useGraphContentEditor } from '@/react-web/hooks';
+import { useGraphContentEditor, useSource, useSourceFactory } from '@/react-web/hooks';
 import { useDocumentEditorMachine2, useFocus, useHover, useNodeResizing } from '@/react-web/hooks';
+import { useServices } from '@/react-web/services';
 import { canElementScroll } from '@/react-web/utils';
 import { ExternalLinkIcon } from '@chakra-ui/icons';
 import { Box, ButtonGroup, Collapse, Fade, Flex, Grid, Icon, IconButton, Input, useDisclosure } from '@chakra-ui/react';
@@ -29,6 +31,14 @@ export function DocumentNode({
   const titleInputRef = React.useRef<HTMLInputElement>(null);
   const toolbarRef = React.useRef<HTMLDivElement>(null);
   const contentContainerRef = React.useRef<HTMLDivElement>(null);
+
+  // Request the document header first
+  const { documents } = useServices();
+  const header = useSourceFactory(() => data.documentId 
+    ? documents.getDocumentHeader(data.documentId)
+    : undefined
+  , [data.documentId]);
+
   const { documentEditor, startDocumentEditor } = useDocumentEditorMachine2({
     documentId: data.documentId
   });
@@ -84,8 +94,8 @@ export function DocumentNode({
   const handleViewAsPage = () => setLocation(createDocumentRoute(data.id));
   
   // Extract display data from the node, or the document editor if it's open
-  const doc = documentEditor?.state.context.document;
-  const title = doc?.title ?? '';
+  const doc = { ...header, ...documentEditor?.state.context.document };
+  const title = doc.title ?? '';
   const width = data.width ? `${data.width}px` : undefined;
   const height = data.height ? `${data.height}px` : undefined;
 

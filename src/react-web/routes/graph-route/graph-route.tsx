@@ -81,6 +81,11 @@ export function GraphRoute({
     <>
       <Portal containerRef={appBar.ref}>
         <ButtonGroup isAttached>
+          <IconButton
+            icon={<Icon as={MdOutlineCreate}/>}
+            aria-label='create'
+            onClick={() => send({ type: 'query', payload: {} })}
+          />
           <Menu>
             <MenuButton
               as={IconButton}

@@ -1,14 +1,16 @@
 import { ClientDocumentsGateway } from "@/client/interfaces";
-import { assertEventType } from "@/client/utils";
+import { assertEventType, Observable } from "@/client/utils";
 import { ContentMigrationManager, Document, ID, UpdateDocumentInput } from "@/domain";
-import { Sender, sendParent, assign, createMachine, DoneInvokeEvent, ErrorPlatformEvent, EventObject, Interpreter, State, StateMachine } from 'xstate';
+import { Subscribable, Sender, sendParent, assign, createMachine, DoneInvokeEvent, ErrorPlatformEvent, EventObject, Interpreter, State, StateMachine, ActorRef, spawn } from 'xstate';
+import { pipe, map, toObservable } from '@/client/utils';
 
 
 // Describes the machine's context
 export type DocumentEditorMachineContext = {
   document?: Document,
   conversions?: string[],
-  error?: Error
+  error?: Error,
+  documentSubscription?: ActorRef<any>
 };
 
 // Event types, for reference in this file
@@ -134,16 +136,21 @@ export function makeDocumentEditorMachine(gateway: ClientDocumentsGateway, migra
       },
 
       openingDocument: {
-        initial: 'opening',
-        states: {
-          opening: {
-            invoke: {
-              src: 'openDocument',
-              onDone: { target: '#document-editor.ready.pristine', actions: ['assignOpenDocumentResult'] },
-              onError: { target: '#document-editor.closed', actions: ['assignError'] }
-            }
-          }
+        entry: ['spawnGetDocument'],
+        on: {
+          getDocumentResult: { target: 'ready', actions: ['assignGetDocumentResult'] }
         }
+
+        // initial: 'opening',
+        // states: {
+        //   opening: {
+        //     invoke: {
+        //       src: 'openDocument',
+        //       onDone: { target: '#document-editor.ready.pristine', actions: ['assignOpenDocumentResult'] },
+        //       onError: { target: '#document-editor.closed', actions: ['assignError'] }
+        //     }
+        //   }
+        // }
       },
 
       ready: {
@@ -311,6 +318,27 @@ export function makeDocumentEditorMachine(gateway: ClientDocumentsGateway, migra
 
       assignListContentConversionsResult: assign<DocumentEditorMachineContext, DocumentEditorEvent>({
         conversions: (context, event) => (event as DoneInvokeEvent<string[]>).data
+      }),
+
+      spawnWatchDocument: assign({
+        documentSubscription: (context, event) => {
+          const documentId = event.type === 'xstate.init' ? openDocumentId! : (event as OpenDocumentEvent).payload;
+          const observable = pipe(
+            gateway.getDocument(documentId),
+            map(payload => ({ type: 'getDocumentResult', payload })),
+            toObservable
+          )
+
+          return spawn(observable);
+        }
+      }),
+
+      assignWatchDocumentResult: assign({
+        document: (context, event) => {
+          // @ts-ignore
+          const document = event.payload as Document;
+          return document;
+        }
       })
     }
   });

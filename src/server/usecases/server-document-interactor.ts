@@ -95,6 +95,17 @@ export class ServerDocumentInteractor {
     return document;
   }
 
+  async getDocumentHeader(userId: ID | undefined, documentId: ID): Promise<DocumentHeader> {
+    const user = userId && await this.users.getById(userId);
+    const { content, ...header } = await this.documents.getById(documentId);
+    const isViewPermitted = (header.isPublic) || (user && user.author.id === header.author.id);
+
+    if (!isViewPermitted)
+      throw new AuthorizationError('Only the document author can view this document');
+
+    return header;
+  }
+
 
   async deleteDocument(userId: ID, documentId: ID) : Promise<Document> {
     const user = await this.users.getById(userId);

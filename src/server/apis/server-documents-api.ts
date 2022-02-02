@@ -5,7 +5,7 @@ import { GraphQLSchema } from 'graphql';
 import gql from 'graphql-tag';
 import { AuthorizationError } from '../usecases/server-errors';
 import { JSONResolver } from 'graphql-scalars';
-
+import { PubSub } from 'graphql-subscriptions';
 
 
 export type ServerDocumentsApiContext = () => {
@@ -14,16 +14,18 @@ export type ServerDocumentsApiContext = () => {
 
 export class ServerDocumentsApi {
   private interactor: ServerDocumentInteractor;
+  private pubsub: PubSub;
 
   
   constructor(interactor: ServerDocumentInteractor) {
     this.interactor = interactor;
+    this.pubsub = new PubSub();
   };
 
 
   getSchema() : GraphQLSchema {
-    function getAuthenticatedUserId(context: ServerDocumentsApiContext) : ID {
-      const { userId } = context();
+    function getAuthenticatedUserId(context: ServerDocumentsApiContext | ReturnType<ServerDocumentsApiContext>) : ID {
+      const { userId } = typeof context === 'function' ? context() : context;
       if (!userId)
         throw new AuthorizationError('Must be signed in');
       
@@ -113,9 +115,14 @@ export class ServerDocumentsApi {
         type Query {
           listDocuments(query: DocumentQuery): [DocumentHeader!]!
           getDocument(id: ID!): Document!
+          getDocumentHeader(id: ID!): DocumentHeader!
           getRecommendedLinks(id: ID!) : DocumentGraph!
           graphByQuery(query: DocumentGraphQuery): DocumentGraph!
           listContentConversions(from: String!): [String!]!
+        }
+
+        type Subscription {
+          watchDocument(id: ID!): Document!
         }
       `,
 
@@ -135,6 +142,13 @@ export class ServerDocumentsApi {
             const { id: documentId } = args;
 
             return this.interactor.getDocument(userId, documentId);
+          },
+
+          getDocumentHeader: (root, args, context, info) => {
+            const { userId } = context();
+            const { id: documentId } = args;
+
+            return this.interactor.getDocumentHeader(userId, documentId);
           },
 
           getRecommendedLinks: (root, args, context, info) => {
@@ -206,6 +220,24 @@ export class ServerDocumentsApi {
 
             return this.interactor.convertContent(content, from, to);
           }
+        },
+
+        Subscription: {
+          watchDocument: {
+            resolve: (payload, args, context, info) => {
+              return payload;
+            },
+            subscribe: (root, args, context, info) => {
+              const userId = getAuthenticatedUserId(context);
+              const { id } = args;
+
+              this.interactor.getDocument(userId, id).then(document => {
+                this.pubsub.publish('watchDocument', document);
+              });
+
+              return this.pubsub.asyncIterator('watchDocument');
+            }
+          },
         }
       }
     });

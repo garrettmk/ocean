@@ -11,11 +11,11 @@ import {
   AlreadyExistsError,
   validateContentType,
 } from "@/domain";
-import { AuthorizationError } from "@/client/interfaces";
+import { AuthorizationError } from "@/server";
 import { UpdateDocumentInput, User } from "@/server/usecases";
 import { ServerTestHarness } from "../__utils__/server-test-harness";
 import * as VALID from "../__utils__/domain-valid-examples";
-import * as INVALID from '..//__utils__/domain-invalid-examples';
+import * as INVALID from '../__utils__/domain-invalid-examples';
 
 
 describe('Testing OceanServer', () => {

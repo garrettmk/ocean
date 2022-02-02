@@ -1,5 +1,4 @@
-import { ContentMigrationManager, Document, DocumentHeader, DocumentGraph, DocumentGraphQuery, DocumentLink, ID } from "@/domain";
-import { CreateDocumentInput, UpdateDocumentInput } from "@/server/usecases";
+import { ContentMigrationManager, Document, DocumentHeader, DocumentGraph, DocumentGraphQuery, DocumentLink, ID, CreateDocumentInput, UpdateDocumentInput } from "@/domain";
 import { spawn, Interpreter, createMachine, assign, DoneInvokeEvent, ErrorPlatformEvent, State, EventObject, ActorRef } from "xstate";
 import { stop } from "xstate/lib/actions";
 import { DocumentEditorEvent, DocumentEditorMachineState } from ".";

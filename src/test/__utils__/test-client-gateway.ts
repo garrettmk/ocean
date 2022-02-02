@@ -7,6 +7,7 @@ interface MockClientDocumentsGateway extends Record<keyof ClientDocumentsGateway
 
 export class TestClientGateway implements MockClientDocumentsGateway {
   public getDocument: Mock;
+  public getDocumentHeader: Mock;
   public createDocument: Mock;
   public updateDocument: Mock;
   public deleteDocument: Mock;
@@ -21,6 +22,7 @@ export class TestClientGateway implements MockClientDocumentsGateway {
 
   constructor() {
     this.getDocument = jest.fn(() => { return new TestPromise<Document>(); });
+    this.getDocumentHeader = jest.fn(() => { return new TestPromise<DocumentHeader>(); })
     this.createDocument = jest.fn(() => { return new TestPromise<Document>(); });
     this.updateDocument = jest.fn(() => { return new TestPromise<Document>(); });
     this.deleteDocument = jest.fn(() => { return new TestPromise<Document>(); });

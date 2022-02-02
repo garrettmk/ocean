@@ -42,12 +42,12 @@ module.exports = {
     rules: [
       {
         test: /\.(ts|tsx)$/i,
-        exclude: /node_modules/,
+        exclude: /node_modules|test/,
         use: 'ts-loader'
       },
       {
         test: /\.css$/i,
-        exclude: /node_modules/,
+        exclude: /node_modules|test/,
         use: ['style-loader', 'css-loader']
       }
     ]
@@ -58,4 +58,10 @@ module.exports = {
     template: 'src/react-web/public/index.html',
     filename: 'public/index.html'
   })],
+
+  stats: {
+    modules: true,
+    reasons: true,
+    errorDetails: true
+  }
 }

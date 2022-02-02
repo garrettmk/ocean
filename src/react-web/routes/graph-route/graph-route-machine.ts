@@ -1,13 +1,14 @@
 import { ClientDocumentsGateway } from "@/client/interfaces";
-import { assertEventType } from "@/client/utils";
+import { assertEventType, pipe, map, toObservable } from "@/client/utils";
 import { GraphContent } from "@/content";
 import { CreateDocumentInput, Document, DocumentGraph, DocumentGraphQuery } from "@/domain";
 import { docToGraphNode, documentGraphToGraphContent, addNode } from "@/react-web/editors/graph-content-editor";
-import { assign, createMachine, DoneInvokeEvent, ErrorPlatformEvent, Interpreter, State, StateMachine } from "xstate";
+import { assign, createMachine, DoneInvokeEvent, ErrorPlatformEvent, Interpreter, State, StateMachine, ActorRef, AnyEventObject, spawn } from "xstate";
 
 
 // The machine's context data
 export type GraphRouteContext = {
+  loadGraph?: ActorRef<AnyEventObject>,
   contentType: 'ocean/graph',
   content: GraphContent,
   error?: Error
@@ -36,6 +37,7 @@ export type GraphRouteTypeState =
 
 // Event types, for use in this file
 type QueryEvent = { type: 'query', payload: DocumentGraphQuery };
+type LoadGraphResultEvent = { type: 'loadGraphResult', payload: DocumentGraph };
 type CreateDocumentEvent = { type: 'createDocument', payload: CreateDocumentInput };
 type ContentChangedEvent = { type: 'contentChanged', payload: GraphContent };
 type XStateEvents = DoneInvokeEvent<DocumentGraph> | DoneInvokeEvent<Document> | ErrorPlatformEvent;
@@ -44,6 +46,7 @@ type XStateEvents = DoneInvokeEvent<DocumentGraph> | DoneInvokeEvent<Document> |
 // Aggregate event type
 export type GraphRouteEvent =
   | QueryEvent
+  | LoadGraphResultEvent
   | CreateDocumentEvent
   | ContentChangedEvent;
 
@@ -68,48 +71,25 @@ export type GraphRouteEvent =
       },
       initial: 'ready',
       on: {
-        contentChanged: {
-          actions: ['assignNewContent']
-        }
+        contentChanged: { actions: ['assignNewContent'] },
+        loadGraphResult: { actions: ['assignLoadGraphResult'] }
       },
       states: {
         ready: {
           on: {
-            query: { target: 'loadingGraph' },
-            createDocument: { target: 'creatingDocument' }
+            // query: { target: 'loading' },
+            query: { actions: ['spawnLoadGraph'] }
           }
         },
-        loadingGraph: {
-          invoke: {
-            src: 'loadGraph',
-            onDone: { target: 'ready', actions: ['assignLoadGraphResult', 'clearError'] },
-            onError: { target: 'ready', actions: ['assignError'] },
-          }
-        },
-        creatingDocument: {
-          invoke: {
-            src: 'createDocument',
-            onDone: { target: 'ready', actions: ['assignCreateDocumentResult', 'clearError'] },
-            onError: { target: 'ready', actions: ['assignError']}
+
+        loading: {
+          entry: ['spawnLoadGraph'],
+          on: {
+            loadGraphResult: { target: 'ready', actions: ['assignLoadGraphResult'] }
           }
         }
       }
     }, {
-      services: {
-        async loadGraph(context, event) {
-          assertEventType<QueryEvent>(event, 'query');
-          const query = event.payload;
-
-          return await gateway.graphByQuery(query);
-        },
-
-        async createDocument(context, event) {
-          assertEventType<CreateDocumentEvent>(event, 'createDocument');
-          const input = event.payload;
-
-          return await gateway.createDocument(input);
-        }
-      },
       actions: {
         assignError: assign({
           error: (_, event) => (event as ErrorPlatformEvent).data
@@ -128,24 +108,31 @@ export type GraphRouteEvent =
           }
         }),
 
+        spawnLoadGraph: assign({
+          loadGraph: (context, event) => {
+            assertEventType<QueryEvent>(event, 'query');
+            const query = event.payload;
+
+            const observable = pipe(
+              gateway.graphByQuery(query),
+              map(result => ({ type: 'loadGraphResult', payload: result })),
+              toObservable
+            );
+
+            context.loadGraph?.stop?.();
+            return spawn(observable);
+          }
+        }),
+
         assignLoadGraphResult: assign({
           content: (context, event) => {
-            // assertEventType<DoneInvokeEvent<DocumentGraph>>(event, 'done.invoke.loadGraph');
-            const documentGraph = (event as DoneInvokeEvent<DocumentGraph>).data;
+            console.log(event);
+            assertEventType<LoadGraphResultEvent>(event, 'loadGraphResult');
+            const documentGraph = event.payload;
 
             return documentGraphToGraphContent(documentGraph);
           }
-        }),
-
-        assignCreateDocumentResult: assign({
-          content: (context, event) => {
-            const document = (event as DoneInvokeEvent<Document>).data;
-            const newNode = docToGraphNode(document);
-            const newContent = addNode(context.content, newNode);
-
-            return newContent;
-          }
-        }),
+        })
       }
     });
   }
