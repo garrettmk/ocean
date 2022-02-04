@@ -1,7 +1,6 @@
 import { Document, DocumentHeader } from '@/domain';
 import { FloatingWindowCloseButton } from '@/react-web/components/floating-window-close-button';
 import { FloatingWindowHeader } from '@/react-web/components/floating-window-header';
-import { useGraphEditor } from '@/react-web/hooks';
 import { Box, Heading, Link, StackDivider, Text, VStack } from '@chakra-ui/layout';
 import { Skeleton } from '@chakra-ui/skeleton';
 import React from 'react';
@@ -19,9 +18,6 @@ export function FloatingDocumentList({
   onClose,
   ...windowProps
 }: FloatingDocumentListProps): JSX.Element {
-  const graphEditor = useGraphEditor();
-  const docs = graphEditor?.state.context.graph?.documents ?? [];
-  const isSelected = (doc: DocumentHeader) => graphEditor?.state.context.selectedDocuments.includes(doc.id);
 
   return (
     <FloatingWindow maxW='100%' display={isOpen ? undefined : 'none'} {...windowProps}>
@@ -29,7 +25,7 @@ export function FloatingDocumentList({
         <FloatingWindowCloseButton onClick={onClose}/>
       </FloatingWindowHeader>
 
-      {graphEditor?.state.matches('loading') && !docs.length ? (
+      {false ? (
         <VStack
           divider={<StackDivider borderColor='gray.300'/>}
           align='stretch'
@@ -46,15 +42,15 @@ export function FloatingDocumentList({
           divider={<StackDivider borderColor="gray.300" m='0px !important'/>}
           align='stretch'
         >
-          {docs.map(doc => (
+          {[].map((doc: Document) => (
             <Box 
               key={doc.id}
               px='4'
               py='6'
               cursor='pointer'
-              bg={isSelected(doc) ? 'blue.100' : undefined}
+              // bg={isSelected(doc) ? 'blue.100' : undefined}
             >
-              <Link onClick={() => graphEditor?.send({ type: 'selectDocument', payload: doc.id })}>
+              <Link onClick={() => {}}>
                 <Heading 
                   fontSize='md'
                   whiteSpace='nowrap'

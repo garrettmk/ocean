@@ -58,6 +58,29 @@ export function toObservable<T>(source: Source<T>) : Observable<T> {
   }
 }
 
+// Return a Promise that resolves with the first result from a source
+export function toPromise<T>(source: Source<T>) : Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    let talkback: Sink<never>;
+    source(CallType.Start, (...[t, d]) => {
+      // On start, save the talkback
+      if (t === CallType.Start) {
+        talkback = d as Sink<never>;
+        talkback(CallType.Data);
+      // If data, resolve the promise and terminate the stream
+      } else if (t === CallType.Data) {
+        resolve(d as T);
+        talkback(CallType.End);
+      // If no data, reject the promise
+      } else if (t === CallType.End && !d) {
+        reject('No data');
+      // If error, reject the promise
+      } else if (t === CallType.End) {
+        reject(d);
+      }
+    })
+  });
+}
 
 // export function catchError<E = any>(onError: (error: E) => void) {
 //   return function (source: Source<any>) {

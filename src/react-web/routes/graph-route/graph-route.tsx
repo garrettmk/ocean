@@ -1,8 +1,9 @@
 import { GraphContent } from '@/content';
-import { DocumentNode } from '@/react-web/components';
-import { GraphRouteParams } from "@/react-web/config/routes";
+import { useAppBar } from '@/react-web/app';
+import { DocumentNode } from '@/react-web/editors';
+import { GraphRouteParams } from "@/react-web/config/index";
 import { GraphContentEditor } from "@/react-web/editors";
-import { useAppBar, useStateTransition } from "@/react-web/hooks";
+import { useStateTransition } from "@/react-web/hooks";
 import { useServices } from "@/react-web/services";
 import { ButtonGroup, Grid, Icon, IconButton, Menu, MenuButton, MenuItem, MenuList, Portal, useToast } from '@chakra-ui/react';
 import { useMachine } from '@xstate/react';
@@ -30,7 +31,6 @@ export function GraphRoute({
   // Handlers for GraphEditor
   const content = state.context.content;
   const handleChangeContent = React.useCallback((newContent: GraphContent) => {
-    console.log(newContent);
     send({ type: 'contentChanged', payload: newContent});
   }, [send]);
 

@@ -1,7 +1,7 @@
 import { ContentAnalysis, ContentAnalyzer } from "@/domain";
 import { createEditor, Node } from "slate";
-import { slateContentType, LinkElement } from "../content-types/content-type-slate";
-import { validateSlateContent } from "../validators";
+import { slateContentType, LinkElement } from "@/content/content-types";
+import { validateSlateContent } from "@/content/validators";
 
 
 export class SlateContentAnalyzer implements ContentAnalyzer {

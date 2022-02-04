@@ -1,3 +1,4 @@
+const CircularDependencyPlugin = require('circular-dependency-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const path = require('path');
 
@@ -53,15 +54,16 @@ module.exports = {
     ]
   },
 
-  plugins: [new HtmlWebpackPlugin({
-    title: 'Ocean',
-    template: 'src/react-web/public/index.html',
-    filename: 'public/index.html'
-  })],
+  plugins: [
+    new HtmlWebpackPlugin({
+      title: 'Ocean',
+      template: 'src/react-web/public/index.html',
+      filename: 'public/index.html'
+    }),
 
-  stats: {
-    modules: true,
-    reasons: true,
-    errorDetails: true
-  }
+    new CircularDependencyPlugin({
+      exclude: /node_modules/,
+      cwd: process.cwd(),
+    })
+  ],
 }

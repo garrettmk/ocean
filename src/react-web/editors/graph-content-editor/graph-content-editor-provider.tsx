@@ -1,5 +1,5 @@
 import React from 'react';
-import { GraphContentEditorContextValue, GraphContentEditorContext } from '@/react-web/editors';
+import { GraphContentEditorContextValue, GraphContentEditorContext } from './graph-content-editor-context';
 
 export function GraphContentEditorProvider({
   updateNode,

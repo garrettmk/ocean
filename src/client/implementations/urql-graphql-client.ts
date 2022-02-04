@@ -31,15 +31,8 @@ export class UrqlGraphQLClient implements GraphQLClient {
     fetch, 
     cacheResolvers 
   }: UrqlGraphQLClientOptions) {
-
     // Create a subscription client
     this.subscriptionClient = UrqlGraphQLClient.makeSubscriptionClient(subscriptionsUrl, authenticator);
-
-    // This is supposed to fix a bug in Firefox related to websockets
-    window.addEventListener('beforeunload', () => {
-      this.subscriptionClient.unsubscribeAll();
-      this.subscriptionClient.close();
-    });
 
     // Setup the exchanges
     const auth = UrqlGraphQLClient.makeAuthExchange(authenticator);
@@ -63,12 +56,20 @@ export class UrqlGraphQLClient implements GraphQLClient {
 
   // Create a SubscriptionClient from an URL and an authenticator
   private static makeSubscriptionClient(url: string, authenticator: ClientAuthenticator): SubscriptionClient {
-    return new SubscriptionClient(url, {
+    const client = new SubscriptionClient(url, {
       reconnect: true,
       connectionParams: async () => ({
         authorization: await authenticator.getAccessToken()
       })
     });
+
+    // This is supposed to fix a bug in Firefox related to websockets
+    window.addEventListener('beforeunload', () => {
+      client.unsubscribeAll();
+      client.close();
+    });
+
+    return client;
   }
 
   // Create a normalized cache

@@ -1,5 +1,5 @@
 import { ContentAnalysis, ContentAnalyzer } from "@/domain";
-import { htmlContentType } from "..";
+import { htmlContentType } from "@/content/content-types";
 
 
 export class HtmlContentAnalyzer implements ContentAnalyzer {

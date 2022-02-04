@@ -44,6 +44,7 @@
     "@types/url-parse": "^1.4.4",
     "@xstate/test": "^0.4.2",
     "babel-loader": "^8.2.2",
+    "circular-dependency-plugin": "^5.2.2",
     "html-webpack-plugin": "^5.3.2",
     "jest": "^27.0.6",
     "node-fetch": "^2.6.1",

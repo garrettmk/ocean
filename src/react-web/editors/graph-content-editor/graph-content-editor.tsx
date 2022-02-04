@@ -1,5 +1,5 @@
 import { GraphContent, GraphEdge, GraphNode, GraphViewport } from "@/content";
-import { DocumentNode } from "@/react-web/components";
+import { DocumentNode } from "./document-node";
 import { BoxProps, Grid } from "@chakra-ui/react";
 import React from 'react';
 import ReactFlow, {
@@ -11,6 +11,7 @@ import ReactFlow, {
 } from "react-flow-renderer";
 import { GraphContentEditorProvider } from "./graph-content-editor-provider";
 import { addEdge, graphContentToFlowElements, replaceNode } from "./graph-content-editor-utils";
+import './react-flow-overrides.css';
 
 
 export type GraphContentEditorProps = BoxProps & {
@@ -85,8 +86,15 @@ export function GraphContentEditor({
 
 
   // Callbacks used by nodes
-  const updateNode = React.useCallback((node: GraphNode) => {
-    onChangeContent?.(replaceNode(content!, node));
+  const updateNode = React.useCallback((nodeUpdates: Partial<GraphNode>) => {
+    if (!onChangeContent || !content) return;
+
+    const currentNode = content.nodes.find(({ id }) => id === nodeUpdates.id);
+    if (!currentNode)
+    throw new Error(`Can\'t update node, id not found: ${nodeUpdates.id}`);
+    
+    const newNode = { ...currentNode, ...nodeUpdates };
+    onChangeContent(replaceNode(content, newNode));
   }, [content]);
   
   return (

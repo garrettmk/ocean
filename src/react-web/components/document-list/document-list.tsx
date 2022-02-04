@@ -1,24 +1,26 @@
-import { makeBrowseDocumentsMachine } from "@/client/machines";
-import { useServices } from "@/react-web/services";
+import { DocumentHeader, ID } from '@/domain';
 import { Box, BoxProps, Heading, Link, Skeleton, StackDivider, Text, VStack } from '@chakra-ui/react';
-import { useMachine } from '@xstate/react';
 import React from 'react';
-import { useMeasure } from "react-use";
 import { Link as RouterLink } from 'wouter';
 
 
-export function DocumentList(props: BoxProps) {
-  const services = useServices();
-  const machine = React.useMemo(() => makeBrowseDocumentsMachine(services.documents), []);
-  // @ts-ignore
-  const [state, send] = useMachine(machine);
-  const docs = state.context.documents ?? [];
+export type DocumentListProps = BoxProps & {
+  documents?: DocumentHeader[],
+  selected?: ID[],
+  isLoading?: boolean,
+}
 
-  const selectedId = 'no';
+export function DocumentList({
+  documents = [],
+  selected = [],
+  isLoading,
+  ...boxProps
+}: DocumentListProps) {
+  const isSelected = (id: ID) => selected?.includes(id);
 
   return (
-    <Box {...props}>
-      {state.matches('loading') && !docs.length ? (
+    <Box {...boxProps}>
+      {isLoading ? (
         <VStack
           divider={<StackDivider borderColor='gray.300' mx='-4'/>}
           align='stretch'
@@ -34,12 +36,12 @@ export function DocumentList(props: BoxProps) {
           divider={<StackDivider borderColor="gray.300" mx='-4'/>}
           align='stretch'
         >
-          {docs.map(doc => (
+          {documents.map(doc => (
             <RouterLink to={`/doc/${doc.id}`}>
               <Box 
                 px='4'
                 py='2'
-                bgColor={doc.id === selectedId ? 'gray.300' : undefined}
+                bgColor={isSelected(doc.id) ? 'gray.300' : undefined}
                 cursor='pointer'
               >
                 <Link>

@@ -2,7 +2,7 @@ import { ClientDocumentsGateway } from "@/client/interfaces";
 import { assertEventType, pipe, map, toObservable } from "@/client/utils";
 import { GraphContent } from "@/content";
 import { CreateDocumentInput, Document, DocumentGraph, DocumentGraphQuery } from "@/domain";
-import { docToGraphNode, documentGraphToGraphContent, addNode } from "@/react-web/editors/graph-content-editor";
+import { mergeGraphContent, docToGraphNode, documentGraphToGraphContent, addNode } from "@/react-web/editors/graph-content-editor";
 import { assign, createMachine, DoneInvokeEvent, ErrorPlatformEvent, Interpreter, State, StateMachine, ActorRef, AnyEventObject, spawn } from "xstate";
 
 
@@ -126,11 +126,11 @@ export type GraphRouteEvent =
 
         assignLoadGraphResult: assign({
           content: (context, event) => {
-            console.log(event);
             assertEventType<LoadGraphResultEvent>(event, 'loadGraphResult');
             const documentGraph = event.payload;
+            const newContent = documentGraphToGraphContent(documentGraph);
 
-            return documentGraphToGraphContent(documentGraph);
+            return mergeGraphContent(context.content, newContent);
           }
         })
       }

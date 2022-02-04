@@ -2,7 +2,7 @@ import { ClientDocumentsGateway } from "@/client/interfaces";
 import { assertEventType, Observable } from "@/client/utils";
 import { ContentMigrationManager, Document, ID, UpdateDocumentInput } from "@/domain";
 import { Subscribable, Sender, sendParent, assign, createMachine, DoneInvokeEvent, ErrorPlatformEvent, EventObject, Interpreter, State, StateMachine, ActorRef, spawn } from 'xstate';
-import { pipe, map, toObservable } from '@/client/utils';
+import { pipe, map, toObservable, toPromise } from '@/client/utils';
 
 
 // Describes the machine's context
@@ -10,7 +10,7 @@ export type DocumentEditorMachineContext = {
   document?: Document,
   conversions?: string[],
   error?: Error,
-  documentSubscription?: ActorRef<any>
+  getDocumentRef?: ActorRef<any>
 };
 
 // Event types, for reference in this file
@@ -138,19 +138,8 @@ export function makeDocumentEditorMachine(gateway: ClientDocumentsGateway, migra
       openingDocument: {
         entry: ['spawnGetDocument'],
         on: {
-          getDocumentResult: { target: 'ready', actions: ['assignGetDocumentResult'] }
+          getDocumentResult: { target: '#document-editor.ready.pristine', actions: ['assignGetDocumentResult'] }
         }
-
-        // initial: 'opening',
-        // states: {
-        //   opening: {
-        //     invoke: {
-        //       src: 'openDocument',
-        //       onDone: { target: '#document-editor.ready.pristine', actions: ['assignOpenDocumentResult'] },
-        //       onError: { target: '#document-editor.closed', actions: ['assignError'] }
-        //     }
-        //   }
-        // }
       },
 
       ready: {
@@ -234,48 +223,42 @@ export function makeDocumentEditorMachine(gateway: ClientDocumentsGateway, migra
     }
   }, {
     services: {
-      async openDocument(context, event) {
-        if (event.type === 'xstate.init' && openDocumentId)
-          return await gateway.getDocument(openDocumentId);
-
-        assertEventType<OpenDocumentEvent>(event, 'openDocument');
-        const { payload: id } = event;
-
-        return await gateway.getDocument(id);
-      },
-
       async saveDocument(context, event) {
-        const document = context.document!;
+        const { id, title, contentType, content } = context.document!;
 
-        return await gateway.updateDocument(document.id, {
-          title: document.title,
-          contentType: document.contentType,
-          content: document.content
-        });
+        return await pipe(
+          gateway.updateDocument(id, { title, contentType, content }),
+          toPromise
+        );
       },
 
       async listContentConversions(context, event) {
-        const document = context.document!;
-        const contentTypes = await gateway.listContentConversions(document.contentType);
+        const { contentType } = context.document!;
 
-        return contentTypes;
+        return pipe(
+          gateway.listContentConversions(contentType),
+          toPromise
+        );
       },
 
       async convertDocument(context, event) {
-        const document = context.document!;
+        const { contentType, content } = context.document!;
         const to = (event as ConfirmConvertDocumentEvent).payload;
-        
-        const newContent = await gateway.convertContent(document.content, document.contentType, to);
-        return {
-          contentType: to,
-          content: newContent
-        };
+
+        return pipe(
+          gateway.convertContent(content, contentType, to),
+          map(newContent => ({ contentType: to, content: newContent })),
+          toPromise
+        );
       },
 
       async deleteDocument(context, event) {
-        const id = context.document!.id;
+        const { id } = context.document!;
 
-        return await gateway.deleteDocument(id);
+        return pipe(
+          gateway.deleteDocument(id),
+          toPromise
+        );
       },
     },
 
@@ -320,20 +303,20 @@ export function makeDocumentEditorMachine(gateway: ClientDocumentsGateway, migra
         conversions: (context, event) => (event as DoneInvokeEvent<string[]>).data
       }),
 
-      spawnWatchDocument: assign({
-        documentSubscription: (context, event) => {
+      spawnGetDocument: assign({
+        getDocumentRef: (context, event) => {
           const documentId = event.type === 'xstate.init' ? openDocumentId! : (event as OpenDocumentEvent).payload;
           const observable = pipe(
             gateway.getDocument(documentId),
             map(payload => ({ type: 'getDocumentResult', payload })),
             toObservable
-          )
+          );
 
           return spawn(observable);
         }
       }),
 
-      assignWatchDocumentResult: assign({
+      assignGetDocumentResult: assign({
         document: (context, event) => {
           // @ts-ignore
           const document = event.payload as Document;

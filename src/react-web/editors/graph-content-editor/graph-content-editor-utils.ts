@@ -146,3 +146,25 @@ export function replaceNode(content: GraphContent, node: GraphNode) : GraphConte
     };
   }
 }
+
+// Merge two GraphContent objects into one
+export function mergeGraphContent(first: GraphContent, second: GraphContent) : GraphContent {
+  const nodes = second.nodes.map(node => {
+    const existing = first.nodes.find(({ id }) => id === node.id);
+    return { ...existing, ...node };
+  });
+
+  const edges = second.edges.filter(edge => {
+    const sourceExists = nodes.some(({ id }) => id === edge.sourceId);
+    const targetExists = nodes.some(({ id }) => id === edge.targetId);
+
+    return sourceExists && targetExists;
+  });
+
+  return {
+    ...first,
+    ...second,
+    nodes,
+    edges
+  };
+}

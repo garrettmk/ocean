@@ -1,6 +1,6 @@
 import type { GraphQLError } from "graphql";
 import { NotImplementedError, NotFoundError, ValidationError, AlreadyExistsError } from "@/domain";
-import { AuthorizationError } from "@/client/utils";
+import { AuthorizationError } from "./errors";
 
 
 export interface GraphQLCombinedError extends Error {
